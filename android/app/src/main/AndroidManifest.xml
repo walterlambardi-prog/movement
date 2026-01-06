@@ -26,7 +26,7 @@
         <category android:name="android.intent.category.DEFAULT"/>
         <category android:name="android.intent.category.BROWSABLE"/>
         <data android:scheme="myapp"/>
-        <data android:scheme="com.ailsonfreire.movement"/>
+        <data android:scheme="com.walterlambardi.movement"/>
       </intent-filter>
     </activity>
   </application>

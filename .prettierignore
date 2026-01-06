@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+dist/
+build/
+.expo/
+.expo-shared/
+
+# iOS
+ios/build/
+ios/Pods/
+*.xcworkspace
+*.pbxuser
+*.perspectivev3
+
+# Android
+android/build/
+android/app/build/
+android/app/.cxx/
+android/.gradle/
+
+# Misc
+.DS_Store
+*.log
+coverage/
+.vscode/
+.idea/
+
+# Generated files
+*.lock
+yarn.lock
+package-lock.json
+
+# Config files to ignore
+*.xcassets/
+Podfile.properties.json

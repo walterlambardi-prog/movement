@@ -12,7 +12,8 @@ export default function Page() {
 			}}
 		>
 			<Text style={{ fontSize: 22 }}>Wellcome to Movement!</Text>
-			<Text style={{ fontSize: 16 }}>Let's do some exercise</Text>
+			<Text style={{ fontSize: 16 }}>Choose your tracking mode</Text>
+
 			<Link href="/exercise" asChild>
 				<TouchableOpacity
 					style={{
@@ -21,10 +22,52 @@ export default function Page() {
 						borderRadius: 5,
 						paddingHorizontal: 40,
 						paddingVertical: 10,
-						margin: 20,
+						margin: 10,
+						backgroundColor: "#f0f0f0",
 					}}
 				>
-					<Text style={{ fontSize: 16 }}>Start</Text>
+					<Text style={{ fontSize: 16, textAlign: "center" }}>💪 Body Exercise</Text>
+					<Text style={{ fontSize: 12, textAlign: "center", color: "gray" }}>
+						Full body pose tracking
+					</Text>
+				</TouchableOpacity>
+			</Link>
+
+			<Link href="/squats" asChild>
+				<TouchableOpacity
+					style={{
+						borderColor: "black",
+						borderWidth: 1,
+						borderRadius: 5,
+						paddingHorizontal: 40,
+						paddingVertical: 10,
+						margin: 10,
+						backgroundColor: "#f0f0f0",
+					}}
+				>
+					<Text style={{ fontSize: 16, textAlign: "center" }}>🏋️ Squat Counter</Text>
+					<Text style={{ fontSize: 12, textAlign: "center", color: "gray" }}>
+						Count your squats automatically
+					</Text>
+				</TouchableOpacity>
+			</Link>
+
+			<Link href="/hands" asChild>
+				<TouchableOpacity
+					style={{
+						borderColor: "black",
+						borderWidth: 1,
+						borderRadius: 5,
+						paddingHorizontal: 40,
+						paddingVertical: 10,
+						margin: 10,
+						backgroundColor: "#f0f0f0",
+					}}
+				>
+					<Text style={{ fontSize: 16, textAlign: "center" }}>👋 Hand Tracking</Text>
+					<Text style={{ fontSize: 12, textAlign: "center", color: "gray" }}>
+						Track hand movements
+					</Text>
 				</TouchableOpacity>
 			</Link>
 		</View>

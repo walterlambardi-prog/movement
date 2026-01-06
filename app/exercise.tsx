@@ -1,6 +1,6 @@
 import { Skia } from "@shopify/react-native-skia";
 import { Stack } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
 	Button,
 	NativeEventEmitter,
@@ -27,10 +27,7 @@ const { PoseLandmarks } = NativeModules;
 const poseLandmarksEmitter = new NativeEventEmitter(PoseLandmarks);
 
 // Initialize the frame processor plugin 'poseLandmarks'
-const poseLandMarkPlugin = VisionCameraProxy.initFrameProcessorPlugin(
-	"poseLandmarks",
-	{}
-);
+const poseLandMarkPlugin = VisionCameraProxy.initFrameProcessorPlugin("poseLandmarks", {});
 
 function poseLandmarks(frame: Frame) {
 	"worklet";
@@ -95,6 +92,10 @@ const circlePaint = Skia.Paint();
 circlePaint.setColor(Skia.Color("green"));
 linePaint.setStrokeWidth(10);
 
+const CameraButton = ({ onPress }: { onPress: () => void }) => (
+	<Button title="Change camera" onPress={onPress} />
+);
+
 export default function Exercise() {
 	const landmarks = useSharedValue<KeypointsMap>({});
 	const { hasPermission, requestPermission } = useCameraPermission();
@@ -102,32 +103,42 @@ export default function Exercise() {
 	const [showLines, setShowLines] = useState(true);
 	const [showCircles, setShowCircles] = useState(true);
 	const device = useCameraDevice(cameraPosition);
+	const format = useCameraFormat(device, [{ fps: 30 }]);
 
 	useEffect(() => {
 		// Set up the event listener to listen for pose landmarks detection results
-		const subscription = poseLandmarksEmitter.addListener(
-			"onPoseLandmarksDetected",
-			(event) => {
-				// Update the landmarks shared value to paint them on the screen
+		const subscription = poseLandmarksEmitter.addListener("onPoseLandmarksDetected", (event) => {
+			// Update the landmarks shared value to paint them on the screen
 
-				/*
+			/*
           The event contains values for landmarks and pose.
           These values are defined in the PoseLandmarkerResultProcessor class
           found in the PoseLandmarks.swift file.
         */
-				landmarks.value = event.landmarks[0];
-			}
-		);
+			landmarks.value = event.landmarks[0];
+		});
 
 		// Clean up the event listener when the component is unmounted
 		return () => {
 			subscription.remove();
 		};
-	}, []);
+	}, [landmarks]);
 
 	useEffect(() => {
 		requestPermission().catch((error) => console.log(error));
 	}, [requestPermission]);
+
+	const handleCameraChange = useCallback(() => {
+		setCameraPosition((prev) => (prev === "front" ? "back" : "front"));
+	}, []);
+
+	const handleToggleLines = useCallback(() => {
+		setShowLines((prev) => !prev);
+	}, []);
+
+	const handleToggleCircles = useCallback(() => {
+		setShowCircles((prev) => !prev);
+	}, []);
 
 	const frameProcessor = useSkiaFrameProcessor(
 		(frame) => {
@@ -136,16 +147,13 @@ export default function Exercise() {
 			// Process the frame using the 'poseLandmarks' function
 			frame.render();
 			poseLandmarks(frame);
-			if (
-				landmarks?.value !== undefined &&
-				Object.keys(landmarks?.value).length > 0
-			) {
-				let body = landmarks?.value;
-				let frameWidth = frame.width;
-				let frameHeight = frame.height;
+			if (landmarks?.value !== undefined && Object.keys(landmarks?.value).length > 0) {
+				const body = landmarks?.value;
+				const frameWidth = frame.width;
+				const frameHeight = frame.height;
 				// Draw line on landmarks
 				if (showLines) {
-					for (let [from, to] of LINES) {
+					for (const [from, to] of LINES) {
 						frame.drawLine(
 							body[from].x * Number(frameWidth),
 							body[from].y * Number(frameHeight),
@@ -156,7 +164,7 @@ export default function Exercise() {
 					}
 				} // Draw circles on landmarks
 				if (showCircles) {
-					for (let mark of Object.values(body)) {
+					for (const mark of Object.values(body)) {
 						frame.drawCircle(
 							mark.x * Number(frameWidth),
 							mark.y * Number(frameHeight),
@@ -170,6 +178,21 @@ export default function Exercise() {
 		[showLines, showCircles]
 	);
 
+	const pixelFormat = Platform.OS === "ios" ? "rgb" : "yuv";
+
+	const HeaderRight = useMemo(
+		() => <CameraButton onPress={handleCameraChange} />,
+		[handleCameraChange]
+	);
+
+	const screenOptions = useMemo(
+		() => ({
+			title: "Exercise",
+			headerRight: () => HeaderRight,
+		}),
+		[HeaderRight]
+	);
+
 	if (!hasPermission) {
 		return <Text>No permission</Text>;
 	}
@@ -178,36 +201,14 @@ export default function Exercise() {
 		return <Text>No device</Text>;
 	}
 
-	const pixelFormat = Platform.OS === "ios" ? "rgb" : "yuv";
-
 	return (
 		<>
-			<Stack.Screen
-				name="exercise"
-				options={{
-					title: "Exercise",
-					headerRight: () => (
-						<>
-							<Button
-								title="Change camera"
-								onPress={() =>
-									setCameraPosition((prev) =>
-										prev === "front" ? "back" : "front"
-									)
-								}
-							/>
-						</>
-					),
-				}}
-			/>
+			<Stack.Screen name="exercise" options={screenOptions} />
 			<View style={styles.drawControl}>
-				<Button
-					title={showLines ? "Hide lines" : "Show lines"}
-					onPress={() => setShowLines(!showLines)}
-				/>
+				<Button title={showLines ? "Hide lines" : "Show lines"} onPress={handleToggleLines} />
 				<Button
 					title={showCircles ? "Hide circles" : "Show circles"}
-					onPress={() => setShowCircles(!showCircles)}
+					onPress={handleToggleCircles}
 				/>
 			</View>
 			<Camera
@@ -219,7 +220,7 @@ export default function Exercise() {
 				videoHdr={false}
 				enableBufferCompression={true}
 				photo={false}
-				fps={30}
+				format={format}
 			/>
 		</>
 	);
