@@ -1,0 +1,126 @@
+yarn run v1.22.22
+$ expo run:ios
+› Skipping dev server
+› Planning build
+› Preparing Pods/glog-glog_privacy » ResourceBundle-glog_privacy-glog-Info.plist
+› Executing react-native Pods/hermes-engine » [CP-User] [Hermes] Replace Hermes for the right configuration, if needed
+› Preparing Pods/RCT-Folly-RCT-Folly_privacy » ResourceBundle-RCT-Folly_privacy-RCT-Folly-Info.plist
+› Preparing Pods/boost-boost_privacy » ResourceBundle-boost_privacy-boost-Info.plist
+› Executing react-native Pods/hermes-engine » [CP] Copy XCFrameworks
+› Preparing Pods/React-cxxreact-React-cxxreact_privacy » ResourceBundle-React-cxxreact_privacy-React-cxxreact-Info.plist
+› Preparing Pods/React-Core-React-Core_privacy » ResourceBundle-React-Core_privacy-React-Core-Info.plist
+    Run script build phase '[CP-User] [RN]Check rncore' will be run during every build because it does not specify any outputs. To address this issue, either add output dependencies to the script phase, or configure it to run in every build by unchecking "Based on dependency analysis" in the script phase. (in target 'React-Fabric' from project 'Pods')
+› Executing react-native Pods/React-Fabric » [CP-User] [RN]Check rncore
+› Executing movement Pods/ReactCodegen » [CP-User] Generate Specs
+› Compiling movement Pods/ReactCodegen » ComponentDescriptors.cpp
+› Compiling movement Pods/ReactCodegen » EventEmitters.cpp
+› Compiling movement Pods/ReactCodegen » ComponentDescriptors.cpp
+› Compiling movement Pods/ReactCodegen » ComponentDescriptors.cpp
+› Compiling movement Pods/ReactCodegen » EventEmitters.cpp
+› Compiling movement Pods/ReactCodegen » ComponentDescriptors.cpp
+› Compiling movement Pods/ReactCodegen » FBReactNativeSpecJSI-generated.cpp
+› Compiling movement Pods/ReactCodegen » EventEmitters.cpp
+› Compiling movement Pods/ReactCodegen » EventEmitters.cpp
+› Compiling movement Pods/ReactCodegen » ComponentDescriptors.cpp
+› Compiling movement Pods/ReactCodegen » Props.cpp
+› Compiling movement Pods/ReactCodegen » EventEmitters.cpp
+› Compiling movement Pods/ReactCodegen » FBReactNativeSpec-generated.mm
+› Compiling movement Pods/ReactCodegen » safeareacontextJSI-generated.cpp
+› Compiling movement Pods/ReactCodegen » safeareacontext-generated.mm
+› Compiling movement Pods/ReactCodegen » rnskiaJSI-generated.cpp
+› Compiling movement Pods/ReactCodegen » rnskia-generated.mm
+› Compiling movement Pods/ReactCodegen » rnscreensJSI-generated.cpp
+› Compiling movement Pods/ReactCodegen » rnscreens-generated.mm
+› Compiling movement Pods/ReactCodegen » rnreanimatedJSI-generated.cpp
+› Compiling movement Pods/ReactCodegen » rnreanimated-generated.mm
+› Compiling movement Pods/ReactCodegen » rngesturehandler_codegenJSI-generated.cpp
+› Compiling movement Pods/ReactCodegen » rngesturehandler_codegen-generated.mm
+› Compiling movement Pods/ReactCodegen » States.cpp
+› Compiling movement Pods/ReactCodegen » States.cpp
+› Compiling movement Pods/ReactCodegen » States.cpp
+› Compiling movement Pods/ReactCodegen » States.cpp
+› Compiling movement Pods/ReactCodegen » States.cpp
+› Compiling movement Pods/ReactCodegen » ShadowNodes.cpp
+› Compiling movement Pods/ReactCodegen » ShadowNodes.cpp
+› Compiling movement Pods/ReactCodegen » ShadowNodes.cpp
+› Compiling movement Pods/ReactCodegen » ShadowNodes.cpp
+› Compiling movement Pods/ReactCodegen » ShadowNodes.cpp
+› Compiling movement Pods/ReactCodegen » RNWorkletsSpecJSI-generated.cpp
+› Compiling movement Pods/ReactCodegen » RNWorkletsSpec-generated.mm
+› Compiling movement Pods/ReactCodegen » RNCWebViewSpecJSI-generated.cpp
+› Compiling movement Pods/ReactCodegen » RNCWebViewSpec-generated.mm
+› Compiling movement Pods/ReactCodegen » RCTModulesConformingToProtocolsProvider.mm
+› Compiling movement Pods/ReactCodegen » Props.cpp
+› Compiling movement Pods/ReactCodegen » Props.cpp
+› Compiling movement Pods/ReactCodegen » Props.cpp
+› Compiling movement Pods/ReactCodegen » Props.cpp
+› Packaging movement Pods/ReactCodegen » libReactCodegen.a
+    Run script build phase '[CP-User] [RN]Check rncore' will be run during every build because it does not specify any outputs. To address this issue, either add output dependencies to the script phase, or configure it to run in every build by unchecking "Based on dependency analysis" in the script phase. (in target 'React-FabricComponents' from project 'Pods')
+› Executing react-native Pods/React-FabricComponents » [CP-User] [RN]Check rncore
+› Compiling react-native Pods/React-RCTNetwork » RCTNetworking.mm
+› Packaging react-native Pods/React-RCTNetwork » libReact-RCTNetwork.a
+› Compiling react-native Pods/React-RCTBlob » RCTBlobManager.mm
+› Compiling react-native Pods/React-RCTBlob » RCTFileReaderModule.mm
+› Packaging react-native Pods/React-RCTBlob » libReact-RCTBlob.a
+› Compiling react-native Pods/React-RCTImage » RCTImageEditingManager.mm
+› Compiling react-native Pods/React-RCTImage » RCTImageLoader.mm
+› Compiling react-native Pods/React-RCTImage » RCTImageStoreManager.mm
+› Packaging react-native Pods/React-RCTImage » libReact-RCTImage.a
+› Compiling react-native Pods/React-CoreModules » RCTAccessibilityManager.mm
+› Compiling react-native Pods/React-CoreModules » RCTAppearance.mm
+› Compiling react-native Pods/React-CoreModules » RCTAlertManager.mm
+› Compiling react-native Pods/React-CoreModules » RCTActionSheetManager.mm
+› Compiling react-native Pods/React-CoreModules » RCTAppState.mm
+› Compiling react-native Pods/React-CoreModules » RCTDevSettings.mm
+› Compiling react-native Pods/React-CoreModules » RCTDeviceInfo.mm
+› Compiling react-native Pods/React-CoreModules » RCTDevLoadingView.mm
+› Compiling react-native Pods/React-CoreModules » RCTKeyboardObserver.mm
+› Compiling react-native Pods/React-CoreModules » RCTTiming.mm
+› Compiling react-native Pods/React-CoreModules » RCTDevMenu.mm
+› Compiling react-native Pods/React-CoreModules » RCTExceptionsManager.mm
+› Compiling react-native Pods/React-CoreModules » RCTWebSocketModule.mm
+› Compiling react-native Pods/React-CoreModules » RCTStatusBarManager.mm
+› Compiling react-native Pods/React-CoreModules » RCTSourceCode.mm
+› Compiling react-native Pods/React-CoreModules » RCTRedBox.mm
+› Compiling react-native Pods/React-CoreModules » RCTPlatform.mm
+› Compiling react-native Pods/React-CoreModules » RCTLogBox.mm
+› Compiling react-native Pods/React-CoreModules » RCTI18nManager.mm
+› Compiling react-native Pods/React-CoreModules » RCTClipboard.mm
+› Packaging react-native Pods/React-CoreModules » libReact-CoreModules.a
+› Compiling react-native Pods/React-RCTFabric » RCTActivityIndicatorViewComponentView.mm
+› Compiling react-native Pods/React-RCTFabric » RCTFabricComponentsPlugins.mm
+› Compiling react-native Pods/React-RCTFabric » RCTScrollViewComponentView.mm
+› Compiling react-native Pods/React-RCTFabric » RCTSwitchComponentView.mm
+› Compiling react-native Pods/React-RCTFabric » RCTUnimplementedViewComponentView.mm
+› Compiling react-native Pods/React-RCTFabric » RCTPullToRefreshViewComponentView.mm
+› Compiling react-native Pods/React-RCTFabric » RCTParagraphComponentView.mm
+› Compiling react-native Pods/React-RCTFabric » RCTParagraphComponentAccessibilityProvider.mm
+› Compiling react-native Pods/React-RCTFabric » RCTTextInputComponentView.mm
+› Compiling react-native Pods/React-RCTFabric » RCTSafeAreaViewComponentView.mm
+› Compiling react-native Pods/React-RCTFabric » RCTInputAccessoryComponentView.mm
+› Compiling react-native Pods/React-RCTFabric » RCTThirdPartyFabricComponentsProvider.mm
+› Compiling react-native Pods/React-RCTFabric » RCTDebuggingOverlayComponentView.mm
+› Compiling react-native Pods/React-RCTFabric » RCTComponentViewFactory.mm
+› Packaging react-native Pods/React-RCTFabric » libReact-RCTFabric.a
+› Compiling react-native Pods/React-domnativemodule » NativeDOM.cpp
+› Packaging react-native Pods/React-domnativemodule » libReact-domnativemodule.a
+› Compiling react-native Pods/React-featureflagsnativemodule » NativeReactNativeFeatureFlags.cpp
+› Packaging react-native Pods/React-featureflagsnativemodule » libReact-featureflagsnativemodule.a
+› Compiling react-native Pods/React-idlecallbacksnativemodule » NativeIdleCallbacks.cpp
+› Packaging react-native Pods/React-idlecallbacksnativemodule » libReact-idlecallbacksnativemodule.a
+› Compiling react-native Pods/React-microtasksnativemodule » NativeMicrotasks.cpp
+› Packaging react-native Pods/React-microtasksnativemodule » libReact-microtasksnativemodule.a
+› Compiling react-native Pods/React-defaultsnativemodule » DefaultTurboModules.cpp
+› Packaging react-native Pods/React-defaultsnativemodule » libReact-defaultsnativemodule.a
+› Compiling react-native Pods/React-RCTAppDelegate » RCTAppSetupUtils.mm
+› Packaging react-native Pods/React-RCTAppDelegate » libReact-RCTAppDelegate.a
+› Executing expo-modules-core Pods/ExpoModulesCore » Copy generated compatibility header
+› Preparing Pods/EXConstants-ExpoConstants_privacy » ResourceBundle-ExpoConstants_privacy-EXConstants-Info.plist
+› Preparing expo-constants Pods/EXConstants-EXConstants » ResourceBundle-EXConstants-EXConstants-Info.plist
+› Executing expo-constants Pods/EXConstants » [CP-User] Generate app.config for prebuilt Constants.manifest
+› Compiling expo-constants Pods/EXConstants » EXConstants-dummy.m
+› Compiling expo-constants Pods/EXConstants » EXConstantsService.m
+› Compiling expo-constants Pods/EXConstants » EXConstantsInstallationIdProvider.m
+› Packaging expo-constants Pods/EXConstants » libEXConstants.a
+› Executing expo-constants Pods/EXConstants » Copy generated compatibility header
+› Compiling react-native Pods/React-RCTAnimation » RCTNativeAnimatedModule.mm

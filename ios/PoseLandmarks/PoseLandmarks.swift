@@ -17,7 +17,7 @@ class PoseLandmarks: RCTEventEmitter {
   
   override init() {
     super.init()
-    initModel()
+    // Don't auto-initialize - will be called manually when needed
   }
   
   override func supportedEvents() -> [String]! {

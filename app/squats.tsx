@@ -390,6 +390,11 @@ export default function Squats() {
 	}, [squatCount]);
 
 	useEffect(() => {
+		// Initialize the model explicitly (needed for iOS)
+		if (PoseLandmarks && PoseLandmarks.initModel) {
+			PoseLandmarks.initModel();
+		}
+		
 		const subscription = poseLandmarksEmitter.addListener("onPoseLandmarksDetected", (event) => {
 			// Validar que existan landmarks
 			if (!event?.landmarks?.[0]) {
