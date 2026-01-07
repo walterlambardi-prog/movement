@@ -416,6 +416,10 @@ export default function Squats() {
 			const rightHip = detectedLandmarks[24];
 			const rightKnee = detectedLandmarks[26];
 			const rightAnkle = detectedLandmarks[28];
+			const leftHeel = detectedLandmarks[29];
+			const rightHeel = detectedLandmarks[30];
+			const leftFootIndex = detectedLandmarks[31];
+			const rightFootIndex = detectedLandmarks[32];
 
 			// Validar que todos los puntos clave del cuerpo existan
 			const allPointsExist =
@@ -426,7 +430,11 @@ export default function Squats() {
 				leftAnkle &&
 				rightHip &&
 				rightKnee &&
-				rightAnkle;
+				rightAnkle &&
+				leftHeel &&
+				rightHeel &&
+				leftFootIndex &&
+				rightFootIndex;
 
 			if (!allPointsExist) {
 				setSquatState("idle");
@@ -445,7 +453,11 @@ export default function Squats() {
 				leftKnee.visibility > minVisibility &&
 				rightKnee.visibility > minVisibility &&
 				leftAnkle.visibility > minVisibility &&
-				rightAnkle.visibility > minVisibility;
+				rightAnkle.visibility > minVisibility &&
+				leftHeel.visibility > minVisibility &&
+				rightHeel.visibility > minVisibility &&
+				leftFootIndex.visibility > minVisibility &&
+				rightFootIndex.visibility > minVisibility;
 
 			// Calcular ángulos de ambas rodillas
 			const leftKneeAngle = calculateAngle(leftHip, leftKnee, leftAnkle);
