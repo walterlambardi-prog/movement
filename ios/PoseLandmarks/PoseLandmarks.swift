@@ -10,6 +10,11 @@ import MediaPipeTasksVision
 @objc(PoseLandmarks)
 class PoseLandmarks: RCTEventEmitter {
   
+  @objc
+  override static func moduleName() -> String! {
+    return "PoseLandmarks"
+  }
+  
   override init() {
     super.init()
     initModel()

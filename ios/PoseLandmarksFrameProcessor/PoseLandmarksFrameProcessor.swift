@@ -15,7 +15,9 @@ public class PoseLandmarksFrameProcessorPlugin: FrameProcessorPlugin {
       return "PoseLandmarker is not initialized"
     }
     
-    let image = MPImage(sampleBuffer: frame.buffer, orientation: .up)
+    guard let image = try? MPImage(sampleBuffer: frame.buffer, orientation: .up) else {
+      return "Failed to create MPImage"
+    }
     
     do {
       try poseLandmarker.detectAsync(image: image, timestampInMilliseconds: Int(frame.timestamp))
