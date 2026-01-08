@@ -89,7 +89,7 @@ const LINES = [
 
 // Paint para las líneas (esqueleto)
 const linePaint = Skia.Paint();
-linePaint.setColor(Skia.Color("#4CAF50")); // Verde para que coincida con el tema de squats
+linePaint.setColor(Skia.Color("#FF6B6B")); // Rojo para flexiones
 linePaint.setStrokeWidth(25);
 
 // Paint para los círculos (keypoints)
@@ -97,7 +97,7 @@ const circlePaint = Skia.Paint();
 circlePaint.setColor(Skia.Color("#FFC107")); // Amarillo para los puntos
 linePaint.setStrokeWidth(10);
 
-// Configuración: Mostrar confetti cada N sentadillas
+// Configuración: Mostrar confetti cada N flexiones
 const CONFETTI_INTERVAL = 5;
 
 // Configuración de voz
@@ -108,14 +108,14 @@ const VOICE_CONFIG = {
 };
 
 // Mensaje de bienvenida
-const WELCOME_MESSAGE = "Let's do some squats! Position your full body in frame to begin.";
+const WELCOME_MESSAGE = "Let's do some push-ups! Face the camera and get in position to begin.";
 
 // Mensajes motivacionales para milestones (se elige uno al azar)
 const MILESTONE_MESSAGES = [
-	(count: number) => `${count} squats! Keep it up!`,
-	(count: number) => `Amazing! ${count} squats completed! You're on fire!`,
-	(count: number) => `Wow! ${count} squats done! Keep pushing!`,
-	(count: number) => `Fantastic! ${count} squats! You're crushing it!`,
+	(count: number) => `${count} push-ups! Keep it up!`,
+	(count: number) => `Amazing! ${count} push-ups completed! You're on fire!`,
+	(count: number) => `Wow! ${count} push-ups done! Keep pushing!`,
+	(count: number) => `Fantastic! ${count} push-ups! You're crushing it!`,
 ];
 
 // Mensajes de voz
@@ -141,26 +141,28 @@ function calculateAngle(p1: KeypointData, p2: KeypointData, p3: KeypointData): n
 	return angle;
 }
 
-// Estados de la sentadilla mejorados
-type SquatState = "idle" | "ready" | "descending" | "bottom" | "ascending";
+// Estados de la flexión mejorados
+type PushupState = "idle" | "ready" | "descending" | "bottom" | "ascending";
 
 type RepQuality = "perfect" | "good" | "incomplete";
 
 type StateTransitionResult = {
-	newState: SquatState;
+	newState: PushupState;
 	feedback: string;
 	incrementCount: boolean;
 	quality?: RepQuality;
 	progress: number; // 0-100 para mostrar progreso visual
 };
 
-// Función mejorada para manejar las transiciones de estado de la sentadilla
-function processSquatStateMachine(
-	currentState: SquatState,
-	avgKneeAngle: number,
-	bodyFullyVisible: boolean
+// Función mejorada para manejar las transiciones de estado de la flexión
+// Usa ángulo de codo (enfoque estándar de apps de fitness)
+function processPushupStateMachine(
+	currentState: PushupState,
+	elbowAngle: number, // Ángulo del codo (shoulder-elbow-wrist)
+	bodyFullyVisible: boolean,
+	isInPlankPosition: boolean // Cuerpo en posición de plancha
 ): StateTransitionResult {
-	const angle = Math.round(avgKneeAngle);
+	const angle = Math.round(elbowAngle);
 
 	// Si el cuerpo no está completamente visible, volver a idle
 	if (!bodyFullyVisible) {
@@ -172,27 +174,27 @@ function processSquatStateMachine(
 		};
 	}
 
-	// IDLE -> READY: Cuerpo visible y en posición de pie
+	// IDLE -> READY: En posición de plancha con brazos extendidos
 	if (currentState === "idle") {
-		if (avgKneeAngle > 165) {
+		if (isInPlankPosition && elbowAngle > 160) {
 			return {
 				newState: "ready",
-				feedback: "Ready! Start your squat",
+				feedback: "Perfect! Lower down to begin",
 				incrementCount: false,
 				progress: 0,
 			};
 		}
 		return {
 			newState: "idle",
-			feedback: "Stand up straight to begin",
+			feedback: isInPlankPosition ? `Extend arms (${angle}°)` : "Get in plank position",
 			incrementCount: false,
 			progress: 0,
 		};
 	}
 
-	// READY -> DESCENDING: Comenzando a bajar
+	// READY -> DESCENDING: Comenzando a flexionar los brazos
 	if (currentState === "ready") {
-		if (avgKneeAngle < 150) {
+		if (elbowAngle < 150) {
 			return {
 				newState: "descending",
 				feedback: "Going down...",
@@ -202,7 +204,7 @@ function processSquatStateMachine(
 		}
 		return {
 			newState: "ready",
-			feedback: "Ready! Start your squat",
+			feedback: "Lower down to begin",
 			incrementCount: false,
 			progress: 0,
 		};
@@ -210,29 +212,29 @@ function processSquatStateMachine(
 
 	// DESCENDING: Bajando
 	if (currentState === "descending") {
-		// Llegó a buena profundidad
-		if (avgKneeAngle < 100) {
+		// Llegó a buena profundidad (brazos bien flexionados)
+		if (elbowAngle < 100) {
 			return {
 				newState: "bottom",
-				feedback: "Perfect depth! 💪",
+				feedback: "Good! Now push up! 💪",
 				incrementCount: false,
 				progress: 50,
 			};
 		}
 		// Se devolvió antes de llegar abajo
-		if (avgKneeAngle > 155) {
+		if (elbowAngle > 150) {
 			return {
 				newState: "ready",
-				feedback: "Go deeper next time",
+				feedback: "Go lower next time",
 				incrementCount: false,
 				progress: 0,
 			};
 		}
-		// Calculando progreso basado en ángulo (165° -> 100°)
-		const progress = Math.min(50, ((165 - avgKneeAngle) / (165 - 100)) * 50);
+		// Calculando progreso basado en ángulo (160° -> 100°)
+		const progress = Math.min(50, ((160 - elbowAngle) / (160 - 100)) * 50);
 		return {
 			newState: "descending",
-			feedback: `Keep going... ${angle}°`,
+			feedback: `Lower... ${angle}°`,
 			incrementCount: false,
 			progress,
 		};
@@ -240,8 +242,8 @@ function processSquatStateMachine(
 
 	// BOTTOM: En la posición más baja
 	if (currentState === "bottom") {
-		// Empezó a subir
-		if (avgKneeAngle > 110) {
+		// Empezó a extender los brazos
+		if (elbowAngle > 110) {
 			return {
 				newState: "ascending",
 				feedback: "Push up! 🔥",
@@ -251,26 +253,26 @@ function processSquatStateMachine(
 		}
 		return {
 			newState: "bottom",
-			feedback: "Good! Now push up",
+			feedback: "Now extend your arms!",
 			incrementCount: false,
 			progress: 50,
 		};
 	}
 
-	// ASCENDING: Subiendo
+	// ASCENDING: Extendiendo los brazos
 	if (currentState === "ascending") {
-		// Completó la sentadilla perfectamente
-		if (avgKneeAngle > 165) {
+		// Completó la flexión - brazos extendidos
+		if (elbowAngle > 160) {
 			return {
 				newState: "ready",
-				feedback: "Excellent! ✨",
+				feedback: "Perfect! ✨",
 				incrementCount: true,
 				quality: "perfect",
 				progress: 100,
 			};
 		}
 		// Se devolvió antes de completar
-		if (avgKneeAngle < 100) {
+		if (elbowAngle < 105) {
 			return {
 				newState: "bottom",
 				feedback: "Keep pushing!",
@@ -278,11 +280,11 @@ function processSquatStateMachine(
 				progress: 50,
 			};
 		}
-		// Calculando progreso basado en ángulo (100° -> 165°)
-		const progress = 50 + Math.min(50, ((avgKneeAngle - 100) / (165 - 100)) * 50);
+		// Calculando progreso basado en ángulo (100° -> 160°)
+		const progress = 50 + Math.min(50, ((elbowAngle - 100) / (160 - 100)) * 50);
 		return {
 			newState: "ascending",
-			feedback: `Almost there... ${angle}°`,
+			feedback: `Push! ${angle}°`,
 			incrementCount: false,
 			progress,
 		};
@@ -300,7 +302,7 @@ const CameraButton = ({ onPress }: { onPress: () => void }) => (
 	<Button title="Change camera" onPress={onPress} />
 );
 
-export default function Squats() {
+export default function Pushups() {
 	const landmarks = useSharedValue<KeypointsMap>({});
 	const { hasPermission, requestPermission } = useCameraPermission();
 	const [cameraPosition, setCameraPosition] = useState<CameraPosition>("front");
@@ -308,15 +310,15 @@ export default function Squats() {
 	const format = useCameraFormat(device, [{ fps: 30 }]);
 
 	// Referencias para control de tiempo
-	const lastSquatTimeRef = useRef<number>(0);
+	const lastPushupTimeRef = useRef<number>(0);
 	const confettiTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 	const isMountedRef = useRef<boolean>(true);
-	const squatCountRef = useRef<number>(0);
-	const squatStateRef = useRef<SquatState>("idle");
+	const pushupCountRef = useRef<number>(0);
+	const pushupStateRef = useRef<PushupState>("idle");
 
 	// Estados del contador
-	const [squatCount, setSquatCount] = useState(0);
-	const [squatState, setSquatState] = useState<SquatState>("idle");
+	const [pushupCount, setPushupCount] = useState(0);
+	const [pushupState, setPushupState] = useState<PushupState>("idle");
 	const [currentAngle, setCurrentAngle] = useState<number>(0);
 	const [feedback, setFeedback] = useState<string>("Position yourself in frame");
 	const [progress, setProgress] = useState<number>(0);
@@ -325,12 +327,12 @@ export default function Squats() {
 
 	// Mantener refs sincronizados con el estado
 	useEffect(() => {
-		squatCountRef.current = squatCount;
-	}, [squatCount]);
+		pushupCountRef.current = pushupCount;
+	}, [pushupCount]);
 
 	useEffect(() => {
-		squatStateRef.current = squatState;
-	}, [squatState]);
+		pushupStateRef.current = pushupState;
+	}, [pushupState]);
 
 	// Animación para la barra de progreso
 	const progressAnim = useRef(new Animated.Value(0)).current;
@@ -340,8 +342,8 @@ export default function Squats() {
 	}, []);
 
 	const handleReset = useCallback(() => {
-		setSquatCount(0);
-		setSquatState("idle");
+		setPushupCount(0);
+		setPushupState("idle");
 		setProgress(0);
 		setFeedback("Position yourself in frame");
 		setLastRepQuality(null);
@@ -395,19 +397,19 @@ export default function Squats() {
 
 	// Anunciar voz cuando cambia el contador (evita duplicados)
 	useEffect(() => {
-		if (squatCount > 0) {
-			if (squatCount % CONFETTI_INTERVAL === 0) {
+		if (pushupCount > 0) {
+			if (pushupCount % CONFETTI_INTERVAL === 0) {
 				// Anuncio especial para múltiplos del intervalo
-				announceVoice(VOICE_MESSAGES.MILESTONE(squatCount));
+				announceVoice(VOICE_MESSAGES.MILESTONE(pushupCount));
 			} else {
 				// Anuncio simple del número
-				announceVoice(VOICE_MESSAGES.COUNT(squatCount));
+				announceVoice(VOICE_MESSAGES.COUNT(pushupCount));
 			}
 		}
 		return () => {
 			Speech.stop();
 		};
-	}, [squatCount]);
+	}, [pushupCount]);
 
 	useEffect(() => {
 		// Initialize the model explicitly (needed for iOS)
@@ -423,7 +425,7 @@ export default function Squats() {
 			try {
 				// Validar que existan landmarks
 				if (!event?.landmarks?.[0]) {
-					setSquatState("idle");
+					setPushupState("idle");
 					setFeedback("No pose detected");
 					setProgress(0);
 					return;
@@ -435,34 +437,34 @@ export default function Squats() {
 				// Verificar que los puntos necesarios existan
 				const leftShoulder = detectedLandmarks[11];
 				const rightShoulder = detectedLandmarks[12];
+				const leftElbow = detectedLandmarks[13];
+				const rightElbow = detectedLandmarks[14];
+				const leftWrist = detectedLandmarks[15];
+				const rightWrist = detectedLandmarks[16];
 				const leftHip = detectedLandmarks[23];
-				const leftKnee = detectedLandmarks[25];
-				const leftAnkle = detectedLandmarks[27];
 				const rightHip = detectedLandmarks[24];
+				const leftKnee = detectedLandmarks[25];
 				const rightKnee = detectedLandmarks[26];
+				const leftAnkle = detectedLandmarks[27];
 				const rightAnkle = detectedLandmarks[28];
-				const leftHeel = detectedLandmarks[29];
-				const rightHeel = detectedLandmarks[30];
-				const leftFootIndex = detectedLandmarks[31];
-				const rightFootIndex = detectedLandmarks[32];
 
 				// Validar que todos los puntos clave del cuerpo existan
 				const allPointsExist =
 					leftShoulder &&
 					rightShoulder &&
+					leftElbow &&
+					rightElbow &&
+					leftWrist &&
+					rightWrist &&
 					leftHip &&
-					leftKnee &&
-					leftAnkle &&
 					rightHip &&
+					leftKnee &&
 					rightKnee &&
-					rightAnkle &&
-					leftHeel &&
-					rightHeel &&
-					leftFootIndex &&
-					rightFootIndex;
+					leftAnkle &&
+					rightAnkle;
 
 				if (!allPointsExist) {
-					setSquatState("idle");
+					setPushupState("idle");
 					setFeedback("Position your full body in frame");
 					setProgress(0);
 					return;
@@ -473,33 +475,38 @@ export default function Squats() {
 				const bodyFullyVisible =
 					leftShoulder.visibility > minVisibility &&
 					rightShoulder.visibility > minVisibility &&
+					leftElbow.visibility > minVisibility &&
+					rightElbow.visibility > minVisibility &&
+					leftWrist.visibility > minVisibility &&
+					rightWrist.visibility > minVisibility &&
 					leftHip.visibility > minVisibility &&
 					rightHip.visibility > minVisibility &&
 					leftKnee.visibility > minVisibility &&
-					rightKnee.visibility > minVisibility &&
-					leftAnkle.visibility > minVisibility &&
-					rightAnkle.visibility > minVisibility &&
-					leftHeel.visibility > minVisibility &&
-					rightHeel.visibility > minVisibility &&
-					leftFootIndex.visibility > minVisibility &&
-					rightFootIndex.visibility > minVisibility;
+					rightKnee.visibility > minVisibility;
 
-				// Calcular ángulos de ambas rodillas
-				const leftKneeAngle = calculateAngle(leftHip, leftKnee, leftAnkle);
-				const rightKneeAngle = calculateAngle(rightHip, rightKnee, rightAnkle);
+				// Calcular ángulos de los codos (enfoque estándar de apps de fitness)
+				const leftElbowAngle = calculateAngle(leftShoulder, leftElbow, leftWrist);
+				const rightElbowAngle = calculateAngle(rightShoulder, rightElbow, rightWrist);
+				const avgElbowAngle = (leftElbowAngle + rightElbowAngle) / 2;
+				setCurrentAngle(avgElbowAngle);
 
-				// Usar el promedio para mayor precisión
-				const avgKneeAngle = (leftKneeAngle + rightKneeAngle) / 2;
-				setCurrentAngle(Math.round(avgKneeAngle));
+				// Validar posición de plancha: cuerpo relativamente recto y manos en posición
+				const avgShoulderY = (leftShoulder.y + rightShoulder.y) / 2;
+				const avgHipY = (leftHip.y + rightHip.y) / 2;
+				const avgKneeY = (leftKnee.y + rightKnee.y) / 2;
+				// En plancha: caderas no deben estar muy abajo ni muy arriba
+				const isInPlankPosition =
+					Math.abs(avgHipY - avgShoulderY) < 0.3 && avgKneeY > avgHipY - 0.1;
 
-				// Procesar la máquina de estados con validación de visibilidad
-				const result = processSquatStateMachine(
-					squatStateRef.current,
-					avgKneeAngle,
-					bodyFullyVisible
+				// Procesar la máquina de estados
+				const result = processPushupStateMachine(
+					pushupStateRef.current,
+					avgElbowAngle,
+					bodyFullyVisible,
+					isInPlankPosition
 				);
 
-				setSquatState(result.newState);
+				setPushupState(result.newState);
 				setFeedback(result.feedback);
 				setProgress(result.progress);
 
@@ -507,8 +514,8 @@ export default function Squats() {
 				if (result.incrementCount) {
 					const now = Date.now();
 					// Debounce de 1.5 segundos entre reps
-					if (now - lastSquatTimeRef.current > 1500) {
-						lastSquatTimeRef.current = now;
+					if (now - lastPushupTimeRef.current > 1500) {
+						lastPushupTimeRef.current = now;
 
 						if (!isMountedRef.current) return;
 
@@ -516,10 +523,10 @@ export default function Squats() {
 						setLastRepQuality(result.quality || "good");
 
 						// Incrementar contador usando setState funcional y manejar confetti
-						setSquatCount((prevCount) => {
+						setPushupCount((prevCount) => {
 							const newCount = prevCount + 1;
 
-							// Mostrar confetti cada CONFETTI_INTERVAL sentadillas
+							// Mostrar confetti cada CONFETTI_INTERVAL flexiones
 							if (newCount % CONFETTI_INTERVAL === 0) {
 								setShowConfetti(true);
 
@@ -554,6 +561,7 @@ export default function Squats() {
 		"worklet";
 		frame.render();
 		poseLandmarks(frame);
+
 		// Dibujar la silueta del usuario
 		if (landmarks?.value !== undefined && Object.keys(landmarks?.value).length > 0) {
 			const body = landmarks?.value;
@@ -625,21 +633,23 @@ export default function Squats() {
 			{/* Contador principal - más grande y visible */}
 			<View style={styles.topBar}>
 				<View style={styles.counterContainer}>
-					<Text style={styles.counterValue}>{squatCount}</Text>
-					<Text style={styles.counterLabel}>SQUATS</Text>
+					<Text style={styles.counterValue}>{pushupCount}</Text>
+					<Text style={styles.counterLabel}>PUSH-UPS</Text>
 				</View>
 			</View>
 
 			{/* Feedback central - mensaje principal */}
 			<View style={styles.centerFeedback}>
-				<Text style={[styles.feedbackText, getFeedbackStyle(squatState)]}>{feedback}</Text>
-				{squatState !== "idle" && squatState !== "ready" && (
-					<Text style={styles.angleIndicator}>{currentAngle}°</Text>
+				<Text style={[styles.feedbackText, getFeedbackStyle(pushupState)]}>{feedback}</Text>
+				{pushupState !== "idle" && (
+					<Text style={styles.angleIndicator}>{Math.round(currentAngle)}°</Text>
 				)}
 			</View>
 
 			{/* Barra de progreso visual */}
-			{(squatState === "descending" || squatState === "ascending" || squatState === "bottom") && (
+			{(pushupState === "descending" ||
+				pushupState === "ascending" ||
+				pushupState === "bottom") && (
 				<View style={styles.progressBarContainer}>
 					<View style={styles.progressBarBackground}>
 						<Animated.View
@@ -651,7 +661,7 @@ export default function Squats() {
 										outputRange: ["0%", "100%"],
 									}),
 								},
-								getProgressBarColor(squatState),
+								getProgressBarColor(pushupState),
 							]}
 						/>
 					</View>
@@ -660,7 +670,7 @@ export default function Squats() {
 			)}
 
 			{/* Indicador de calidad de la última rep */}
-			{lastRepQuality && squatState === "ready" && (
+			{lastRepQuality && pushupState === "ready" && (
 				<View style={styles.qualityBadge}>
 					<Text style={styles.qualityText}>
 						{lastRepQuality === "perfect" ? "🌟 Perfect!" : "✓ Good!"}
@@ -673,7 +683,7 @@ export default function Squats() {
 				<View style={styles.statsRow}>
 					<View style={styles.statItem}>
 						<Text style={styles.statLabel}>State</Text>
-						<Text style={styles.statValue}>{getStateLabel(squatState)}</Text>
+						<Text style={styles.statValue}>{getStateLabel(pushupState)}</Text>
 					</View>
 					<View style={styles.resetButtonContainer}>
 						<Button title="Reset" onPress={handleReset} color="#FF6B6B" />
@@ -681,11 +691,12 @@ export default function Squats() {
 				</View>
 
 				{/* Guía de instrucciones compacta */}
-				{squatState === "idle" && (
+				{pushupState === "idle" && (
 					<View style={styles.instructionsContainer}>
-						<Text style={styles.instructionText}>📱 Show your full body</Text>
-						<Text style={styles.instructionText}>🦵 Squat down until knees reach ~100°</Text>
-						<Text style={styles.instructionText}>⬆️ Stand back up to complete</Text>
+						<Text style={styles.instructionText}>📱 Position yourself (side or front view)</Text>
+						<Text style={styles.instructionText}>👐 Get in plank position, arms extended</Text>
+						<Text style={styles.instructionText}>💪 Lower down until elbows ~90°</Text>
+						<Text style={styles.instructionText}>⬆️ Push up to extend arms and complete</Text>
 					</View>
 				)}
 			</View>
@@ -701,12 +712,12 @@ export default function Squats() {
 }
 
 // Función auxiliar para estilos dinámicos del feedback
-function getFeedbackStyle(state: SquatState) {
+function getFeedbackStyle(state: PushupState) {
 	switch (state) {
 		case "idle":
 			return { color: "#FFC107" }; // Amarillo - atención
 		case "ready":
-			return { color: "#4CAF50" }; // Verde - listo
+			return { color: "#FF6B6B" }; // Rojo - listo
 		case "descending":
 			return { color: "#2196F3" }; // Azul - bajando
 		case "bottom":
@@ -719,21 +730,21 @@ function getFeedbackStyle(state: SquatState) {
 }
 
 // Función auxiliar para color de barra de progreso
-function getProgressBarColor(state: SquatState) {
+function getProgressBarColor(state: PushupState) {
 	switch (state) {
 		case "descending":
 			return { backgroundColor: "#2196F3" }; // Azul
 		case "bottom":
 			return { backgroundColor: "#FF9800" }; // Naranja
 		case "ascending":
-			return { backgroundColor: "#4CAF50" }; // Verde
+			return { backgroundColor: "#FF6B6B" }; // Rojo
 		default:
-			return { backgroundColor: "#4CAF50" };
+			return { backgroundColor: "#FF6B6B" };
 	}
 }
 
 // Función auxiliar para etiqueta del estado
-function getStateLabel(state: SquatState): string {
+function getStateLabel(state: PushupState): string {
 	switch (state) {
 		case "idle":
 			return "Positioning...";
@@ -744,7 +755,7 @@ function getStateLabel(state: SquatState): string {
 		case "bottom":
 			return "Bottom";
 		case "ascending":
-			return "Rising Up";
+			return "Pushing Up";
 		default:
 			return state;
 	}
@@ -775,15 +786,15 @@ const styles = StyleSheet.create({
 		paddingHorizontal: 40,
 		borderRadius: 20,
 		borderWidth: 3,
-		borderColor: "#4CAF50",
+		borderColor: "#FF6B6B",
 		alignItems: "center",
 	},
 	counterValue: {
 		fontSize: 80,
 		fontWeight: "900",
-		color: "#4CAF50",
+		color: "#FF6B6B",
 		letterSpacing: 2,
-		textShadowColor: "rgba(76, 175, 80, 0.5)",
+		textShadowColor: "rgba(255, 107, 107, 0.5)",
 		textShadowOffset: { width: 0, height: 0 },
 		textShadowRadius: 20,
 	},
@@ -825,6 +836,15 @@ const styles = StyleSheet.create({
 		textShadowOffset: { width: 0, height: 2 },
 		textShadowRadius: 4,
 	},
+	bodyAngleIndicator: {
+		fontSize: 20,
+		fontWeight: "bold",
+		color: "#FFC107",
+		marginTop: 8,
+		textShadowColor: "rgba(0, 0, 0, 0.8)",
+		textShadowOffset: { width: 0, height: 2 },
+		textShadowRadius: 4,
+	},
 	// Barra de progreso
 	progressBarContainer: {
 		position: "absolute",
@@ -861,7 +881,7 @@ const styles = StyleSheet.create({
 		position: "absolute",
 		top: 220,
 		alignSelf: "center",
-		backgroundColor: "rgba(76, 175, 80, 0.9)",
+		backgroundColor: "rgba(255, 107, 107, 0.9)",
 		paddingHorizontal: 20,
 		paddingVertical: 8,
 		borderRadius: 20,
@@ -904,7 +924,7 @@ const styles = StyleSheet.create({
 	statValue: {
 		fontSize: 18,
 		fontWeight: "bold",
-		color: "#4CAF50",
+		color: "#FF6B6B",
 	},
 	resetButtonContainer: {
 		marginLeft: 10,

@@ -25,8 +25,6 @@ import { useSharedValue } from "react-native-worklets-core";
 // Use the HandLandmarks module for hand tracking
 const { HandLandmarks } = NativeModules;
 
-const handLandmarksEmitter = new NativeEventEmitter(HandLandmarks);
-
 // Initialize the hand landmarks frame processor plugin
 const handLandmarkPlugin = VisionCameraProxy.initFrameProcessorPlugin("handLandmarks", {});
 
@@ -81,8 +79,14 @@ export default function HandTracking() {
 
 	useEffect(() => {
 		// Initialize the hand model
-		HandLandmarks.initModel();
+		HandLandmarks?.initModel?.();
 
+		if (!HandLandmarks) {
+			console.warn("HandLandmarks module not available");
+			return;
+		}
+
+		const handLandmarksEmitter = new NativeEventEmitter(HandLandmarks);
 		const subscription = handLandmarksEmitter.addListener("onHandLandmarksDetected", (event) => {
 			if (event.hands && event.hands.length > 0) {
 				hands.value = event.hands;

@@ -24,8 +24,6 @@ import { useSharedValue } from "react-native-worklets-core";
 
 const { PoseLandmarks } = NativeModules;
 
-const poseLandmarksEmitter = new NativeEventEmitter(PoseLandmarks);
-
 // Initialize the frame processor plugin 'poseLandmarks'
 const poseLandMarkPlugin = VisionCameraProxy.initFrameProcessorPlugin("poseLandmarks", {});
 
@@ -106,7 +104,16 @@ export default function Exercise() {
 	const format = useCameraFormat(device, [{ fps: 30 }]);
 
 	useEffect(() => {
+		// Initialize the model explicitly
+		PoseLandmarks?.initModel?.();
+
+		if (!PoseLandmarks) {
+			console.warn("PoseLandmarks module not available");
+			return;
+		}
+
 		// Set up the event listener to listen for pose landmarks detection results
+		const poseLandmarksEmitter = new NativeEventEmitter(PoseLandmarks);
 		const subscription = poseLandmarksEmitter.addListener("onPoseLandmarksDetected", (event) => {
 			// Update the landmarks shared value to paint them on the screen
 

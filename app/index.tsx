@@ -52,6 +52,25 @@ export default function Page() {
 				</TouchableOpacity>
 			</Link>
 
+			<Link href="/pushups" asChild>
+				<TouchableOpacity
+					style={{
+						borderColor: "black",
+						borderWidth: 1,
+						borderRadius: 5,
+						paddingHorizontal: 40,
+						paddingVertical: 10,
+						margin: 10,
+						backgroundColor: "#f0f0f0",
+					}}
+				>
+					<Text style={{ fontSize: 16, textAlign: "center" }}>💪 Push-up Counter</Text>
+					<Text style={{ fontSize: 12, textAlign: "center", color: "gray" }}>
+						Count your push-ups automatically
+					</Text>
+				</TouchableOpacity>
+			</Link>
+
 			<Link href="/hands" asChild>
 				<TouchableOpacity
 					style={{
