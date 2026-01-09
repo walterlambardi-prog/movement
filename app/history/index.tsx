@@ -223,13 +223,9 @@ export default function History() {
 		<View style={styles.container}>
 			<Stack.Screen options={{ title: t("history.title") }} />
 			<ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-				<View style={styles.heroCard}>
-					<View style={styles.heroBadge}>
-						<Ionicons name="time-outline" size={16} color="#22D3EE" />
-						<Text style={styles.heroBadgeText}>{t("history.badge")}</Text>
-					</View>
-					<Text style={styles.heroTitle}>{t("history.title")}</Text>
-					<Text style={styles.heroSubtitle}>{t("history.subtitle")}</Text>
+				<View style={styles.exercisesHeading}>
+					<Text style={styles.summaryTitle}>{t("history.exercisesHeading.title")}</Text>
+					<Text style={styles.summarySubtitle}>{t("history.exercisesHeading.subtitle")}</Text>
 				</View>
 				<View style={styles.statsGrid}>
 					{(Object.keys(exercises) as ExerciseKey[]).map((key) => (

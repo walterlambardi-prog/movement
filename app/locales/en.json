@@ -53,6 +53,10 @@
 		"subtitle": "See every session and total across exercises.",
 		"badge": "Activity",
 		"reps": "Reps",
+		"exercisesHeading": {
+			"title": "Totals by exercise",
+			"subtitle": "See volume per activity"
+		},
 		"highlights": {
 			"sectionTitle": "Highlights",
 			"sectionSubtitle": "Your key stats at a glance",

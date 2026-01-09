@@ -53,6 +53,10 @@
 		"subtitle": "Revisa cada sesión y el total por ejercicio.",
 		"badge": "Actividad",
 		"reps": "Reps",
+		"exercisesHeading": {
+			"title": "Totales por ejercicio",
+			"subtitle": "Volumen por actividad"
+		},
 		"highlights": {
 			"sectionTitle": "Resumen",
 			"sectionSubtitle": "Tus métricas clave de un vistazo",
