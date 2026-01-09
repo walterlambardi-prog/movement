@@ -23,6 +23,7 @@ import {
 } from "react-native-vision-camera";
 import { useSharedValue } from "react-native-worklets-core";
 import { useTranslation } from "react-i18next";
+import { useSessionRecorder } from "../state/useSessionRecorder";
 import { styles } from "./LateralRaises.styles";
 import { ArmState, KeypointData, KeypointsMap } from "./LateralRaises.types";
 
@@ -167,6 +168,8 @@ export default function LateralRaises() {
 	const [rightState, setRightState] = useState<ArmState>("down");
 	const [progress, setProgress] = useState<number>(0);
 	const [showConfetti, setShowConfetti] = useState(false);
+
+	useSessionRecorder("lateralRaises", repCount);
 
 	const progressAnim = useRef(new Animated.Value(0)).current;
 	const lastUiUpdateRef = useRef<number>(0);

@@ -31,6 +31,7 @@ import {
 	SquatState,
 	StateTransitionResult,
 } from "./Squats.types";
+import { useSessionRecorder } from "../state/useSessionRecorder";
 
 const { PoseLandmarks } = NativeModules;
 
@@ -263,6 +264,8 @@ export default function Squats() {
 	const [progress, setProgress] = useState<number>(0);
 	const [showConfetti, setShowConfetti] = useState(false);
 	const [lastRepQuality, setLastRepQuality] = useState<RepQuality | null>(null);
+
+	useSessionRecorder("squats", squatCount);
 
 	const voiceConfig = useMemo(
 		() => ({

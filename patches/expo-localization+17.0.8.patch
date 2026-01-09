@@ -1,5 +1,7 @@
---- /tmp/expo-localization-17.0.8/package/android/build.gradle	1985-10-26 05:15:00
-+++ node_modules/expo-localization/android/build.gradle	2026-01-08 23:25:18
+diff --git a/node_modules/expo-localization/android/build.gradle b/node_modules/expo-localization/android/build.gradle
+index 7e53d2b..2d6a1f1 100644
+--- a/node_modules/expo-localization/android/build.gradle
++++ b/node_modules/expo-localization/android/build.gradle
 @@ -1,8 +1,12 @@
 -plugins {
 -  id 'com.android.library'

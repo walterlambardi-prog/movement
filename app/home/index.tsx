@@ -1,16 +1,11 @@
-import { memo, useCallback, useMemo } from "react";
+import { memo, useMemo } from "react";
 import { Link } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 
-import i18n from "../i18n";
+import { useAppStore } from "../state/useAppStore";
 import { styles } from "./Home.styles";
-import { CardProps, Language } from "./Home.types";
-
-const languages: Language[] = [
-	{ code: "en", label: "EN" },
-	{ code: "es", label: "ES" },
-];
+import { CardProps } from "./Home.types";
 
 const ExerciseCard = memo(function ExerciseCard({
 	href,
@@ -45,30 +40,10 @@ const ExerciseCard = memo(function ExerciseCard({
 	);
 });
 
-function LanguageButton({
-	lang,
-	isActive,
-	onPress,
-}: {
-	readonly lang: Language;
-	readonly isActive: boolean;
-	readonly onPress: (code: string) => void;
-}) {
-	const handlePress = useCallback(() => onPress(lang.code), [lang.code, onPress]);
-
-	return (
-		<TouchableOpacity
-			onPress={handlePress}
-			style={[styles.languageButton, isActive && styles.languageButtonActive]}
-		>
-			<Text>{lang.label}</Text>
-		</TouchableOpacity>
-	);
-}
-
 export default function Home() {
 	const { t } = useTranslation();
-	const currentLang = i18n.language;
+	const username = useAppStore((state) => state.username);
+	const displayName = username?.trim().length ? username : t("index.welcomeTitle");
 
 	const exercises = useMemo(
 		() => [
@@ -104,30 +79,44 @@ export default function Home() {
 		[t]
 	);
 
-	const handleChangeLanguage = useCallback((code: string) => {
-		i18n.changeLanguage(code).catch((err) => console.warn("Failed to change language", err));
-	}, []);
+	const quickActions = useMemo(
+		() => [
+			{
+				href: "/history" as const,
+				title: t("common.history", { defaultValue: "History" }),
+				subtitle: t("index.historySubtitle", { defaultValue: "Revisa tus sesiones" }),
+				accent: "#22D3EE",
+			},
+			{
+				href: "/profile" as const,
+				title: t("common.profile", { defaultValue: "Profile" }),
+				subtitle: t("index.profileSubtitle", { defaultValue: "Ajusta idioma y nombre" }),
+				accent: "#F97316",
+			},
+		],
+		[t]
+	);
 
 	return (
 		<View style={styles.container}>
 			<View style={styles.bubbleTop} />
 			<View style={styles.bubbleBottom} />
 
-			<View style={styles.header}>
-				<Text style={styles.headerTitle}>{t("index.welcomeTitle")}</Text>
-				<Text style={styles.headerSubtitle}>{t("index.subtitle")}</Text>
+			<View style={styles.heroCard}>
+				<Text style={styles.heroGreeting}>{t("index.welcomeTitle")}</Text>
+				<Text style={styles.heroName}>{displayName}</Text>
+				<Text style={styles.heroSubtitle}>{t("index.subtitle")}</Text>
+			</View>
 
-				<View style={styles.languageRow}>
-					<Text style={styles.languageLabel}>{t("index.languageToggle")}</Text>
-					{languages.map((lang) => (
-						<LanguageButton
-							key={lang.code}
-							lang={lang}
-							isActive={currentLang === lang.code}
-							onPress={handleChangeLanguage}
-						/>
-					))}
-				</View>
+			<View style={styles.quickActionsRow}>
+				{quickActions.map((action) => (
+					<Link key={action.href} href={action.href} asChild>
+						<TouchableOpacity style={[styles.quickAction, { borderColor: action.accent }]}>
+							<Text style={styles.quickActionTitle}>{action.title}</Text>
+							<Text style={styles.quickActionSubtitle}>{action.subtitle}</Text>
+						</TouchableOpacity>
+					</Link>
+				))}
 			</View>
 
 			<ScrollView

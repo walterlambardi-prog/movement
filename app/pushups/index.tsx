@@ -32,6 +32,7 @@ import {
 	RepQuality,
 	StateTransitionResult,
 } from "./Pushups.types";
+import { useSessionRecorder } from "../state/useSessionRecorder";
 
 const { PoseLandmarks } = NativeModules;
 
@@ -271,6 +272,8 @@ export default function Pushups() {
 	const [progress, setProgress] = useState<number>(0);
 	const [showConfetti, setShowConfetti] = useState(false);
 	const [lastRepQuality, setLastRepQuality] = useState<RepQuality | null>(null);
+
+	useSessionRecorder("pushups", pushupCount);
 
 	const voiceConfig = useMemo(
 		() => ({

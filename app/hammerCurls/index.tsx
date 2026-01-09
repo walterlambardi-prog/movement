@@ -23,6 +23,7 @@ import {
 } from "react-native-vision-camera";
 import { useSharedValue } from "react-native-worklets-core";
 import { useTranslation } from "react-i18next";
+import { useSessionRecorder } from "../state/useSessionRecorder";
 import { styles } from "./HammerCurls.styles";
 import { Arm, ArmState, KeypointData, KeypointsMap } from "./HammerCurls.types";
 
@@ -147,6 +148,8 @@ export default function HammerCurls() {
 	const [progress, setProgress] = useState<number>(0);
 	const [showConfetti, setShowConfetti] = useState(false);
 	const [lastRepArm, setLastRepArm] = useState<Arm | null>(null);
+
+	useSessionRecorder("hammerCurls", repCount);
 
 	const progressAnim = useRef(new Animated.Value(0)).current;
 	const lastUiUpdateRef = useRef<number>(0);

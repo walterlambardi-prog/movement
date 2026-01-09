@@ -5,6 +5,9 @@
 		"noPermission": "Sin permiso",
 		"noDevice": "Sin cámara",
 		"reset": "Reset",
+		"save": "Guardar",
+		"profile": "Perfil",
+		"history": "Historial",
 		"state": "Estado",
 		"lastArm": "Último brazo",
 		"left": "Izquierdo",
@@ -42,7 +45,31 @@
 		"hammerSubtitle": "Curl martillo alterno con conteo",
 		"lateralsTitle": "Elevaciones Laterales",
 		"lateralsSubtitle": "Elevaciones laterales simultáneas",
-		"languageToggle": "Idioma"
+		"historySubtitle": "Revisa tus sesiones",
+		"profileSubtitle": "Ajusta idioma y nombre"
+	},
+	"history": {
+		"title": "Historial",
+		"header": "Historial de ejercicios",
+		"reps": "Reps"
+	},
+	"onboarding": {
+		"title": "Bienvenido a Movement",
+		"subtitle": "Ingresa tu nombre para personalizar la experiencia.",
+		"placeholder": "Tu nombre",
+		"cta": "Continuar",
+		"error": "Por favor ingresa tu nombre para continuar",
+		"loading": "Cargando..."
+	},
+	"profile": {
+		"title": "Perfil",
+		"subtitle": "Configura tu nombre e idioma para motivarte.",
+		"username": "Nombre",
+		"usernamePlaceholder": "Tu nombre",
+		"language": "Idioma",
+		"cta": "Activa tu meta hoy.",
+		"greeting": "A moverse, {{name}}!",
+		"emptyName": "Atleta"
 	},
 	"exercise": {
 		"title": "Ejercicio",

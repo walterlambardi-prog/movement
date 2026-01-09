@@ -5,6 +5,38 @@ export const styles = StyleSheet.create({
 		flex: 1,
 		backgroundColor: "#010a30ff",
 	},
+	heroCard: {
+		marginHorizontal: 20,
+		marginTop: 24,
+		marginBottom: 16,
+		padding: 18,
+		borderRadius: 18,
+		backgroundColor: "#0F172A",
+		borderWidth: 1,
+		borderColor: "rgba(255, 255, 255, 0.06)",
+		shadowColor: "#000",
+		shadowOpacity: 0.3,
+		shadowRadius: 10,
+		elevation: 4,
+	},
+	heroGreeting: {
+		color: "#94A3B8",
+		fontSize: 13,
+		letterSpacing: 0.5,
+		textTransform: "uppercase",
+	},
+	heroName: {
+		color: "#E2E8F0",
+		fontSize: 28,
+		fontWeight: "900",
+		marginTop: 4,
+	},
+	heroSubtitle: {
+		color: "#CBD5E1",
+		fontSize: 15,
+		marginTop: 8,
+		lineHeight: 20,
+	},
 	bubbleTop: {
 		position: "absolute",
 		top: -120,
@@ -25,21 +57,30 @@ export const styles = StyleSheet.create({
 		backgroundColor: "#22D3EE",
 		opacity: 0.1,
 	},
-	header: {
-		paddingTop: 64,
+	quickActionsRow: {
+		flexDirection: "row",
+		gap: 12,
 		paddingHorizontal: 20,
+		marginBottom: 12,
 	},
-	headerTitle: {
+	quickAction: {
+		flex: 1,
+		paddingVertical: 14,
+		paddingHorizontal: 14,
+		borderRadius: 14,
+		borderWidth: 1,
+		backgroundColor: "#0C142C",
+	},
+	quickActionTitle: {
 		color: "#E2E8F0",
-		fontSize: 28,
-		fontWeight: "900",
-		letterSpacing: 0.5,
+		fontSize: 16,
+		fontWeight: "800",
+		marginBottom: 4,
 	},
-	headerSubtitle: {
+	quickActionSubtitle: {
 		color: "#94A3B8",
-		fontSize: 15,
-		marginTop: 6,
-		lineHeight: 20,
+		fontSize: 13,
+		lineHeight: 18,
 	},
 	languageRow: {
 		flexDirection: "row",
@@ -65,7 +106,7 @@ export const styles = StyleSheet.create({
 	},
 	cardsContainer: {
 		paddingHorizontal: 20,
-		paddingTop: 24,
+		paddingTop: 12,
 		paddingBottom: 32,
 		gap: 24,
 	},

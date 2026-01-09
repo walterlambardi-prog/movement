@@ -5,6 +5,9 @@
 		"noPermission": "No permission",
 		"noDevice": "No device",
 		"reset": "Reset",
+		"save": "Save",
+		"profile": "Profile",
+		"history": "History",
 		"state": "State",
 		"lastArm": "Last arm",
 		"left": "Left",
@@ -42,7 +45,31 @@
 		"hammerSubtitle": "Alternating hammer curl counter",
 		"lateralsTitle": "Lateral Raises",
 		"lateralsSubtitle": "Simultaneous lateral raises",
-		"languageToggle": "Language"
+		"historySubtitle": "Review your sessions",
+		"profileSubtitle": "Adjust language and name"
+	},
+	"history": {
+		"title": "History",
+		"header": "Exercise history",
+		"reps": "Reps"
+	},
+	"onboarding": {
+		"title": "Welcome to Movement",
+		"subtitle": "Enter your name to personalize your experience.",
+		"placeholder": "Your name",
+		"cta": "Continue",
+		"error": "Please enter your name to continue",
+		"loading": "Loading..."
+	},
+	"profile": {
+		"title": "Profile",
+		"subtitle": "Dial in your name and language to stay motivated.",
+		"username": "Name",
+		"usernamePlaceholder": "Your name",
+		"language": "Language",
+		"cta": "Lock in your goal today.",
+		"greeting": "Let's move, {{name}}!",
+		"emptyName": "Athlete"
 	},
 	"exercise": {
 		"title": "Exercise",
