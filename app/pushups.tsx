@@ -128,6 +128,18 @@ const VOICE_MESSAGES = {
 	WELCOME: WELCOME_MESSAGE,
 };
 
+// Detection tolerances
+const MIN_VISIBILITY = 0.3; // More permissive visibility so the body can be considered visible
+const HIP_SHOULDER_MAX_DELTA = 0.5; // More lenient plank tolerance between hips and shoulders
+const KNEE_HIP_MIN_DELTA = -0.25; // Knees can sit a bit higher relative to hips
+
+// Push-up angle thresholds (more permissive to count shallow reps)
+const ELBOW_EXTENDED = 140; // Arms considered extended/ready
+const ELBOW_START_DESCENT = 135; // Start counting descent sooner
+const ELBOW_BOTTOM = 110; // Depth considered valid
+const ELBOW_ASCEND_TRIGGER = 120; // Start ascent once past this
+const ELBOW_COMPLETE = 140; // Count rep when back near extension
+
 // Función helper para anunciar con voz
 function announceVoice(text: string) {
 	Speech.speak(text, VOICE_CONFIG);
@@ -176,7 +188,7 @@ function processPushupStateMachine(
 
 	// IDLE -> READY: En posición de plancha con brazos extendidos
 	if (currentState === "idle") {
-		if (isInPlankPosition && elbowAngle > 160) {
+		if (isInPlankPosition && elbowAngle > ELBOW_EXTENDED) {
 			return {
 				newState: "ready",
 				feedback: "Perfect! Lower down to begin",
@@ -194,7 +206,7 @@ function processPushupStateMachine(
 
 	// READY -> DESCENDING: Comenzando a flexionar los brazos
 	if (currentState === "ready") {
-		if (elbowAngle < 150) {
+		if (elbowAngle < ELBOW_START_DESCENT) {
 			return {
 				newState: "descending",
 				feedback: "Going down...",
@@ -213,7 +225,7 @@ function processPushupStateMachine(
 	// DESCENDING: Bajando
 	if (currentState === "descending") {
 		// Llegó a buena profundidad (brazos bien flexionados)
-		if (elbowAngle < 100) {
+		if (elbowAngle < ELBOW_BOTTOM) {
 			return {
 				newState: "bottom",
 				feedback: "Good! Now push up! 💪",
@@ -222,7 +234,7 @@ function processPushupStateMachine(
 			};
 		}
 		// Se devolvió antes de llegar abajo
-		if (elbowAngle > 150) {
+		if (elbowAngle > ELBOW_EXTENDED) {
 			return {
 				newState: "ready",
 				feedback: "Go lower next time",
@@ -230,8 +242,11 @@ function processPushupStateMachine(
 				progress: 0,
 			};
 		}
-		// Calculando progreso basado en ángulo (160° -> 100°)
-		const progress = Math.min(50, ((160 - elbowAngle) / (160 - 100)) * 50);
+		// Calculando progreso basado en ángulo (140° -> 110°)
+		const progress = Math.min(
+			50,
+			((ELBOW_EXTENDED - elbowAngle) / (ELBOW_EXTENDED - ELBOW_BOTTOM)) * 50
+		);
 		return {
 			newState: "descending",
 			feedback: `Lower... ${angle}°`,
@@ -243,7 +258,7 @@ function processPushupStateMachine(
 	// BOTTOM: En la posición más baja
 	if (currentState === "bottom") {
 		// Empezó a extender los brazos
-		if (elbowAngle > 110) {
+		if (elbowAngle > ELBOW_ASCEND_TRIGGER) {
 			return {
 				newState: "ascending",
 				feedback: "Push up! 🔥",
@@ -262,7 +277,7 @@ function processPushupStateMachine(
 	// ASCENDING: Extendiendo los brazos
 	if (currentState === "ascending") {
 		// Completó la flexión - brazos extendidos
-		if (elbowAngle > 160) {
+		if (elbowAngle > ELBOW_COMPLETE) {
 			return {
 				newState: "ready",
 				feedback: "Perfect! ✨",
@@ -272,7 +287,7 @@ function processPushupStateMachine(
 			};
 		}
 		// Se devolvió antes de completar
-		if (elbowAngle < 105) {
+		if (elbowAngle < ELBOW_BOTTOM) {
 			return {
 				newState: "bottom",
 				feedback: "Keep pushing!",
@@ -280,8 +295,9 @@ function processPushupStateMachine(
 				progress: 50,
 			};
 		}
-		// Calculando progreso basado en ángulo (100° -> 160°)
-		const progress = 50 + Math.min(50, ((elbowAngle - 100) / (160 - 100)) * 50);
+		// Calculando progreso basado en ángulo (110° -> 140°)
+		const progress =
+			50 + Math.min(50, ((elbowAngle - ELBOW_BOTTOM) / (ELBOW_COMPLETE - ELBOW_BOTTOM)) * 50);
 		return {
 			newState: "ascending",
 			feedback: `Push! ${angle}°`,
@@ -471,18 +487,17 @@ export default function Pushups() {
 				}
 
 				// Verificar visibilidad del cuerpo completo
-				const minVisibility = 0.6;
 				const bodyFullyVisible =
-					leftShoulder.visibility > minVisibility &&
-					rightShoulder.visibility > minVisibility &&
-					leftElbow.visibility > minVisibility &&
-					rightElbow.visibility > minVisibility &&
-					leftWrist.visibility > minVisibility &&
-					rightWrist.visibility > minVisibility &&
-					leftHip.visibility > minVisibility &&
-					rightHip.visibility > minVisibility &&
-					leftKnee.visibility > minVisibility &&
-					rightKnee.visibility > minVisibility;
+					leftShoulder.visibility > MIN_VISIBILITY &&
+					rightShoulder.visibility > MIN_VISIBILITY &&
+					leftElbow.visibility > MIN_VISIBILITY &&
+					rightElbow.visibility > MIN_VISIBILITY &&
+					leftWrist.visibility > MIN_VISIBILITY &&
+					rightWrist.visibility > MIN_VISIBILITY &&
+					leftHip.visibility > MIN_VISIBILITY &&
+					rightHip.visibility > MIN_VISIBILITY &&
+					leftKnee.visibility > MIN_VISIBILITY &&
+					rightKnee.visibility > MIN_VISIBILITY;
 
 				// Calcular ángulos de los codos (enfoque estándar de apps de fitness)
 				const leftElbowAngle = calculateAngle(leftShoulder, leftElbow, leftWrist);
@@ -496,7 +511,8 @@ export default function Pushups() {
 				const avgKneeY = (leftKnee.y + rightKnee.y) / 2;
 				// En plancha: caderas no deben estar muy abajo ni muy arriba
 				const isInPlankPosition =
-					Math.abs(avgHipY - avgShoulderY) < 0.3 && avgKneeY > avgHipY - 0.1;
+					Math.abs(avgHipY - avgShoulderY) < HIP_SHOULDER_MAX_DELTA &&
+					avgKneeY > avgHipY + KNEE_HIP_MIN_DELTA;
 
 				// Procesar la máquina de estados
 				const result = processPushupStateMachine(
@@ -625,6 +641,8 @@ export default function Pushups() {
 				format={format}
 				frameProcessor={frameProcessor}
 				pixelFormat="yuv"
+				photoQualityBalance="speed"
+				videoBitRate="extra-low"
 			/>
 
 			{/* Overlay oscuro para mejorar legibilidad */}

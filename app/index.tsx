@@ -89,6 +89,25 @@ export default function Page() {
 					</Text>
 				</TouchableOpacity>
 			</Link>
+
+			<Link href="/hammerCurls" asChild>
+				<TouchableOpacity
+					style={{
+						borderColor: "black",
+						borderWidth: 1,
+						borderRadius: 5,
+						paddingHorizontal: 40,
+						paddingVertical: 10,
+						margin: 10,
+						backgroundColor: "#f0f0f0",
+					}}
+				>
+					<Text style={{ fontSize: 16, textAlign: "center" }}>🔨 Hammer Curls</Text>
+					<Text style={{ fontSize: 12, textAlign: "center", color: "gray" }}>
+						Curl martillo alterno con conteo
+					</Text>
+				</TouchableOpacity>
+			</Link>
 		</View>
 	);
 }

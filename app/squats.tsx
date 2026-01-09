@@ -15,7 +15,6 @@ import { Confetti } from "react-native-fast-confetti";
 import {
 	Camera,
 	CameraPosition,
-	Frame,
 	useCameraDevice,
 	useCameraFormat,
 	useCameraPermission,
@@ -25,17 +24,6 @@ import {
 import { useSharedValue } from "react-native-worklets-core";
 
 const { PoseLandmarks } = NativeModules;
-
-// Initialize the frame processor plugin 'poseLandmarks'
-const poseLandMarkPlugin = VisionCameraProxy.initFrameProcessorPlugin("poseLandmarks", {});
-
-function poseLandmarks(frame: Frame) {
-	"worklet";
-	if (poseLandMarkPlugin == null) {
-		throw new Error("Failed to load Frame Processor Plugin!");
-	}
-	return poseLandMarkPlugin.call(frame);
-}
 
 type KeypointData = {
 	keypoint: number;
@@ -90,15 +78,17 @@ const LINES = [
 // Paint para las líneas (esqueleto)
 const linePaint = Skia.Paint();
 linePaint.setColor(Skia.Color("#4CAF50")); // Verde para que coincida con el tema de squats
-linePaint.setStrokeWidth(25);
+linePaint.setStrokeWidth(12);
 
 // Paint para los círculos (keypoints)
 const circlePaint = Skia.Paint();
 circlePaint.setColor(Skia.Color("#FFC107")); // Amarillo para los puntos
-linePaint.setStrokeWidth(10);
+linePaint.setStrokeWidth(8);
 
 // Configuración: Mostrar confetti cada N sentadillas
 const CONFETTI_INTERVAL = 5;
+const UI_UPDATE_THROTTLE_MS = 140; // reduce setState frequency for smoother UI
+const REP_DEBOUNCE_MS = 900; // allow quicker consecutive reps
 
 // Configuración de voz
 const VOICE_CONFIG = {
@@ -127,6 +117,13 @@ const VOICE_MESSAGES = {
 	COUNT: (count: number) => `${count}`,
 	WELCOME: WELCOME_MESSAGE,
 };
+
+// Angles tuned to be more permissive so reps count even if the form is shallow
+const ANGLE_TOP_READY = 150; // Standing straight threshold (was 165)
+const ANGLE_START_DESCENT = 145; // When descent is detected (was 150)
+const ANGLE_BOTTOM = 130; // Depth considered valid at the bottom (was 100)
+const ANGLE_ASCEND_TRIGGER = 140; // Begin ascent once knees open past this
+const ANGLE_COMPLETE = 150; // Count rep once back near standing (was 165)
 
 // Función helper para anunciar con voz
 function announceVoice(text: string) {
@@ -174,7 +171,7 @@ function processSquatStateMachine(
 
 	// IDLE -> READY: Cuerpo visible y en posición de pie
 	if (currentState === "idle") {
-		if (avgKneeAngle > 165) {
+		if (avgKneeAngle > ANGLE_TOP_READY) {
 			return {
 				newState: "ready",
 				feedback: "Ready! Start your squat",
@@ -192,7 +189,7 @@ function processSquatStateMachine(
 
 	// READY -> DESCENDING: Comenzando a bajar
 	if (currentState === "ready") {
-		if (avgKneeAngle < 150) {
+		if (avgKneeAngle < ANGLE_START_DESCENT) {
 			return {
 				newState: "descending",
 				feedback: "Going down...",
@@ -210,8 +207,8 @@ function processSquatStateMachine(
 
 	// DESCENDING: Bajando
 	if (currentState === "descending") {
-		// Llegó a buena profundidad
-		if (avgKneeAngle < 100) {
+		// Llegó a buena profundidad (inclusive)
+		if (avgKneeAngle <= ANGLE_BOTTOM) {
 			return {
 				newState: "bottom",
 				feedback: "Perfect depth! 💪",
@@ -220,7 +217,7 @@ function processSquatStateMachine(
 			};
 		}
 		// Se devolvió antes de llegar abajo
-		if (avgKneeAngle > 155) {
+		if (avgKneeAngle > ANGLE_TOP_READY) {
 			return {
 				newState: "ready",
 				feedback: "Go deeper next time",
@@ -228,8 +225,11 @@ function processSquatStateMachine(
 				progress: 0,
 			};
 		}
-		// Calculando progreso basado en ángulo (165° -> 100°)
-		const progress = Math.min(50, ((165 - avgKneeAngle) / (165 - 100)) * 50);
+		// Calculando progreso basado en ángulo (150° -> 130°)
+		const progress = Math.min(
+			50,
+			((ANGLE_TOP_READY - avgKneeAngle) / (ANGLE_TOP_READY - ANGLE_BOTTOM)) * 50
+		);
 		return {
 			newState: "descending",
 			feedback: `Keep going... ${angle}°`,
@@ -241,7 +241,7 @@ function processSquatStateMachine(
 	// BOTTOM: En la posición más baja
 	if (currentState === "bottom") {
 		// Empezó a subir
-		if (avgKneeAngle > 110) {
+		if (avgKneeAngle > ANGLE_ASCEND_TRIGGER) {
 			return {
 				newState: "ascending",
 				feedback: "Push up! 🔥",
@@ -260,7 +260,7 @@ function processSquatStateMachine(
 	// ASCENDING: Subiendo
 	if (currentState === "ascending") {
 		// Completó la sentadilla perfectamente
-		if (avgKneeAngle > 165) {
+		if (avgKneeAngle > ANGLE_COMPLETE) {
 			return {
 				newState: "ready",
 				feedback: "Excellent! ✨",
@@ -270,7 +270,7 @@ function processSquatStateMachine(
 			};
 		}
 		// Se devolvió antes de completar
-		if (avgKneeAngle < 100) {
+		if (avgKneeAngle <= ANGLE_BOTTOM) {
 			return {
 				newState: "bottom",
 				feedback: "Keep pushing!",
@@ -278,8 +278,9 @@ function processSquatStateMachine(
 				progress: 50,
 			};
 		}
-		// Calculando progreso basado en ángulo (100° -> 165°)
-		const progress = 50 + Math.min(50, ((avgKneeAngle - 100) / (165 - 100)) * 50);
+		// Calculando progreso basado en ángulo (130° -> 150°)
+		const progress =
+			50 + Math.min(50, ((avgKneeAngle - ANGLE_BOTTOM) / (ANGLE_COMPLETE - ANGLE_BOTTOM)) * 50);
 		return {
 			newState: "ascending",
 			feedback: `Almost there... ${angle}°`,
@@ -305,7 +306,15 @@ export default function Squats() {
 	const { hasPermission, requestPermission } = useCameraPermission();
 	const [cameraPosition, setCameraPosition] = useState<CameraPosition>("front");
 	const device = useCameraDevice(cameraPosition);
-	const format = useCameraFormat(device, [{ fps: 30 }]);
+	const format = useCameraFormat(device, [{ fps: 24 }]);
+	const poseLandmarkPlugin = useMemo(() => {
+		try {
+			return VisionCameraProxy.initFrameProcessorPlugin("poseLandmarks", {});
+		} catch (error) {
+			console.warn("poseLandmarks plugin failed to init", error);
+			return null;
+		}
+	}, []);
 
 	// Referencias para control de tiempo
 	const lastSquatTimeRef = useRef<number>(0);
@@ -334,6 +343,7 @@ export default function Squats() {
 
 	// Animación para la barra de progreso
 	const progressAnim = useRef(new Animated.Value(0)).current;
+	const lastUiUpdateRef = useRef<number>(0);
 
 	const handleCameraChange = useCallback(() => {
 		setCameraPosition((prev) => (prev === "back" ? "front" : "back"));
@@ -393,16 +403,10 @@ export default function Squats() {
 		};
 	}, []);
 
-	// Anunciar voz cuando cambia el contador (evita duplicados)
+	// Anunciar voz solo en hitos para reducir uso de Speech
 	useEffect(() => {
-		if (squatCount > 0) {
-			if (squatCount % CONFETTI_INTERVAL === 0) {
-				// Anuncio especial para múltiplos del intervalo
-				announceVoice(VOICE_MESSAGES.MILESTONE(squatCount));
-			} else {
-				// Anuncio simple del número
-				announceVoice(VOICE_MESSAGES.COUNT(squatCount));
-			}
+		if (squatCount > 0 && squatCount % CONFETTI_INTERVAL === 0) {
+			announceVoice(VOICE_MESSAGES.MILESTONE(squatCount));
 		}
 		return () => {
 			Speech.stop();
@@ -469,7 +473,7 @@ export default function Squats() {
 				}
 
 				// Verificar visibilidad del cuerpo completo
-				const minVisibility = 0.6;
+				const minVisibility = 0.55;
 				const bodyFullyVisible =
 					leftShoulder.visibility > minVisibility &&
 					rightShoulder.visibility > minVisibility &&
@@ -490,7 +494,6 @@ export default function Squats() {
 
 				// Usar el promedio para mayor precisión
 				const avgKneeAngle = (leftKneeAngle + rightKneeAngle) / 2;
-				setCurrentAngle(Math.round(avgKneeAngle));
 
 				// Procesar la máquina de estados con validación de visibilidad
 				const result = processSquatStateMachine(
@@ -498,16 +501,23 @@ export default function Squats() {
 					avgKneeAngle,
 					bodyFullyVisible
 				);
+				squatStateRef.current = result.newState;
 
-				setSquatState(result.newState);
-				setFeedback(result.feedback);
-				setProgress(result.progress);
+				// Throttle UI updates to reduce setState frequency
+				const now = Date.now();
+				if (now - lastUiUpdateRef.current > UI_UPDATE_THROTTLE_MS) {
+					lastUiUpdateRef.current = now;
+					setSquatState(result.newState);
+					setFeedback(result.feedback);
+					setProgress(result.progress);
+					setCurrentAngle(Math.round(avgKneeAngle));
+				}
 
 				// Manejar el incremento del contador con debounce
 				if (result.incrementCount) {
 					const now = Date.now();
-					// Debounce de 1.5 segundos entre reps
-					if (now - lastSquatTimeRef.current > 1500) {
+					// Debounce configurado
+					if (now - lastSquatTimeRef.current > REP_DEBOUNCE_MS) {
 						lastSquatTimeRef.current = now;
 
 						if (!isMountedRef.current) return;
@@ -550,44 +560,47 @@ export default function Squats() {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []); // Solo crear el listener una vez
 
-	const frameProcessor = useSkiaFrameProcessor((frame) => {
-		"worklet";
-		frame.render();
-		poseLandmarks(frame);
-		// Dibujar la silueta del usuario
-		if (landmarks?.value !== undefined && Object.keys(landmarks?.value).length > 0) {
-			const body = landmarks?.value;
-			const frameWidth = frame.width;
-			const frameHeight = frame.height;
+	const frameProcessor = useSkiaFrameProcessor(
+		(frame) => {
+			"worklet";
+			if (poseLandmarkPlugin == null) return;
+			poseLandmarkPlugin.call(frame);
+			// Dibujar la silueta del usuario
+			if (landmarks?.value !== undefined && Object.keys(landmarks?.value).length > 0) {
+				const body = landmarks?.value;
+				const frameWidth = frame.width;
+				const frameHeight = frame.height;
 
-			// Dibujar líneas del esqueleto
-			for (const [from, to] of LINES) {
-				const fromPoint = body[from];
-				const toPoint = body[to];
-				if (fromPoint && toPoint) {
-					frame.drawLine(
-						fromPoint.x * Number(frameWidth),
-						fromPoint.y * Number(frameHeight),
-						toPoint.x * Number(frameWidth),
-						toPoint.y * Number(frameHeight),
-						linePaint
-					);
+				// Dibujar líneas del esqueleto
+				for (const [from, to] of LINES) {
+					const fromPoint = body[from];
+					const toPoint = body[to];
+					if (fromPoint && toPoint) {
+						frame.drawLine(
+							fromPoint.x * Number(frameWidth),
+							fromPoint.y * Number(frameHeight),
+							toPoint.x * Number(frameWidth),
+							toPoint.y * Number(frameHeight),
+							linePaint
+						);
+					}
+				}
+
+				// Dibujar círculos en los keypoints
+				for (const mark of Object.values(body)) {
+					if (mark && typeof mark === "object" && "x" in mark && "y" in mark) {
+						frame.drawCircle(
+							mark.x * Number(frameWidth),
+							mark.y * Number(frameHeight),
+							8,
+							circlePaint
+						);
+					}
 				}
 			}
-
-			// Dibujar círculos en los keypoints
-			for (const mark of Object.values(body)) {
-				if (mark && typeof mark === "object" && "x" in mark && "y" in mark) {
-					frame.drawCircle(
-						mark.x * Number(frameWidth),
-						mark.y * Number(frameHeight),
-						8,
-						circlePaint
-					);
-				}
-			}
-		}
-	}, []);
+		},
+		[poseLandmarkPlugin]
+	);
 
 	if (!hasPermission) {
 		return (
