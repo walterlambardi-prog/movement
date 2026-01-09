@@ -49,8 +49,9 @@
 		"profileSubtitle": "Ajusta idioma y nombre"
 	},
 	"history": {
-		"title": "Historial",
-		"header": "Historial de ejercicios",
+		"title": "Historial de progreso",
+		"subtitle": "Revisa cada sesión y el total por ejercicio.",
+		"badge": "Actividad",
 		"reps": "Reps"
 	},
 	"onboarding": {
@@ -69,7 +70,18 @@
 		"language": "Idioma",
 		"cta": "Activa tu meta hoy.",
 		"greeting": "A moverse, {{name}}!",
-		"emptyName": "Atleta"
+		"emptyName": "Atleta",
+		"resetTitle": "Reiniciar ejercicios",
+		"resetSubtitle": "Borra totales y sesiones de todos los ejercicios.",
+		"resetButton": "Reiniciar ejercicios",
+		"resetConfirmTitle": "¿Reiniciar todos los ejercicios?",
+		"resetConfirmBody": "Esto borrará los totales y el historial de sesiones de cada ejercicio.",
+		"resetConfirmYes": "Sí, reiniciar",
+		"resetConfirmNo": "Cancelar",
+		"changeNameTitle": "Cambiar nombre",
+		"changeNameSubtitle": "Actualiza cómo te animamos.",
+		"changeLanguageTitle": "Cambiar idioma",
+		"changeLanguageSubtitle": "Cambia el idioma de la app al instante."
 	},
 	"exercise": {
 		"title": "Ejercicio",

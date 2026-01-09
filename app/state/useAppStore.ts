@@ -26,21 +26,21 @@ type AppState = {
 	setOnboarded: () => void;
 	recordSession: (exercise: ExerciseKey, count: number, timestamp?: number) => void;
 	resetExercise: (exercise: ExerciseKey) => void;
+	resetAllExercises: () => void;
 };
-
-const defaultExercises: Record<ExerciseKey, ExerciseStats> = {
+const createDefaultExercises = (): Record<ExerciseKey, ExerciseStats> => ({
 	hammerCurls: { total: 0, sessions: [] },
 	lateralRaises: { total: 0, sessions: [] },
 	pushups: { total: 0, sessions: [] },
 	squats: { total: 0, sessions: [] },
-};
+});
 
 export const useAppStore = create<AppState>()(
 	persist(
 		(set, get) => ({
 			username: null,
 			language: "en",
-			exercises: defaultExercises,
+			exercises: createDefaultExercises(),
 			hydrated: false,
 			hasOnboarded: false,
 
@@ -68,6 +68,9 @@ export const useAppStore = create<AppState>()(
 						[exercise]: { total: 0, sessions: [] },
 					},
 				});
+			},
+			resetAllExercises: () => {
+				set({ exercises: createDefaultExercises() });
 			},
 		}),
 		{

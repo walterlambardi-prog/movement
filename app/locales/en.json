@@ -49,8 +49,9 @@
 		"profileSubtitle": "Adjust language and name"
 	},
 	"history": {
-		"title": "History",
-		"header": "Exercise history",
+		"title": "Progress history",
+		"subtitle": "See every session and total across exercises.",
+		"badge": "Activity",
 		"reps": "Reps"
 	},
 	"onboarding": {
@@ -69,7 +70,18 @@
 		"language": "Language",
 		"cta": "Lock in your goal today.",
 		"greeting": "Let's move, {{name}}!",
-		"emptyName": "Athlete"
+		"emptyName": "Athlete",
+		"resetTitle": "Reset exercises",
+		"resetSubtitle": "Clear totals and sessions for all exercises.",
+		"resetButton": "Reset exercises",
+		"resetConfirmTitle": "Reset all exercises?",
+		"resetConfirmBody": "This will clear totals and session history for every exercise.",
+		"resetConfirmYes": "Yes, reset",
+		"resetConfirmNo": "Cancel",
+		"changeNameTitle": "Change name",
+		"changeNameSubtitle": "Update how we cheer you on.",
+		"changeLanguageTitle": "Change language",
+		"changeLanguageSubtitle": "Switch the app language instantly."
 	},
 	"exercise": {
 		"title": "Exercise",

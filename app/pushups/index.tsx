@@ -94,15 +94,44 @@ linePaint.setStrokeWidth(10);
 
 const CONFETTI_INTERVAL = 5;
 
-const MIN_VISIBILITY = 0.3;
-const HIP_SHOULDER_MAX_DELTA = 0.5;
-const KNEE_HIP_MIN_DELTA = -0.25;
+const MIN_VISIBILITY = 0.45;
+const HIP_SHOULDER_MAX_DELTA = 0.48;
+const SHOULDER_LEVEL_DELTA = 0.2;
+const SMOOTHING_ALPHA = 0.28;
+const VISIBILITY_EPSILON = 0.1;
+const BOTTOM_HOLD_MS = 80;
+const MAX_TORSO_ANGLE = 35; // degrees from horizontal; larger means too vertical
+const MAX_FRAME_HEIGHT = 0.6; // normalized bbox height threshold to reject standing
+const MAX_HEIGHT_WIDTH_RATIO = 0.9; // if height ~= width, likely vertical
 
-const ELBOW_EXTENDED = 140;
-const ELBOW_START_DESCENT = 135;
-const ELBOW_BOTTOM = 110;
-const ELBOW_ASCEND_TRIGGER = 120;
-const ELBOW_COMPLETE = 140;
+const ELBOW_EXTENDED = 136;
+const ELBOW_START_DESCENT = 132;
+const ELBOW_BOTTOM = 108;
+const ELBOW_ASCEND_TRIGGER = 118;
+const ELBOW_COMPLETE = 138;
+
+function selectElbowAngle(
+	leftShoulder: KeypointData,
+	leftElbow: KeypointData,
+	leftWrist: KeypointData,
+	rightShoulder: KeypointData,
+	rightElbow: KeypointData,
+	rightWrist: KeypointData
+) {
+	const leftVisibility =
+		(leftShoulder.visibility + leftElbow.visibility + leftWrist.visibility) / 3;
+	const rightVisibility =
+		(rightShoulder.visibility + rightElbow.visibility + rightWrist.visibility) / 3;
+
+	const leftAngle = calculateAngle(leftShoulder, leftElbow, leftWrist);
+	const rightAngle = calculateAngle(rightShoulder, rightElbow, rightWrist);
+
+	if (Math.abs(leftVisibility - rightVisibility) < VISIBILITY_EPSILON) {
+		return (leftAngle + rightAngle) / 2;
+	}
+
+	return leftVisibility > rightVisibility ? leftAngle : rightAngle;
+}
 
 function calculateAngle(p1: KeypointData, p2: KeypointData, p3: KeypointData): number {
 	const radians = Math.atan2(p3.y - p2.y, p3.x - p2.x) - Math.atan2(p1.y - p2.y, p1.x - p2.x);
@@ -136,6 +165,14 @@ function processPushupStateMachine(
 				feedback: translate("pushups.feedback.ready"),
 				incrementCount: false,
 				progress: 0,
+			};
+		}
+		if (isInPlankPosition && elbowAngle < ELBOW_BOTTOM) {
+			return {
+				newState: "bottom",
+				feedback: translate("pushups.feedback.nowExtend"),
+				incrementCount: false,
+				progress: 50,
 			};
 		}
 		return {
@@ -257,13 +294,15 @@ export default function Pushups() {
 	const { hasPermission, requestPermission } = useCameraPermission();
 	const [cameraPosition, setCameraPosition] = useState<CameraPosition>("front");
 	const device = useCameraDevice(cameraPosition);
-	const format = useCameraFormat(device, [{ fps: 30 }]);
+	const format = useCameraFormat(device, [{ fps: 24 }]);
 
 	const lastPushupTimeRef = useRef<number>(0);
 	const confettiTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 	const isMountedRef = useRef<boolean>(true);
 	const pushupCountRef = useRef<number>(0);
 	const pushupStateRef = useRef<PushupState>("idle");
+	const angleEmaRef = useRef<number | null>(null);
+	const bottomEntryRef = useRef<number | null>(null);
 
 	const [pushupCount, setPushupCount] = useState(0);
 	const [pushupState, setPushupState] = useState<PushupState>("idle");
@@ -422,10 +461,6 @@ export default function Pushups() {
 				const rightWrist = detectedLandmarks[16];
 				const leftHip = detectedLandmarks[23];
 				const rightHip = detectedLandmarks[24];
-				const leftKnee = detectedLandmarks[25];
-				const rightKnee = detectedLandmarks[26];
-				const leftAnkle = detectedLandmarks[27];
-				const rightAnkle = detectedLandmarks[28];
 
 				const allPointsExist =
 					leftShoulder &&
@@ -435,11 +470,7 @@ export default function Pushups() {
 					leftWrist &&
 					rightWrist &&
 					leftHip &&
-					rightHip &&
-					leftKnee &&
-					rightKnee &&
-					leftAnkle &&
-					rightAnkle;
+					rightHip;
 
 				if (!allPointsExist) {
 					setPushupState("idle");
@@ -456,37 +487,97 @@ export default function Pushups() {
 					leftWrist.visibility > MIN_VISIBILITY &&
 					rightWrist.visibility > MIN_VISIBILITY &&
 					leftHip.visibility > MIN_VISIBILITY &&
-					rightHip.visibility > MIN_VISIBILITY &&
-					leftKnee.visibility > MIN_VISIBILITY &&
-					rightKnee.visibility > MIN_VISIBILITY;
+					rightHip.visibility > MIN_VISIBILITY;
 
-				const leftElbowAngle = calculateAngle(leftShoulder, leftElbow, leftWrist);
-				const rightElbowAngle = calculateAngle(rightShoulder, rightElbow, rightWrist);
-				const avgElbowAngle = (leftElbowAngle + rightElbowAngle) / 2;
-				setCurrentAngle(avgElbowAngle);
+				const selectedElbowAngle = selectElbowAngle(
+					leftShoulder,
+					leftElbow,
+					leftWrist,
+					rightShoulder,
+					rightElbow,
+					rightWrist
+				);
+
+				const prevEma = angleEmaRef.current ?? selectedElbowAngle;
+				const smoothedAngle = prevEma + SMOOTHING_ALPHA * (selectedElbowAngle - prevEma);
+				angleEmaRef.current = smoothedAngle;
+				setCurrentAngle(smoothedAngle);
 
 				const avgShoulderY = (leftShoulder.y + rightShoulder.y) / 2;
 				const avgHipY = (leftHip.y + rightHip.y) / 2;
-				const avgKneeY = (leftKnee.y + rightKnee.y) / 2;
+				const shouldersLevel = Math.abs(leftShoulder.y - rightShoulder.y) < SHOULDER_LEVEL_DELTA;
+				const hipsLevel = Math.abs(leftHip.y - rightHip.y) < SHOULDER_LEVEL_DELTA;
+
+				const points = Object.values(detectedLandmarks).filter(
+					(point): point is KeypointData =>
+						point != null && typeof point.x === "number" && typeof point.y === "number"
+				);
+				const minX = Math.min(...points.map((p) => p.x));
+				const maxX = Math.max(...points.map((p) => p.x));
+				const minY = Math.min(...points.map((p) => p.y));
+				const maxY = Math.max(...points.map((p) => p.y));
+				const bboxWidth = Math.max(maxX - minX, Number.EPSILON);
+				const bboxHeight = Math.max(maxY - minY, 0);
+				const heightWidthRatio = bboxHeight / bboxWidth;
+				const withinFrameHeight = bboxHeight;
+
+				const centerShoulderX = (leftShoulder.x + rightShoulder.x) / 2;
+				const centerHipX = (leftHip.x + rightHip.x) / 2;
+				const torsoAngle = Math.abs(
+					(Math.atan2(avgHipY - avgShoulderY, centerHipX - centerShoulderX) * 180) / Math.PI
+				);
+
+				const torsoAligned = Math.abs(avgHipY - avgShoulderY) < HIP_SHOULDER_MAX_DELTA;
+				const horizontalTorso = torsoAngle < MAX_TORSO_ANGLE;
+				const bboxTooVertical =
+					withinFrameHeight > MAX_FRAME_HEIGHT || heightWidthRatio > MAX_HEIGHT_WIDTH_RATIO;
 				const isInPlankPosition =
-					Math.abs(avgHipY - avgShoulderY) < HIP_SHOULDER_MAX_DELTA &&
-					avgKneeY > avgHipY + KNEE_HIP_MIN_DELTA;
+					torsoAligned && (shouldersLevel || hipsLevel) && horizontalTorso && !bboxTooVertical;
+
+				const postureAligned = bodyFullyVisible && isInPlankPosition;
+				if (!postureAligned) {
+					pushupStateRef.current = "idle";
+					setPushupState("idle");
+					setFeedback(t("pushups.feedback.needPlank"));
+					setProgress(0);
+					bottomEntryRef.current = null;
+					return;
+				}
 
 				const result = processPushupStateMachine(
 					pushupStateRef.current,
-					avgElbowAngle,
+					smoothedAngle,
 					bodyFullyVisible,
 					isInPlankPosition,
 					t
 				);
 
+				if (pushupStateRef.current === "bottom" && result.newState === "ascending") {
+					const bottomDwell = bottomEntryRef.current
+						? Date.now() - bottomEntryRef.current
+						: BOTTOM_HOLD_MS;
+					if (bottomDwell < BOTTOM_HOLD_MS) {
+						setPushupState("bottom");
+						setFeedback(t("pushups.feedback.nowExtend"));
+						setProgress(50);
+						return;
+					}
+				}
+
+				if (result.newState === "bottom") {
+					bottomEntryRef.current = Date.now();
+				} else if (result.newState === "ready" || result.newState === "idle") {
+					bottomEntryRef.current = null;
+				}
+
+				pushupStateRef.current = result.newState;
 				setPushupState(result.newState);
 				setFeedback(result.feedback);
 				setProgress(result.progress);
 
 				if (result.incrementCount) {
 					const now = Date.now();
-					if (now - lastPushupTimeRef.current > 1500) {
+					if (now - lastPushupTimeRef.current > 1200) {
 						lastPushupTimeRef.current = now;
 
 						if (!isMountedRef.current) return;
@@ -527,7 +618,6 @@ export default function Pushups() {
 
 	const frameProcessor = useSkiaFrameProcessor((frame) => {
 		"worklet";
-		frame.render();
 		poseLandmarks(frame);
 
 		if (landmarks?.value !== undefined && Object.keys(landmarks?.value).length > 0) {
@@ -590,8 +680,6 @@ export default function Pushups() {
 				format={format}
 				frameProcessor={frameProcessor}
 				pixelFormat="yuv"
-				photoQualityBalance="speed"
-				videoBitRate="extra-low"
 			/>
 
 			<View style={styles.overlay} />
