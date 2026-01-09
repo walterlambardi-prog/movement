@@ -52,7 +52,22 @@
 		"title": "Progress history",
 		"subtitle": "See every session and total across exercises.",
 		"badge": "Activity",
-		"reps": "Reps"
+		"reps": "Reps",
+		"highlights": {
+			"totalReps": "Total reps",
+			"allExercises": "All exercises",
+			"sessions": "Sessions",
+			"sessionsSub": "Sessions logged today",
+			"topExercise": "Top exercise",
+			"repsCount": "{{count}} reps",
+			"avgPerSession": "Avg per session",
+			"avgPerSessionSub": "Reps per session",
+			"lastSession": "Last session",
+			"lastSessionSub": "Most recent entry",
+			"noData": "No data yet",
+			"none": "-"
+		},
+		"repsLabel": "total reps"
 	},
 	"onboarding": {
 		"title": "Welcome to Movement",

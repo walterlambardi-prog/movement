@@ -52,7 +52,22 @@
 		"title": "Historial de progreso",
 		"subtitle": "Revisa cada sesión y el total por ejercicio.",
 		"badge": "Actividad",
-		"reps": "Reps"
+		"reps": "Reps",
+		"highlights": {
+			"totalReps": "Reps totales",
+			"allExercises": "Todos los ejercicios",
+			"sessions": "Sesiones",
+			"sessionsSub": "Sesiones registradas hoy",
+			"topExercise": "Ejercicio destacado",
+			"repsCount": "{{count}} reps",
+			"avgPerSession": "Promedio por sesión",
+			"avgPerSessionSub": "Reps por sesión",
+			"lastSession": "Última sesión",
+			"lastSessionSub": "Registro más reciente",
+			"noData": "Sin datos aún",
+			"none": "-"
+		},
+		"repsLabel": "reps totales"
 	},
 	"onboarding": {
 		"title": "Bienvenido a Movement",

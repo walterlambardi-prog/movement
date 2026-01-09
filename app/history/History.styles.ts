@@ -7,7 +7,7 @@ export const styles = StyleSheet.create({
 	},
 	content: {
 		padding: 20,
-		flex: 1,
+		paddingBottom: 32,
 	},
 	heroCard: {
 		padding: 18,
@@ -50,6 +50,45 @@ export const styles = StyleSheet.create({
 		color: "#CBD5E1",
 		fontSize: 14,
 		lineHeight: 20,
+	},
+	summaryGrid: {
+		flexDirection: "row",
+		flexWrap: "wrap",
+		gap: 12,
+		marginBottom: 12,
+	},
+	summaryCard: {
+		flexBasis: "48%",
+		backgroundColor: "#0F172A",
+		borderRadius: 14,
+		padding: 14,
+		borderWidth: 1,
+		borderColor: "rgba(255, 255, 255, 0.08)",
+		gap: 6,
+		shadowColor: "#0EA5E9",
+		shadowOpacity: 0.18,
+		shadowRadius: 8,
+		elevation: 3,
+	},
+	summaryHeader: {
+		flexDirection: "row",
+		justifyContent: "space-between",
+		alignItems: "center",
+	},
+	summaryLabel: {
+		color: "#E2E8F0",
+		fontWeight: "800",
+		fontSize: 13,
+	},
+	summaryValue: {
+		color: "#22D3EE",
+		fontSize: 26,
+		fontWeight: "900",
+	},
+	summarySubtext: {
+		color: "#94A3B8",
+		fontSize: 12,
+		lineHeight: 16,
 	},
 	statsGrid: {
 		flexDirection: "row",
