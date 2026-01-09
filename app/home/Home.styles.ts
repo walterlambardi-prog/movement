@@ -7,7 +7,6 @@ export const styles = StyleSheet.create({
 	},
 	screenContent: {
 		paddingBottom: 40,
-		paddingTop: 8,
 	},
 	heroCard: {
 		marginHorizontal: 20,

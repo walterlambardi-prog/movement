@@ -2,6 +2,7 @@ import { memo, useMemo } from "react";
 import { Link } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { ImageBackground, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
 import { useAppStore } from "../state/useAppStore";
@@ -32,6 +33,7 @@ const ExerciseCard = memo(function ExerciseCard({ href, title, subtitle, image }
 
 export default function Home() {
 	const { t } = useTranslation();
+	const insets = useSafeAreaInsets();
 	const username = useAppStore((state) => state.username);
 	const displayName = username?.trim().length ? username : t("index.welcomeTitle");
 
@@ -94,7 +96,10 @@ export default function Home() {
 			<View style={styles.bubbleTop} />
 			<View style={styles.bubbleBottom} />
 
-			<ScrollView contentContainerStyle={styles.screenContent} showsVerticalScrollIndicator={false}>
+			<ScrollView
+				contentContainerStyle={[styles.screenContent, { paddingTop: insets.top }]}
+				showsVerticalScrollIndicator={false}
+			>
 				<View style={styles.heroCard}>
 					<Text style={styles.heroGreeting}>{t("index.welcomeTitle")}</Text>
 					<Text style={styles.heroName}>{displayName}</Text>
