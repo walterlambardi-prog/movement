@@ -22,6 +22,7 @@ import {
 	VisionCameraProxy,
 } from "react-native-vision-camera";
 import { useSharedValue } from "react-native-worklets-core";
+import { useTranslation } from "react-i18next";
 
 const { PoseLandmarks } = NativeModules;
 
@@ -90,45 +91,12 @@ const CONFETTI_INTERVAL = 10;
 const UI_UPDATE_THROTTLE_MS = 140; // reduce setState frequency for smoother UI
 const REP_DEBOUNCE_MS = 900; // allow quicker consecutive reps
 
-// Configuración de voz
-const VOICE_CONFIG = {
-	language: "en-US", // Cambiar a "es-ES" para español
-	pitch: 1,
-	rate: 0.85,
-};
-
-// Mensaje de bienvenida
-const WELCOME_MESSAGE = "Let's do some squats! Position your full body in frame to begin.";
-
-// Mensajes motivacionales para milestones (se elige uno al azar)
-const MILESTONE_MESSAGES = [
-	(count: number) => `${count} squats! Keep it up!`,
-	(count: number) => `Amazing! ${count} squats completed! You're on fire!`,
-	(count: number) => `Wow! ${count} squats done! Keep pushing!`,
-	(count: number) => `Fantastic! ${count} squats! You're crushing it!`,
-];
-
-// Mensajes de voz
-const VOICE_MESSAGES = {
-	MILESTONE: (count: number) => {
-		const randomIndex = Math.floor(Math.random() * MILESTONE_MESSAGES.length);
-		return MILESTONE_MESSAGES[randomIndex](count);
-	},
-	COUNT: (count: number) => `${count}`,
-	WELCOME: WELCOME_MESSAGE,
-};
-
 // Angles tuned to be more permissive so reps count even if the form is shallow
 const ANGLE_TOP_READY = 150; // Standing straight threshold (was 165)
 const ANGLE_START_DESCENT = 145; // When descent is detected (was 150)
 const ANGLE_BOTTOM = 130; // Depth considered valid at the bottom (was 100)
 const ANGLE_ASCEND_TRIGGER = 140; // Begin ascent once knees open past this
 const ANGLE_COMPLETE = 150; // Count rep once back near standing (was 165)
-
-// Función helper para anunciar con voz
-function announceVoice(text: string) {
-	Speech.speak(text, VOICE_CONFIG);
-}
 
 // Función para calcular el ángulo entre 3 puntos
 function calculateAngle(p1: KeypointData, p2: KeypointData, p3: KeypointData): number {
@@ -155,7 +123,8 @@ type StateTransitionResult = {
 function processSquatStateMachine(
 	currentState: SquatState,
 	avgKneeAngle: number,
-	bodyFullyVisible: boolean
+	bodyFullyVisible: boolean,
+	translate: (key: string, options?: Record<string, unknown>) => string
 ): StateTransitionResult {
 	const angle = Math.round(avgKneeAngle);
 
@@ -163,7 +132,7 @@ function processSquatStateMachine(
 	if (!bodyFullyVisible) {
 		return {
 			newState: "idle",
-			feedback: "Position your full body in frame",
+			feedback: translate("squats.feedback.noBody"),
 			incrementCount: false,
 			progress: 0,
 		};
@@ -174,14 +143,14 @@ function processSquatStateMachine(
 		if (avgKneeAngle > ANGLE_TOP_READY) {
 			return {
 				newState: "ready",
-				feedback: "Ready! Start your squat",
+				feedback: translate("squats.feedback.ready"),
 				incrementCount: false,
 				progress: 0,
 			};
 		}
 		return {
 			newState: "idle",
-			feedback: "Stand up straight to begin",
+			feedback: translate("squats.feedback.standStraight"),
 			incrementCount: false,
 			progress: 0,
 		};
@@ -192,14 +161,14 @@ function processSquatStateMachine(
 		if (avgKneeAngle < ANGLE_START_DESCENT) {
 			return {
 				newState: "descending",
-				feedback: "Going down...",
+				feedback: translate("squats.feedback.goingDown"),
 				incrementCount: false,
 				progress: 10,
 			};
 		}
 		return {
 			newState: "ready",
-			feedback: "Ready! Start your squat",
+			feedback: translate("squats.feedback.ready"),
 			incrementCount: false,
 			progress: 0,
 		};
@@ -211,7 +180,7 @@ function processSquatStateMachine(
 		if (avgKneeAngle <= ANGLE_BOTTOM) {
 			return {
 				newState: "bottom",
-				feedback: "Perfect depth! 💪",
+				feedback: translate("squats.feedback.perfectDepth"),
 				incrementCount: false,
 				progress: 50,
 			};
@@ -220,7 +189,7 @@ function processSquatStateMachine(
 		if (avgKneeAngle > ANGLE_TOP_READY) {
 			return {
 				newState: "ready",
-				feedback: "Go deeper next time",
+				feedback: translate("squats.feedback.goDeeper"),
 				incrementCount: false,
 				progress: 0,
 			};
@@ -232,7 +201,7 @@ function processSquatStateMachine(
 		);
 		return {
 			newState: "descending",
-			feedback: `Keep going... ${angle}°`,
+			feedback: translate("squats.feedback.keepGoing", { angle }),
 			incrementCount: false,
 			progress,
 		};
@@ -244,14 +213,14 @@ function processSquatStateMachine(
 		if (avgKneeAngle > ANGLE_ASCEND_TRIGGER) {
 			return {
 				newState: "ascending",
-				feedback: "Push up! 🔥",
+				feedback: translate("squats.feedback.push"),
 				incrementCount: false,
 				progress: 60,
 			};
 		}
 		return {
 			newState: "bottom",
-			feedback: "Good! Now push up",
+			feedback: translate("squats.feedback.goodPush"),
 			incrementCount: false,
 			progress: 50,
 		};
@@ -263,7 +232,7 @@ function processSquatStateMachine(
 		if (avgKneeAngle > ANGLE_COMPLETE) {
 			return {
 				newState: "ready",
-				feedback: "Excellent! ✨",
+				feedback: translate("squats.feedback.excellent"),
 				incrementCount: true,
 				quality: "perfect",
 				progress: 100,
@@ -273,7 +242,7 @@ function processSquatStateMachine(
 		if (avgKneeAngle <= ANGLE_BOTTOM) {
 			return {
 				newState: "bottom",
-				feedback: "Keep pushing!",
+				feedback: translate("squats.feedback.keepPushing"),
 				incrementCount: false,
 				progress: 50,
 			};
@@ -283,7 +252,7 @@ function processSquatStateMachine(
 			50 + Math.min(50, ((avgKneeAngle - ANGLE_BOTTOM) / (ANGLE_COMPLETE - ANGLE_BOTTOM)) * 50);
 		return {
 			newState: "ascending",
-			feedback: `Almost there... ${angle}°`,
+			feedback: translate("squats.feedback.almost", { angle }),
 			incrementCount: false,
 			progress,
 		};
@@ -291,17 +260,18 @@ function processSquatStateMachine(
 
 	return {
 		newState: currentState,
-		feedback: "Keep going!",
+		feedback: translate("squats.feedback.keepPushing"),
 		incrementCount: false,
 		progress: 0,
 	};
 }
 
-const CameraButton = ({ onPress }: { onPress: () => void }) => (
-	<Button title="Change camera" onPress={onPress} />
+const CameraButton = ({ label, onPress }: { label: string; onPress: () => void }) => (
+	<Button title={label} onPress={onPress} />
 );
 
 export default function Squats() {
+	const { t, i18n } = useTranslation();
 	const landmarks = useSharedValue<KeypointsMap>({});
 	const { hasPermission, requestPermission } = useCameraPermission();
 	const [cameraPosition, setCameraPosition] = useState<CameraPosition>("front");
@@ -327,10 +297,43 @@ export default function Squats() {
 	const [squatCount, setSquatCount] = useState(0);
 	const [squatState, setSquatState] = useState<SquatState>("idle");
 	const [currentAngle, setCurrentAngle] = useState<number>(0);
-	const [feedback, setFeedback] = useState<string>("Position yourself in frame");
+	const [feedback, setFeedback] = useState<string>(t("squats.feedback.noBody"));
 	const [progress, setProgress] = useState<number>(0);
 	const [showConfetti, setShowConfetti] = useState(false);
 	const [lastRepQuality, setLastRepQuality] = useState<RepQuality | null>(null);
+
+	const voiceConfig = useMemo(
+		() => ({
+			language: i18n.language === "es" ? "es-ES" : "en-US",
+			pitch: 1,
+			rate: 0.85,
+		}),
+		[i18n.language]
+	);
+
+	const speak = useCallback(
+		(text: string) => {
+			Speech.speak(text, voiceConfig);
+		},
+		[voiceConfig]
+	);
+
+	const getMilestoneMessage = useCallback(
+		(count: number) => {
+			const messages = t("squats.voice.milestones", { returnObjects: true, count }) as string[];
+			if (Array.isArray(messages) && messages.length > 0) {
+				const randomIndex = Math.floor(Math.random() * messages.length);
+				return messages[randomIndex];
+			}
+			return `${count}`;
+		},
+		[t]
+	);
+
+	const instructions = useMemo(
+		() => t("squats.instructions", { returnObjects: true }) as string[],
+		[t]
+	);
 
 	// Mantener refs sincronizados con el estado
 	useEffect(() => {
@@ -353,33 +356,34 @@ export default function Squats() {
 		setSquatCount(0);
 		setSquatState("idle");
 		setProgress(0);
-		setFeedback("Position yourself in frame");
+		setFeedback(t("squats.feedback.noBody"));
 		setLastRepQuality(null);
 		setShowConfetti(false);
 		if (confettiTimeoutRef.current) {
 			clearTimeout(confettiTimeoutRef.current);
 		}
-	}, []);
+	}, [t]);
 
 	const HeaderRight = useMemo(
-		() => <CameraButton onPress={handleCameraChange} />,
-		[handleCameraChange]
+		() => <CameraButton label={t("common.changeCamera")} onPress={handleCameraChange} />,
+		[handleCameraChange, t]
 	);
 
 	const screenOptions = useMemo(
 		() => ({
+			title: t("squats.title"),
 			headerRight: () => HeaderRight,
 		}),
-		[HeaderRight]
+		[HeaderRight, t]
 	);
 
 	// Anunciar mensaje de bienvenida al montar el componente
 	useEffect(() => {
-		announceVoice(VOICE_MESSAGES.WELCOME);
+		speak(t("squats.voice.welcome"));
 		return () => {
 			Speech.stop();
 		};
-	}, []);
+	}, [speak, t]);
 
 	// Animar la barra de progreso cuando cambie
 	useEffect(() => {
@@ -389,6 +393,12 @@ export default function Squats() {
 			useNativeDriver: false,
 		}).start();
 	}, [progress, progressAnim]);
+
+	useEffect(() => {
+		if (squatState === "idle") {
+			setFeedback(t("squats.feedback.noBody"));
+		}
+	}, [squatState, t]);
 
 	// Limpiar recursos al desmontar
 	useEffect(() => {
@@ -406,12 +416,12 @@ export default function Squats() {
 	// Anunciar voz solo en hitos para reducir uso de Speech
 	useEffect(() => {
 		if (squatCount > 0 && squatCount % CONFETTI_INTERVAL === 0) {
-			announceVoice(VOICE_MESSAGES.MILESTONE(squatCount));
+			speak(getMilestoneMessage(squatCount));
 		}
 		return () => {
 			Speech.stop();
 		};
-	}, [squatCount]);
+	}, [getMilestoneMessage, speak, squatCount]);
 
 	useEffect(() => {
 		// Initialize the model explicitly (needed for iOS)
@@ -428,7 +438,7 @@ export default function Squats() {
 				// Validar que existan landmarks
 				if (!event?.landmarks?.[0]) {
 					setSquatState("idle");
-					setFeedback("No pose detected");
+					setFeedback(t("squats.feedback.noPose"));
 					setProgress(0);
 					return;
 				}
@@ -467,7 +477,7 @@ export default function Squats() {
 
 				if (!allPointsExist) {
 					setSquatState("idle");
-					setFeedback("Position your full body in frame");
+					setFeedback(t("squats.feedback.noBody"));
 					setProgress(0);
 					return;
 				}
@@ -499,7 +509,8 @@ export default function Squats() {
 				const result = processSquatStateMachine(
 					squatStateRef.current,
 					avgKneeAngle,
-					bodyFullyVisible
+					bodyFullyVisible,
+					t
 				);
 				squatStateRef.current = result.newState;
 
@@ -558,7 +569,7 @@ export default function Squats() {
 			subscription.remove();
 		};
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []); // Solo crear el listener una vez
+	}, [t]);
 
 	const frameProcessor = useSkiaFrameProcessor(
 		(frame) => {
@@ -605,8 +616,8 @@ export default function Squats() {
 	if (!hasPermission) {
 		return (
 			<View style={styles.container}>
-				<Text>No camera permission</Text>
-				<Button title="Request Permission" onPress={requestPermission} />
+				<Text>{t("common.noPermission")}</Text>
+				<Button title={t("common.requestPermission") || ""} onPress={requestPermission} />
 			</View>
 		);
 	}
@@ -614,7 +625,7 @@ export default function Squats() {
 	if (device == null) {
 		return (
 			<View style={styles.container}>
-				<Text>No camera device found</Text>
+				<Text>{t("common.noDevice")}</Text>
 			</View>
 		);
 	}
@@ -639,7 +650,7 @@ export default function Squats() {
 			<View style={styles.topBar}>
 				<View style={styles.counterContainer}>
 					<Text style={styles.counterValue}>{squatCount}</Text>
-					<Text style={styles.counterLabel}>SQUATS</Text>
+					<Text style={styles.counterLabel}>{t("squats.counterLabel")}</Text>
 				</View>
 			</View>
 
@@ -676,7 +687,7 @@ export default function Squats() {
 			{lastRepQuality && squatState === "ready" && (
 				<View style={styles.qualityBadge}>
 					<Text style={styles.qualityText}>
-						{lastRepQuality === "perfect" ? "🌟 Perfect!" : "✓ Good!"}
+						{lastRepQuality === "perfect" ? t("common.quality.perfect") : t("common.quality.good")}
 					</Text>
 				</View>
 			)}
@@ -685,20 +696,22 @@ export default function Squats() {
 			<View style={styles.bottomPanel}>
 				<View style={styles.statsRow}>
 					<View style={styles.statItem}>
-						<Text style={styles.statLabel}>State</Text>
-						<Text style={styles.statValue}>{getStateLabel(squatState)}</Text>
+						<Text style={styles.statLabel}>{t("common.state")}</Text>
+						<Text style={styles.statValue}>{getStateLabel(squatState, t)}</Text>
 					</View>
 					<View style={styles.resetButtonContainer}>
-						<Button title="Reset" onPress={handleReset} color="#FF6B6B" />
+						<Button title={t("common.reset")} onPress={handleReset} color="#FF6B6B" />
 					</View>
 				</View>
 
 				{/* Guía de instrucciones compacta */}
 				{squatState === "idle" && (
 					<View style={styles.instructionsContainer}>
-						<Text style={styles.instructionText}>📱 Show your full body</Text>
-						<Text style={styles.instructionText}>🦵 Squat down until knees reach ~100°</Text>
-						<Text style={styles.instructionText}>⬆️ Stand back up to complete</Text>
+						{instructions.map((item) => (
+							<Text key={item} style={styles.instructionText}>
+								{item}
+							</Text>
+						))}
 					</View>
 				)}
 			</View>
@@ -746,18 +759,18 @@ function getProgressBarColor(state: SquatState) {
 }
 
 // Función auxiliar para etiqueta del estado
-function getStateLabel(state: SquatState): string {
+function getStateLabel(state: SquatState, translate: (key: string) => string): string {
 	switch (state) {
 		case "idle":
-			return "Positioning...";
+			return translate("squats.stateLabel.idle");
 		case "ready":
-			return "Ready";
+			return translate("squats.stateLabel.ready");
 		case "descending":
-			return "Going Down";
+			return translate("squats.stateLabel.descending");
 		case "bottom":
-			return "Bottom";
+			return translate("squats.stateLabel.bottom");
 		case "ascending":
-			return "Rising Up";
+			return translate("squats.stateLabel.ascending");
 		default:
 			return state;
 	}

@@ -22,6 +22,7 @@ import {
 	VisionCameraProxy,
 } from "react-native-vision-camera";
 import { useSharedValue } from "react-native-worklets-core";
+import { useTranslation } from "react-i18next";
 
 const { PoseLandmarks } = NativeModules;
 
@@ -88,40 +89,12 @@ const CONFETTI_INTERVAL = 10;
 const UI_UPDATE_THROTTLE_MS = 120;
 const REP_DEBOUNCE_MS = 850;
 
-const VOICE_CONFIG = {
-	language: "es-ES",
-	pitch: 1,
-	rate: 0.9,
-};
-
-const WELCOME_MESSAGE =
-	"Elevaciones laterales simultaneas: brazos abajo, sube ambos a la altura de hombros.";
-
-const MILESTONE_MESSAGES = [
-	(count: number) => `${count} levantes, buen control!`,
-	(count: number) => `Sigue, ${count} reps!`,
-	(count: number) => `${count} elevaciones, hombros firmes!`,
-];
-
-const VOICE_MESSAGES = {
-	MILESTONE: (count: number) => {
-		const randomIndex = Math.floor(Math.random() * MILESTONE_MESSAGES.length);
-		return MILESTONE_MESSAGES[randomIndex](count);
-	},
-	COUNT: (count: number) => `${count}`,
-	WELCOME: WELCOME_MESSAGE,
-};
-
 const MIN_VISIBILITY = 0.55;
 // Umbrales más permisivos: permite contar sin llegar 100% paralelo
 const ANGLE_UP = 72; // antes 85
 const ANGLE_UP_RELEASE = 64; // antes 78
 const ANGLE_DOWN = 32;
 const ANGLE_DOWN_RESET = 38;
-
-function announceVoice(text: string) {
-	Speech.speak(text, VOICE_CONFIG);
-}
 
 function calculateAngle(p1: KeypointData, p2: KeypointData, p3: KeypointData): number {
 	const radians = Math.atan2(p3.y - p2.y, p3.x - p2.x) - Math.atan2(p1.y - p2.y, p1.x - p2.x);
@@ -137,26 +110,27 @@ function mapProgress(angle: number) {
 	return Math.min(100, Math.max(0, (value / range) * 100));
 }
 
-function describeArmState(state: ArmState) {
+function describeArmState(state: ArmState, translate: (key: string) => string) {
 	switch (state) {
 		case "down":
-			return "Abajo";
+			return translate("lateralRaises.armState.down");
 		case "raising":
-			return "Subiendo";
+			return translate("lateralRaises.armState.raising");
 		case "up":
-			return "Arriba";
+			return translate("lateralRaises.armState.up");
 		case "lowering":
-			return "Bajando";
+			return translate("lateralRaises.armState.lowering");
 		default:
 			return state;
 	}
 }
 
-const CameraButton = ({ onPress }: { onPress: () => void }) => (
-	<Button title="Cambiar camara" onPress={onPress} />
+const CameraButton = ({ label, onPress }: { label: string; onPress: () => void }) => (
+	<Button title={label} onPress={onPress} />
 );
 
 export default function LateralRaises() {
+	const { t, i18n } = useTranslation();
 	const landmarks = useSharedValue<KeypointsMap>({});
 	const { hasPermission, requestPermission } = useCameraPermission();
 	const [cameraPosition, setCameraPosition] = useState<CameraPosition>("front");
@@ -178,7 +152,27 @@ export default function LateralRaises() {
 	const stateRef = useRef<ArmState>("down");
 
 	const [repCount, setRepCount] = useState(0);
-	const [feedback, setFeedback] = useState<string>("Pon cuerpo completo en cuadro");
+	const [feedback, setFeedback] = useState<string>(t("lateralRaises.feedback.showShoulders"));
+	const voiceConfig = useMemo(
+		() => ({
+			language: i18n.language === "es" ? "es-ES" : "en-US",
+			pitch: 1,
+			rate: 0.9,
+		}),
+		[i18n.language]
+	);
+
+	const speak = useCallback(
+		(text: string) => {
+			Speech.speak(text, voiceConfig);
+		},
+		[voiceConfig]
+	);
+
+	const instructions = useMemo(
+		() => t("lateralRaises.instructions", { returnObjects: true }) as string[],
+		[t]
+	);
 	const [leftAngle, setLeftAngle] = useState<number>(0);
 	const [rightAngle, setRightAngle] = useState<number>(0);
 	const [leftState, setLeftState] = useState<ArmState>("down");
@@ -189,13 +183,28 @@ export default function LateralRaises() {
 	const progressAnim = useRef(new Animated.Value(0)).current;
 	const lastUiUpdateRef = useRef<number>(0);
 
+	const getMilestoneMessage = useCallback(
+		(count: number) => {
+			const messages = t("lateralRaises.voice.milestones", {
+				returnObjects: true,
+				count,
+			}) as string[];
+			if (Array.isArray(messages) && messages.length > 0) {
+				const randomIndex = Math.floor(Math.random() * messages.length);
+				return messages[randomIndex];
+			}
+			return `${count}`;
+		},
+		[t]
+	);
+
 	const handleCameraChange = useCallback(() => {
 		setCameraPosition((prev) => (prev === "back" ? "front" : "back"));
 	}, []);
 
 	const handleReset = useCallback(() => {
 		setRepCount(0);
-		setFeedback("Pon cuerpo completo en cuadro");
+		setFeedback(t("lateralRaises.feedback.showShoulders"));
 		setLeftState("down");
 		setRightState("down");
 		stateRef.current = "down";
@@ -204,26 +213,27 @@ export default function LateralRaises() {
 			clearTimeout(confettiTimeoutRef.current);
 		}
 		setShowConfetti(false);
-	}, []);
+	}, [t]);
 
 	const HeaderRight = useMemo(
-		() => <CameraButton onPress={handleCameraChange} />,
-		[handleCameraChange]
+		() => <CameraButton label={t("common.changeCamera")} onPress={handleCameraChange} />,
+		[handleCameraChange, t]
 	);
 
 	const screenOptions = useMemo(
 		() => ({
+			title: t("lateralRaises.title"),
 			headerRight: () => HeaderRight,
 		}),
-		[HeaderRight]
+		[HeaderRight, t]
 	);
 
 	useEffect(() => {
-		announceVoice(VOICE_MESSAGES.WELCOME);
+		speak(t("lateralRaises.voice.welcome"));
 		return () => {
 			Speech.stop();
 		};
-	}, []);
+	}, [speak, t]);
 
 	useEffect(() => {
 		Animated.timing(progressAnim, {
@@ -232,6 +242,12 @@ export default function LateralRaises() {
 			useNativeDriver: false,
 		}).start();
 	}, [progress, progressAnim]);
+
+	useEffect(() => {
+		if (stateRef.current === "down") {
+			setFeedback(t("lateralRaises.feedback.showShoulders"));
+		}
+	}, [t]);
 
 	useEffect(() => {
 		isMountedRef.current = true;
@@ -247,12 +263,12 @@ export default function LateralRaises() {
 
 	useEffect(() => {
 		if (repCount > 0 && repCount % CONFETTI_INTERVAL === 0) {
-			announceVoice(VOICE_MESSAGES.MILESTONE(repCount));
+			speak(getMilestoneMessage(repCount));
 		}
 		return () => {
 			Speech.stop();
 		};
-	}, [repCount]);
+	}, [getMilestoneMessage, repCount, speak]);
 
 	useEffect(() => {
 		PoseLandmarks?.initModel?.();
@@ -266,7 +282,7 @@ export default function LateralRaises() {
 		const subscription = poseLandmarksEmitter.addListener("onPoseLandmarksDetected", (event) => {
 			try {
 				if (!event?.landmarks?.[0]) {
-					setFeedback("No se detecta pose");
+					setFeedback(t("lateralRaises.feedback.noPose"));
 					return;
 				}
 
@@ -284,7 +300,7 @@ export default function LateralRaises() {
 					leftShoulder && rightShoulder && leftElbow && rightElbow && leftHip && rightHip;
 
 				if (!allPointsExist) {
-					setFeedback("Muestra hombros y codos claramente");
+					setFeedback(t("lateralRaises.feedback.showShoulders"));
 					return;
 				}
 
@@ -297,7 +313,7 @@ export default function LateralRaises() {
 					rightHip.visibility > MIN_VISIBILITY;
 
 				if (!bodyVisible) {
-					setFeedback("Mejora la luz y mantente de frente");
+					setFeedback(t("lateralRaises.feedback.improveLight"));
 					return;
 				}
 
@@ -323,7 +339,7 @@ export default function LateralRaises() {
 					stateRef.current = "down";
 					setLeftState("down");
 					setRightState("down");
-					setFeedback("Brazos abajo, sube ambos a la vez");
+					setFeedback(t("lateralRaises.feedback.armsDown"));
 					return;
 				}
 
@@ -331,7 +347,7 @@ export default function LateralRaises() {
 					stateRef.current = "raising";
 					setLeftState("raising");
 					setRightState("raising");
-					setFeedback("Sube hasta la altura de hombros");
+					setFeedback(t("lateralRaises.feedback.raise"));
 				}
 
 				if (bothUp && stateRef.current !== "up") {
@@ -359,8 +375,8 @@ export default function LateralRaises() {
 							return newTotal;
 						});
 
-						setFeedback("Arriba, pausa y baja controlado");
-						announceVoice(VOICE_MESSAGES.COUNT(repCountRef.current + 1));
+						setFeedback(t("lateralRaises.feedback.upHold"));
+						speak(`${repCountRef.current + 1}`);
 					}
 					return;
 				}
@@ -369,7 +385,7 @@ export default function LateralRaises() {
 					stateRef.current = "lowering";
 					setLeftState("lowering");
 					setRightState("lowering");
-					setFeedback("Baja lento, hombros abajo");
+					setFeedback(t("lateralRaises.feedback.lower"));
 					return;
 				}
 
@@ -377,7 +393,7 @@ export default function LateralRaises() {
 					stateRef.current = "raising";
 					setLeftState("raising");
 					setRightState("raising");
-					setFeedback("Sube hasta la altura de hombros");
+					setFeedback(t("lateralRaises.feedback.raise"));
 				}
 			} catch (error) {
 				console.error("Error in pose landmarks listener:", error);
@@ -387,7 +403,8 @@ export default function LateralRaises() {
 		return () => {
 			subscription.remove();
 		};
-	}, []);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [speak, t]);
 
 	const frameProcessor = useSkiaFrameProcessor(
 		(frame) => {
@@ -431,8 +448,8 @@ export default function LateralRaises() {
 	if (!hasPermission) {
 		return (
 			<View style={styles.container}>
-				<Text>No hay permiso de camara</Text>
-				<Button title="Solicitar" onPress={requestPermission} />
+				<Text>{t("common.noPermission")}</Text>
+				<Button title={t("common.requestPermission") || ""} onPress={requestPermission} />
 			</View>
 		);
 	}
@@ -440,7 +457,7 @@ export default function LateralRaises() {
 	if (device == null) {
 		return (
 			<View style={styles.container}>
-				<Text>No se encuentra camara</Text>
+				<Text>{t("common.noDevice")}</Text>
 			</View>
 		);
 	}
@@ -463,7 +480,7 @@ export default function LateralRaises() {
 			<View style={styles.topBar}>
 				<View style={styles.counterContainer}>
 					<Text style={styles.counterValue}>{repCount}</Text>
-					<Text style={styles.counterLabel}>LATERAL RAISES</Text>
+					<Text style={styles.counterLabel}>{t("lateralRaises.counterLabel")}</Text>
 				</View>
 			</View>
 
@@ -471,14 +488,14 @@ export default function LateralRaises() {
 				<Text style={[styles.feedbackText]}>{feedback}</Text>
 				<View style={styles.armAnglesRow}>
 					<View style={styles.armChip}>
-						<Text style={styles.armLabel}>Izq</Text>
+						<Text style={styles.armLabel}>{t("hammerCurls.armLabel.left")}</Text>
 						<Text style={styles.armValue}>{leftAngle}°</Text>
-						<Text style={styles.armState}>{describeArmState(leftState)}</Text>
+						<Text style={styles.armState}>{describeArmState(leftState, t)}</Text>
 					</View>
 					<View style={styles.armChip}>
-						<Text style={styles.armLabel}>Der</Text>
+						<Text style={styles.armLabel}>{t("hammerCurls.armLabel.right")}</Text>
 						<Text style={styles.armValue}>{rightAngle}°</Text>
-						<Text style={styles.armState}>{describeArmState(rightState)}</Text>
+						<Text style={styles.armState}>{describeArmState(rightState, t)}</Text>
 					</View>
 				</View>
 			</View>
@@ -504,30 +521,20 @@ export default function LateralRaises() {
 			<View style={styles.bottomPanel}>
 				<View style={styles.statsRow}>
 					<View style={styles.statItem}>
-						<Text style={styles.statLabel}>Estado</Text>
-						<Text style={styles.statValue}>
-							{stateRef.current === "down"
-								? "Abajo"
-								: stateRef.current === "up"
-									? "Arriba"
-									: stateRef.current === "lowering"
-										? "Bajando"
-										: "Subiendo"}
-						</Text>
+						<Text style={styles.statLabel}>{t("common.state")}</Text>
+						<Text style={styles.statValue}>{describeArmState(stateRef.current, t)}</Text>
 					</View>
 					<View style={styles.resetButtonContainer}>
-						<Button title="Reset" onPress={handleReset} color="#FF6B6B" />
+						<Button title={t("common.reset")} onPress={handleReset} color="#FF6B6B" />
 					</View>
 				</View>
 
 				<View style={styles.instructionsContainer}>
-					<Text style={styles.instructionText}>1) De pie, torso recto, abdomen firme.</Text>
-					<Text style={styles.instructionText}>2) Agarre neutral, codos con leve flexion.</Text>
-					<Text style={styles.instructionText}>
-						3) Sube ambos brazos hasta la altura de hombros.
-					</Text>
-					<Text style={styles.instructionText}>4) Baja controlado por el mismo camino.</Text>
-					<Text style={styles.instructionText}>Cada subida simultanea cuenta como 1 levante.</Text>
+					{instructions.map((item) => (
+						<Text key={item} style={styles.instructionText}>
+							{item}
+						</Text>
+					))}
 				</View>
 			</View>
 

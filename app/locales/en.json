@@ -1,0 +1,213 @@
+{
+	"common": {
+		"appName": "Movement",
+		"changeCamera": "Change camera",
+		"noPermission": "No permission",
+		"noDevice": "No device",
+		"reset": "Reset",
+		"state": "State",
+		"lastArm": "Last arm",
+		"left": "Left",
+		"right": "Right",
+		"down": "Down",
+		"up": "Up",
+		"raising": "Raising",
+		"lowering": "Lowering",
+		"subiendo": "Rising",
+		"bajando": "Lowering",
+		"idle": "Positioning...",
+		"ready": "Ready",
+		"descending": "Going Down",
+		"bottom": "Bottom",
+		"ascending": "Rising Up",
+		"angle": "{{value}}°",
+		"requestPermission": "Request Permission",
+		"quality": {
+			"perfect": "🌟 Perfect!",
+			"good": "✓ Good!"
+		}
+	},
+	"index": {
+		"welcomeTitle": "Welcome to Movement!",
+		"subtitle": "Choose your tracking mode",
+		"exerciseTitle": "💪 Body Exercise",
+		"exerciseSubtitle": "Full body pose tracking",
+		"squatsTitle": "🏋️ Squat Counter",
+		"squatsSubtitle": "Count your squats automatically",
+		"pushupsTitle": "💪 Push-up Counter",
+		"pushupsSubtitle": "Count your push-ups automatically",
+		"handsTitle": "👋 Hand Tracking",
+		"handsSubtitle": "Track hand movements",
+		"hammerTitle": "🔨 Hammer Curls",
+		"hammerSubtitle": "Alternating hammer curl counter",
+		"lateralsTitle": "🪽 Lateral Raises",
+		"lateralsSubtitle": "Simultaneous lateral raises",
+		"languageToggle": "Language"
+	},
+	"exercise": {
+		"title": "Exercise",
+		"toggleLinesShow": "Show lines",
+		"toggleLinesHide": "Hide lines",
+		"toggleCirclesShow": "Show circles",
+		"toggleCirclesHide": "Hide circles"
+	},
+	"hands": {
+		"title": "Hand Tracking",
+		"toggleLinesShow": "Show lines",
+		"toggleLinesHide": "Hide lines",
+		"toggleCirclesShow": "Show circles",
+		"toggleCirclesHide": "Hide circles",
+		"error": "Hand landmarks error"
+	},
+	"squats": {
+		"title": "Squats",
+		"counterLabel": "SQUATS",
+		"instructions": [
+			"📱 Show your full body",
+			"🦵 Squat down until knees reach ~100°",
+			"⬆️ Stand back up to complete"
+		],
+		"stateLabel": {
+			"idle": "Positioning...",
+			"ready": "Ready",
+			"descending": "Going Down",
+			"bottom": "Bottom",
+			"ascending": "Rising Up"
+		},
+		"feedback": {
+			"noPose": "No pose detected",
+			"noBody": "Position your full body in frame",
+			"standStraight": "Stand up straight to begin",
+			"ready": "Ready! Start your squat",
+			"goingDown": "Going down...",
+			"keepGoing": "Keep going... {{angle}}°",
+			"perfectDepth": "Perfect depth! 💪",
+			"goodPush": "Good! Now push up",
+			"push": "Push up! 🔥",
+			"almost": "Almost there... {{angle}}°",
+			"excellent": "Excellent! ✨",
+			"goDeeper": "Go deeper next time",
+			"keepPushing": "Keep pushing!"
+		},
+		"voice": {
+			"welcome": "Let's do some squats! Position your full body in frame to begin.",
+			"milestones": [
+				"{{count}} squats! Keep it up!",
+				"Amazing! {{count}} squats completed! You're on fire!",
+				"Wow! {{count}} squats done! Keep pushing!",
+				"Fantastic! {{count}} squats! You're crushing it!"
+			]
+		}
+	},
+	"pushups": {
+		"title": "Push-ups",
+		"counterLabel": "PUSH-UPS",
+		"instructions": [
+			"📱 Position yourself (side or front view)",
+			"👐 Get in plank position, arms extended",
+			"💪 Lower down until elbows ~90°",
+			"⬆️ Push up to extend arms and complete"
+		],
+		"stateLabel": {
+			"idle": "Positioning...",
+			"ready": "Ready",
+			"descending": "Going Down",
+			"bottom": "Bottom",
+			"ascending": "Rising Up"
+		},
+		"feedback": {
+			"noPose": "No pose detected",
+			"noBody": "Position your full body in frame",
+			"needPlank": "Get in plank position",
+			"extendArms": "Extend arms ({{angle}}°)",
+			"ready": "Perfect! Lower down to begin",
+			"goingDown": "Going down...",
+			"keepGoing": "Lower... {{angle}}°",
+			"goodDepth": "Good! Now push up! 💪",
+			"nowExtend": "Now extend your arms!",
+			"push": "Push up! 🔥",
+			"almost": "Push! {{angle}}°",
+			"excellent": "Perfect! ✨",
+			"goLower": "Go lower next time",
+			"keepPushing": "Keep pushing!"
+		},
+		"voice": {
+			"welcome": "Let's do some push-ups! Face the camera and get in position to begin.",
+			"milestones": [
+				"{{count}} push-ups! Keep it up!",
+				"Amazing! {{count}} push-ups completed! You're on fire!",
+				"Wow! {{count}} push-ups done! Keep pushing!",
+				"Fantastic! {{count}} push-ups! You're crushing it!"
+			]
+		}
+	},
+	"hammerCurls": {
+		"title": "Hammer Curls",
+		"counterLabel": "HAMMER CURLS",
+		"instructions": [
+			"1) Posture: stand tall, core tight, facing forward.",
+			"2) Hammer grip: palms facing each other throughout.",
+			"3) Elbows close to torso; neutral wrists.",
+			"4) Alternate: right up, down; left up, down.",
+			"Each full raise counts as 1 lift."
+		],
+		"feedback": {
+			"noPose": "No pose detected",
+			"showArms": "Show both arms clearly",
+			"improveLight": "Improve lighting and show both arms",
+			"bothDown": "Arms down, alternate next lift",
+			"counting": "{{arm}} up, control the way down"
+		},
+		"armState": {
+			"extended": "Down",
+			"curling": "Raising",
+			"top": "Up"
+		},
+		"armLabel": {
+			"left": "Left",
+			"right": "Right"
+		},
+		"voice": {
+			"welcome": "Alternating hammer curl: face forward, arms down, alternate each arm.",
+			"milestones": [
+				"{{count}} curls, keep alternating!",
+				"Great pace, {{count}} lifts!",
+				"{{count}} reps, control the descent!"
+			]
+		}
+	},
+	"lateralRaises": {
+		"title": "Lateral Raises",
+		"counterLabel": "LATERAL RAISES",
+		"instructions": [
+			"1) Stand tall, brace core.",
+			"2) Neutral grip, elbows slightly bent.",
+			"3) Raise both arms to shoulder height.",
+			"4) Lower under control along the same path.",
+			"Each simultaneous raise counts as 1 rep."
+		],
+		"feedback": {
+			"noPose": "No pose detected",
+			"showShoulders": "Show shoulders and elbows clearly",
+			"improveLight": "Improve lighting and face forward",
+			"armsDown": "Arms down, raise both together",
+			"raise": "Raise to shoulder height",
+			"upHold": "Up, pause and lower with control",
+			"lower": "Lower slowly, shoulders down"
+		},
+		"armState": {
+			"down": "Down",
+			"raising": "Raising",
+			"up": "Up",
+			"lowering": "Lowering"
+		},
+		"voice": {
+			"welcome": "Lateral raises: arms down, raise both to shoulder height.",
+			"milestones": [
+				"{{count}} raises, nice control!",
+				"Keep going, {{count}} reps!",
+				"{{count}} raises, solid shoulders!"
+			]
+		}
+	}
+}

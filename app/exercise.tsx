@@ -21,6 +21,7 @@ import {
 	VisionCameraProxy,
 } from "react-native-vision-camera";
 import { useSharedValue } from "react-native-worklets-core";
+import { useTranslation } from "react-i18next";
 
 const { PoseLandmarks } = NativeModules;
 
@@ -90,11 +91,12 @@ const circlePaint = Skia.Paint();
 circlePaint.setColor(Skia.Color("green"));
 linePaint.setStrokeWidth(10);
 
-const CameraButton = ({ onPress }: { onPress: () => void }) => (
-	<Button title="Change camera" onPress={onPress} />
+const CameraButton = ({ label, onPress }: { label: string; onPress: () => void }) => (
+	<Button title={label} onPress={onPress} />
 );
 
 export default function Exercise() {
+	const { t } = useTranslation();
 	const landmarks = useSharedValue<KeypointsMap>({});
 	const { hasPermission, requestPermission } = useCameraPermission();
 	const [cameraPosition, setCameraPosition] = useState<CameraPosition>("front");
@@ -188,33 +190,36 @@ export default function Exercise() {
 	const pixelFormat = Platform.OS === "ios" ? "rgb" : "yuv";
 
 	const HeaderRight = useMemo(
-		() => <CameraButton onPress={handleCameraChange} />,
-		[handleCameraChange]
+		() => <CameraButton label={t("common.changeCamera")} onPress={handleCameraChange} />,
+		[handleCameraChange, t]
 	);
 
 	const screenOptions = useMemo(
 		() => ({
-			title: "Exercise",
+			title: t("exercise.title"),
 			headerRight: () => HeaderRight,
 		}),
-		[HeaderRight]
+		[HeaderRight, t]
 	);
 
 	if (!hasPermission) {
-		return <Text>No permission</Text>;
+		return <Text>{t("common.noPermission")}</Text>;
 	}
 
 	if (device == null) {
-		return <Text>No device</Text>;
+		return <Text>{t("common.noDevice")}</Text>;
 	}
 
 	return (
 		<>
 			<Stack.Screen name="exercise" options={screenOptions} />
 			<View style={styles.drawControl}>
-				<Button title={showLines ? "Hide lines" : "Show lines"} onPress={handleToggleLines} />
 				<Button
-					title={showCircles ? "Hide circles" : "Show circles"}
+					title={showLines ? t("exercise.toggleLinesHide") : t("exercise.toggleLinesShow")}
+					onPress={handleToggleLines}
+				/>
+				<Button
+					title={showCircles ? t("exercise.toggleCirclesHide") : t("exercise.toggleCirclesShow")}
 					onPress={handleToggleCircles}
 				/>
 			</View>

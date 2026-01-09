@@ -44,7 +44,8 @@
 				{
 					"cameraPermissionText": "$(PRODUCT_NAME) needs access to your Camera."
 				}
-			]
+			],
+			"expo-localization"
 		],
 		"experiments": {
 			"typedRoutes": true

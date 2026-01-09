@@ -23,6 +23,7 @@ import {
 	VisionCameraProxy,
 } from "react-native-vision-camera";
 import { useSharedValue } from "react-native-worklets-core";
+import { useTranslation } from "react-i18next";
 
 const { PoseLandmarks } = NativeModules;
 
@@ -100,34 +101,6 @@ linePaint.setStrokeWidth(10);
 // Configuración: Mostrar confetti cada N flexiones
 const CONFETTI_INTERVAL = 5;
 
-// Configuración de voz
-const VOICE_CONFIG = {
-	language: "en-US", // Cambiar a "es-ES" para español
-	pitch: 1,
-	rate: 0.85,
-};
-
-// Mensaje de bienvenida
-const WELCOME_MESSAGE = "Let's do some push-ups! Face the camera and get in position to begin.";
-
-// Mensajes motivacionales para milestones (se elige uno al azar)
-const MILESTONE_MESSAGES = [
-	(count: number) => `${count} push-ups! Keep it up!`,
-	(count: number) => `Amazing! ${count} push-ups completed! You're on fire!`,
-	(count: number) => `Wow! ${count} push-ups done! Keep pushing!`,
-	(count: number) => `Fantastic! ${count} push-ups! You're crushing it!`,
-];
-
-// Mensajes de voz
-const VOICE_MESSAGES = {
-	MILESTONE: (count: number) => {
-		const randomIndex = Math.floor(Math.random() * MILESTONE_MESSAGES.length);
-		return MILESTONE_MESSAGES[randomIndex](count);
-	},
-	COUNT: (count: number) => `${count}`,
-	WELCOME: WELCOME_MESSAGE,
-};
-
 // Detection tolerances
 const MIN_VISIBILITY = 0.3; // More permissive visibility so the body can be considered visible
 const HIP_SHOULDER_MAX_DELTA = 0.5; // More lenient plank tolerance between hips and shoulders
@@ -139,11 +112,6 @@ const ELBOW_START_DESCENT = 135; // Start counting descent sooner
 const ELBOW_BOTTOM = 110; // Depth considered valid
 const ELBOW_ASCEND_TRIGGER = 120; // Start ascent once past this
 const ELBOW_COMPLETE = 140; // Count rep when back near extension
-
-// Función helper para anunciar con voz
-function announceVoice(text: string) {
-	Speech.speak(text, VOICE_CONFIG);
-}
 
 // Función para calcular el ángulo entre 3 puntos
 function calculateAngle(p1: KeypointData, p2: KeypointData, p3: KeypointData): number {
@@ -172,7 +140,8 @@ function processPushupStateMachine(
 	currentState: PushupState,
 	elbowAngle: number, // Ángulo del codo (shoulder-elbow-wrist)
 	bodyFullyVisible: boolean,
-	isInPlankPosition: boolean // Cuerpo en posición de plancha
+	isInPlankPosition: boolean, // Cuerpo en posición de plancha
+	translate: (key: string, options?: Record<string, unknown>) => string
 ): StateTransitionResult {
 	const angle = Math.round(elbowAngle);
 
@@ -180,7 +149,7 @@ function processPushupStateMachine(
 	if (!bodyFullyVisible) {
 		return {
 			newState: "idle",
-			feedback: "Position your full body in frame",
+			feedback: translate("pushups.feedback.noBody"),
 			incrementCount: false,
 			progress: 0,
 		};
@@ -191,14 +160,16 @@ function processPushupStateMachine(
 		if (isInPlankPosition && elbowAngle > ELBOW_EXTENDED) {
 			return {
 				newState: "ready",
-				feedback: "Perfect! Lower down to begin",
+				feedback: translate("pushups.feedback.ready"),
 				incrementCount: false,
 				progress: 0,
 			};
 		}
 		return {
 			newState: "idle",
-			feedback: isInPlankPosition ? `Extend arms (${angle}°)` : "Get in plank position",
+			feedback: isInPlankPosition
+				? translate("pushups.feedback.extendArms", { angle })
+				: translate("pushups.feedback.needPlank"),
 			incrementCount: false,
 			progress: 0,
 		};
@@ -209,14 +180,14 @@ function processPushupStateMachine(
 		if (elbowAngle < ELBOW_START_DESCENT) {
 			return {
 				newState: "descending",
-				feedback: "Going down...",
+				feedback: translate("pushups.feedback.goingDown"),
 				incrementCount: false,
 				progress: 10,
 			};
 		}
 		return {
 			newState: "ready",
-			feedback: "Lower down to begin",
+			feedback: translate("pushups.feedback.ready"),
 			incrementCount: false,
 			progress: 0,
 		};
@@ -228,7 +199,7 @@ function processPushupStateMachine(
 		if (elbowAngle < ELBOW_BOTTOM) {
 			return {
 				newState: "bottom",
-				feedback: "Good! Now push up! 💪",
+				feedback: translate("pushups.feedback.goodDepth"),
 				incrementCount: false,
 				progress: 50,
 			};
@@ -237,7 +208,7 @@ function processPushupStateMachine(
 		if (elbowAngle > ELBOW_EXTENDED) {
 			return {
 				newState: "ready",
-				feedback: "Go lower next time",
+				feedback: translate("pushups.feedback.goLower"),
 				incrementCount: false,
 				progress: 0,
 			};
@@ -249,7 +220,7 @@ function processPushupStateMachine(
 		);
 		return {
 			newState: "descending",
-			feedback: `Lower... ${angle}°`,
+			feedback: translate("pushups.feedback.keepGoing", { angle }),
 			incrementCount: false,
 			progress,
 		};
@@ -261,14 +232,14 @@ function processPushupStateMachine(
 		if (elbowAngle > ELBOW_ASCEND_TRIGGER) {
 			return {
 				newState: "ascending",
-				feedback: "Push up! 🔥",
+				feedback: translate("pushups.feedback.push"),
 				incrementCount: false,
 				progress: 60,
 			};
 		}
 		return {
 			newState: "bottom",
-			feedback: "Now extend your arms!",
+			feedback: translate("pushups.feedback.nowExtend"),
 			incrementCount: false,
 			progress: 50,
 		};
@@ -280,7 +251,7 @@ function processPushupStateMachine(
 		if (elbowAngle > ELBOW_COMPLETE) {
 			return {
 				newState: "ready",
-				feedback: "Perfect! ✨",
+				feedback: translate("pushups.feedback.excellent"),
 				incrementCount: true,
 				quality: "perfect",
 				progress: 100,
@@ -290,7 +261,7 @@ function processPushupStateMachine(
 		if (elbowAngle < ELBOW_BOTTOM) {
 			return {
 				newState: "bottom",
-				feedback: "Keep pushing!",
+				feedback: translate("pushups.feedback.keepPushing"),
 				incrementCount: false,
 				progress: 50,
 			};
@@ -300,7 +271,7 @@ function processPushupStateMachine(
 			50 + Math.min(50, ((elbowAngle - ELBOW_BOTTOM) / (ELBOW_COMPLETE - ELBOW_BOTTOM)) * 50);
 		return {
 			newState: "ascending",
-			feedback: `Push! ${angle}°`,
+			feedback: translate("pushups.feedback.almost", { angle }),
 			incrementCount: false,
 			progress,
 		};
@@ -308,17 +279,18 @@ function processPushupStateMachine(
 
 	return {
 		newState: currentState,
-		feedback: "Keep going!",
+		feedback: translate("pushups.feedback.keepPushing"),
 		incrementCount: false,
 		progress: 0,
 	};
 }
 
-const CameraButton = ({ onPress }: { onPress: () => void }) => (
-	<Button title="Change camera" onPress={onPress} />
+const CameraButton = ({ label, onPress }: { label: string; onPress: () => void }) => (
+	<Button title={label} onPress={onPress} />
 );
 
 export default function Pushups() {
+	const { t, i18n } = useTranslation();
 	const landmarks = useSharedValue<KeypointsMap>({});
 	const { hasPermission, requestPermission } = useCameraPermission();
 	const [cameraPosition, setCameraPosition] = useState<CameraPosition>("front");
@@ -336,10 +308,43 @@ export default function Pushups() {
 	const [pushupCount, setPushupCount] = useState(0);
 	const [pushupState, setPushupState] = useState<PushupState>("idle");
 	const [currentAngle, setCurrentAngle] = useState<number>(0);
-	const [feedback, setFeedback] = useState<string>("Position yourself in frame");
+	const [feedback, setFeedback] = useState<string>(t("pushups.feedback.noBody"));
 	const [progress, setProgress] = useState<number>(0);
 	const [showConfetti, setShowConfetti] = useState(false);
 	const [lastRepQuality, setLastRepQuality] = useState<RepQuality | null>(null);
+
+	const voiceConfig = useMemo(
+		() => ({
+			language: i18n.language === "es" ? "es-ES" : "en-US",
+			pitch: 1,
+			rate: 0.85,
+		}),
+		[i18n.language]
+	);
+
+	const speak = useCallback(
+		(text: string) => {
+			Speech.speak(text, voiceConfig);
+		},
+		[voiceConfig]
+	);
+
+	const getMilestoneMessage = useCallback(
+		(count: number) => {
+			const messages = t("pushups.voice.milestones", { returnObjects: true, count }) as string[];
+			if (Array.isArray(messages) && messages.length > 0) {
+				const randomIndex = Math.floor(Math.random() * messages.length);
+				return messages[randomIndex];
+			}
+			return `${count}`;
+		},
+		[t]
+	);
+
+	const instructions = useMemo(
+		() => t("pushups.instructions", { returnObjects: true }) as string[],
+		[t]
+	);
 
 	// Mantener refs sincronizados con el estado
 	useEffect(() => {
@@ -361,33 +366,34 @@ export default function Pushups() {
 		setPushupCount(0);
 		setPushupState("idle");
 		setProgress(0);
-		setFeedback("Position yourself in frame");
+		setFeedback(t("pushups.feedback.noBody"));
 		setLastRepQuality(null);
 		setShowConfetti(false);
 		if (confettiTimeoutRef.current) {
 			clearTimeout(confettiTimeoutRef.current);
 		}
-	}, []);
+	}, [t]);
 
 	const HeaderRight = useMemo(
-		() => <CameraButton onPress={handleCameraChange} />,
-		[handleCameraChange]
+		() => <CameraButton label={t("common.changeCamera")} onPress={handleCameraChange} />,
+		[handleCameraChange, t]
 	);
 
 	const screenOptions = useMemo(
 		() => ({
+			title: t("pushups.title"),
 			headerRight: () => HeaderRight,
 		}),
-		[HeaderRight]
+		[HeaderRight, t]
 	);
 
 	// Anunciar mensaje de bienvenida al montar el componente
 	useEffect(() => {
-		announceVoice(VOICE_MESSAGES.WELCOME);
+		speak(t("pushups.voice.welcome"));
 		return () => {
 			Speech.stop();
 		};
-	}, []);
+	}, [speak, t]);
 
 	// Animar la barra de progreso cuando cambie
 	useEffect(() => {
@@ -397,6 +403,12 @@ export default function Pushups() {
 			useNativeDriver: false,
 		}).start();
 	}, [progress, progressAnim]);
+
+	useEffect(() => {
+		if (pushupState === "idle") {
+			setFeedback(t("pushups.feedback.noBody"));
+		}
+	}, [pushupState, t]);
 
 	// Limpiar recursos al desmontar
 	useEffect(() => {
@@ -416,16 +428,16 @@ export default function Pushups() {
 		if (pushupCount > 0) {
 			if (pushupCount % CONFETTI_INTERVAL === 0) {
 				// Anuncio especial para múltiplos del intervalo
-				announceVoice(VOICE_MESSAGES.MILESTONE(pushupCount));
+				speak(getMilestoneMessage(pushupCount));
 			} else {
 				// Anuncio simple del número
-				announceVoice(VOICE_MESSAGES.COUNT(pushupCount));
+				speak(`${pushupCount}`);
 			}
 		}
 		return () => {
 			Speech.stop();
 		};
-	}, [pushupCount]);
+	}, [getMilestoneMessage, pushupCount, speak]);
 
 	useEffect(() => {
 		// Initialize the model explicitly (needed for iOS)
@@ -442,7 +454,7 @@ export default function Pushups() {
 				// Validar que existan landmarks
 				if (!event?.landmarks?.[0]) {
 					setPushupState("idle");
-					setFeedback("No pose detected");
+					setFeedback(t("pushups.feedback.noPose"));
 					setProgress(0);
 					return;
 				}
@@ -481,7 +493,7 @@ export default function Pushups() {
 
 				if (!allPointsExist) {
 					setPushupState("idle");
-					setFeedback("Position your full body in frame");
+					setFeedback(t("pushups.feedback.noBody"));
 					setProgress(0);
 					return;
 				}
@@ -519,7 +531,8 @@ export default function Pushups() {
 					pushupStateRef.current,
 					avgElbowAngle,
 					bodyFullyVisible,
-					isInPlankPosition
+					isInPlankPosition,
+					t
 				);
 
 				setPushupState(result.newState);
@@ -571,7 +584,7 @@ export default function Pushups() {
 			subscription.remove();
 		};
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []); // Solo crear el listener una vez
+	}, [t]);
 
 	const frameProcessor = useSkiaFrameProcessor((frame) => {
 		"worklet";
@@ -616,8 +629,8 @@ export default function Pushups() {
 	if (!hasPermission) {
 		return (
 			<View style={styles.container}>
-				<Text>No camera permission</Text>
-				<Button title="Request Permission" onPress={requestPermission} />
+				<Text>{t("common.noPermission")}</Text>
+				<Button title={t("common.requestPermission") || ""} onPress={requestPermission} />
 			</View>
 		);
 	}
@@ -625,7 +638,7 @@ export default function Pushups() {
 	if (device == null) {
 		return (
 			<View style={styles.container}>
-				<Text>No camera device found</Text>
+				<Text>{t("common.noDevice")}</Text>
 			</View>
 		);
 	}
@@ -652,7 +665,7 @@ export default function Pushups() {
 			<View style={styles.topBar}>
 				<View style={styles.counterContainer}>
 					<Text style={styles.counterValue}>{pushupCount}</Text>
-					<Text style={styles.counterLabel}>PUSH-UPS</Text>
+					<Text style={styles.counterLabel}>{t("pushups.counterLabel")}</Text>
 				</View>
 			</View>
 
@@ -691,7 +704,7 @@ export default function Pushups() {
 			{lastRepQuality && pushupState === "ready" && (
 				<View style={styles.qualityBadge}>
 					<Text style={styles.qualityText}>
-						{lastRepQuality === "perfect" ? "🌟 Perfect!" : "✓ Good!"}
+						{lastRepQuality === "perfect" ? t("common.quality.perfect") : t("common.quality.good")}
 					</Text>
 				</View>
 			)}
@@ -700,21 +713,22 @@ export default function Pushups() {
 			<View style={styles.bottomPanel}>
 				<View style={styles.statsRow}>
 					<View style={styles.statItem}>
-						<Text style={styles.statLabel}>State</Text>
-						<Text style={styles.statValue}>{getStateLabel(pushupState)}</Text>
+						<Text style={styles.statLabel}>{t("common.state")}</Text>
+						<Text style={styles.statValue}>{getStateLabel(pushupState, t)}</Text>
 					</View>
 					<View style={styles.resetButtonContainer}>
-						<Button title="Reset" onPress={handleReset} color="#FF6B6B" />
+						<Button title={t("common.reset")} onPress={handleReset} color="#FF6B6B" />
 					</View>
 				</View>
 
 				{/* Guía de instrucciones compacta */}
 				{pushupState === "idle" && (
 					<View style={styles.instructionsContainer}>
-						<Text style={styles.instructionText}>📱 Position yourself (side or front view)</Text>
-						<Text style={styles.instructionText}>👐 Get in plank position, arms extended</Text>
-						<Text style={styles.instructionText}>💪 Lower down until elbows ~90°</Text>
-						<Text style={styles.instructionText}>⬆️ Push up to extend arms and complete</Text>
+						{instructions.map((item) => (
+							<Text key={item} style={styles.instructionText}>
+								{item}
+							</Text>
+						))}
 					</View>
 				)}
 			</View>
@@ -762,18 +776,18 @@ function getProgressBarColor(state: PushupState) {
 }
 
 // Función auxiliar para etiqueta del estado
-function getStateLabel(state: PushupState): string {
+function getStateLabel(state: PushupState, translate: (key: string) => string): string {
 	switch (state) {
 		case "idle":
-			return "Positioning...";
+			return translate("pushups.stateLabel.idle");
 		case "ready":
-			return "Ready";
+			return translate("pushups.stateLabel.ready");
 		case "descending":
-			return "Going Down";
+			return translate("pushups.stateLabel.descending");
 		case "bottom":
-			return "Bottom";
+			return translate("pushups.stateLabel.bottom");
 		case "ascending":
-			return "Pushing Up";
+			return translate("pushups.stateLabel.ascending");
 		default:
 			return state;
 	}

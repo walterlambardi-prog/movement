@@ -58,6 +58,7 @@
 		"expo-linking": "~7.0.5",
 		"expo-router": "~4.0.22",
 		"expo-speech": "~13.0.1",
+		"expo-localization": "~17.0.8",
 		"expo-splash-screen": "~0.29.24",
 		"expo-status-bar": "~2.0.1",
 		"expo-symbols": "~0.2.2",
@@ -76,7 +77,9 @@
 		"react-native-vision-camera": "4.7.3",
 		"react-native-web": "~0.19.13",
 		"react-native-webview": "13.12.5",
-		"react-native-worklets-core": "1.6.2"
+		"react-native-worklets-core": "1.6.2",
+		"i18next": "^23.11.5",
+		"react-i18next": "^15.1.4"
 	},
 	"devDependencies": {
 		"@babel/core": "^7.25.2",

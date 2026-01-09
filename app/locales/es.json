@@ -1,0 +1,213 @@
+{
+	"common": {
+		"appName": "Movement",
+		"changeCamera": "Cambiar cámara",
+		"noPermission": "Sin permiso",
+		"noDevice": "Sin cámara",
+		"reset": "Reset",
+		"state": "Estado",
+		"lastArm": "Último brazo",
+		"left": "Izquierdo",
+		"right": "Derecho",
+		"down": "Abajo",
+		"up": "Arriba",
+		"raising": "Subiendo",
+		"lowering": "Bajando",
+		"subiendo": "Subiendo",
+		"bajando": "Bajando",
+		"idle": "Posicionándote...",
+		"ready": "Listo",
+		"descending": "Bajando",
+		"bottom": "Fondo",
+		"ascending": "Subiendo",
+		"angle": "{{value}}°",
+		"requestPermission": "Solicitar permiso",
+		"quality": {
+			"perfect": "🌟 Perfecto!",
+			"good": "✓ Bien!"
+		}
+	},
+	"index": {
+		"welcomeTitle": "Bienvenido a Movement!",
+		"subtitle": "Elige tu modo de seguimiento",
+		"exerciseTitle": "💪 Ejercicio de Cuerpo",
+		"exerciseSubtitle": "Seguimiento de pose corporal",
+		"squatsTitle": "🏋️ Contador de Sentadillas",
+		"squatsSubtitle": "Cuenta tus sentadillas automáticamente",
+		"pushupsTitle": "💪 Contador de Flexiones",
+		"pushupsSubtitle": "Cuenta tus flexiones automáticamente",
+		"handsTitle": "👋 Seguimiento de Manos",
+		"handsSubtitle": "Rastrea movimientos de mano",
+		"hammerTitle": "🔨 Hammer Curls",
+		"hammerSubtitle": "Curl martillo alterno con conteo",
+		"lateralsTitle": "🪽 Elevaciones Laterales",
+		"lateralsSubtitle": "Elevaciones laterales simultáneas",
+		"languageToggle": "Idioma"
+	},
+	"exercise": {
+		"title": "Ejercicio",
+		"toggleLinesShow": "Mostrar líneas",
+		"toggleLinesHide": "Ocultar líneas",
+		"toggleCirclesShow": "Mostrar puntos",
+		"toggleCirclesHide": "Ocultar puntos"
+	},
+	"hands": {
+		"title": "Seguimiento de Manos",
+		"toggleLinesShow": "Mostrar líneas",
+		"toggleLinesHide": "Ocultar líneas",
+		"toggleCirclesShow": "Mostrar puntos",
+		"toggleCirclesHide": "Ocultar puntos",
+		"error": "Error de landmarks de mano"
+	},
+	"squats": {
+		"title": "Sentadillas",
+		"counterLabel": "SQUATS",
+		"instructions": [
+			"📱 Muestra tu cuerpo completo",
+			"🦵 Baja hasta ~100° de rodillas",
+			"⬆️ Sube para completar"
+		],
+		"stateLabel": {
+			"idle": "Posicionándote...",
+			"ready": "Listo",
+			"descending": "Bajando",
+			"bottom": "Fondo",
+			"ascending": "Subiendo"
+		},
+		"feedback": {
+			"noPose": "No se detecta pose",
+			"noBody": "Posiciona tu cuerpo completo en cuadro",
+			"standStraight": "Ponte de pie para empezar",
+			"ready": "Listo! Comienza la sentadilla",
+			"goingDown": "Bajando...",
+			"keepGoing": "Sigue... {{angle}}°",
+			"perfectDepth": "Profundidad perfecta! 💪",
+			"goodPush": "Bien! Ahora sube",
+			"push": "Impulsa! 🔥",
+			"almost": "Casi... {{angle}}°",
+			"excellent": "Excelente! ✨",
+			"goDeeper": "Baja más la próxima",
+			"keepPushing": "Sigue empujando!"
+		},
+		"voice": {
+			"welcome": "Hagamos sentadillas! Muestra tu cuerpo completo para empezar.",
+			"milestones": [
+				"{{count}} sentadillas! Sigue así!",
+				"Increíble! {{count}} sentadillas completadas!",
+				"Wow! {{count}} sentadillas! Sigue empujando!",
+				"Fantástico! {{count}} sentadillas!"
+			]
+		}
+	},
+	"pushups": {
+		"title": "Flexiones",
+		"counterLabel": "PUSH-UPS",
+		"instructions": [
+			"📱 Muestra tu cuerpo (vista lateral o frontal)",
+			"👐 Ponte en plancha, brazos extendidos",
+			"💪 Baja hasta ~90° de codos",
+			"⬆️ Empuja extendiendo los brazos para completar"
+		],
+		"stateLabel": {
+			"idle": "Posicionándote...",
+			"ready": "Listo",
+			"descending": "Bajando",
+			"bottom": "Fondo",
+			"ascending": "Subiendo"
+		},
+		"feedback": {
+			"noPose": "No se detecta pose",
+			"noBody": "Posiciona tu cuerpo completo en cuadro",
+			"needPlank": "Ponte en plancha",
+			"extendArms": "Extiende brazos ({{angle}}°)",
+			"ready": "Perfecto! Baja para empezar",
+			"goingDown": "Bajando...",
+			"keepGoing": "Baja... {{angle}}°",
+			"goodDepth": "Bien! Ahora sube! 💪",
+			"nowExtend": "Ahora extiende los brazos!",
+			"push": "Impulsa! 🔥",
+			"almost": "Impulsa! {{angle}}°",
+			"excellent": "Perfecto! ✨",
+			"goLower": "Baja más la próxima",
+			"keepPushing": "Sigue empujando!"
+		},
+		"voice": {
+			"welcome": "Hagamos flexiones! Mira la cámara y colócate en posición.",
+			"milestones": [
+				"{{count}} flexiones! Sigue así!",
+				"Increíble! {{count}} flexiones completadas!",
+				"Wow! {{count}} flexiones! Sigue empujando!",
+				"Fantástico! {{count}} flexiones!"
+			]
+		}
+	},
+	"hammerCurls": {
+		"title": "Hammer Curls",
+		"counterLabel": "HAMMER CURLS",
+		"instructions": [
+			"1) Postura: de pie, core firme, mirando al frente.",
+			"2) Agarre martillo: palmas enfrentadas todo el tiempo.",
+			"3) Codos pegados al torso; muñecas neutras.",
+			"4) Alterna: sube derecho, baja; sube izquierdo, baja.",
+			"Cada subida completa cuenta como 1 levante."
+		],
+		"feedback": {
+			"noPose": "No se detecta pose",
+			"showArms": "Muestra ambos brazos claramente",
+			"improveLight": "Mejora la luz y muestra ambos brazos",
+			"bothDown": "Brazos abajo, alterna el siguiente levantamiento",
+			"counting": "{{arm}} arriba, baja controlado"
+		},
+		"armState": {
+			"extended": "Abajo",
+			"curling": "Subiendo",
+			"top": "Arriba"
+		},
+		"armLabel": {
+			"left": "Izquierdo",
+			"right": "Derecho"
+		},
+		"voice": {
+			"welcome": "Curl martillo alterno: cuerpo de frente, brazos abajo, alterna cada brazo.",
+			"milestones": [
+				"{{count}} curls, sigue alternando!",
+				"Gran ritmo, {{count}} levantes!",
+				"{{count}} reps, controla la bajada!"
+			]
+		}
+	},
+	"lateralRaises": {
+		"title": "Elevaciones Laterales",
+		"counterLabel": "LATERAL RAISES",
+		"instructions": [
+			"1) De pie, torso recto, abdomen firme.",
+			"2) Agarre neutral, codos con leve flexión.",
+			"3) Sube ambos brazos hasta la altura de hombros.",
+			"4) Baja controlado por el mismo camino.",
+			"Cada subida simultánea cuenta como 1 levante."
+		],
+		"feedback": {
+			"noPose": "No se detecta pose",
+			"showShoulders": "Muestra hombros y codos claramente",
+			"improveLight": "Mejora la luz y mantente de frente",
+			"armsDown": "Brazos abajo, sube ambos a la vez",
+			"raise": "Sube hasta la altura de hombros",
+			"upHold": "Arriba, pausa y baja controlado",
+			"lower": "Baja lento, hombros abajo"
+		},
+		"armState": {
+			"down": "Abajo",
+			"raising": "Subiendo",
+			"up": "Arriba",
+			"lowering": "Bajando"
+		},
+		"voice": {
+			"welcome": "Elevaciones laterales: brazos abajo, sube ambos a la altura de hombros.",
+			"milestones": [
+				"{{count}} levantes, buen control!",
+				"Sigue, {{count}} reps!",
+				"{{count}} elevaciones, hombros firmes!"
+			]
+		}
+	}
+}

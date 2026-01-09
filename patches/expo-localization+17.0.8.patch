@@ -1,0 +1,19 @@
+--- /tmp/expo-localization-17.0.8/package/android/build.gradle	1985-10-26 05:15:00
++++ node_modules/expo-localization/android/build.gradle	2026-01-08 23:25:18
+@@ -1,8 +1,12 @@
+-plugins {
+-  id 'com.android.library'
+-  id 'expo-module-gradle-plugin'
+-}
++apply plugin: 'com.android.library'
+ 
++def expoModulesCorePlugin = new File(project(":expo-modules-core").projectDir.absolutePath, "ExpoModulesCorePlugin.gradle")
++apply from: expoModulesCorePlugin
++applyKotlinExpoModulesCorePlugin()
++useCoreDependencies()
++useDefaultAndroidSdkVersions()
++useExpoPublishing()
++
+ group = 'host.exp.exponent'
+ version = '17.0.8'
+ 

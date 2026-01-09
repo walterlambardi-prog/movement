@@ -21,6 +21,7 @@ import {
 	VisionCameraProxy,
 } from "react-native-vision-camera";
 import { useSharedValue } from "react-native-worklets-core";
+import { useTranslation } from "react-i18next";
 
 // Use the HandLandmarks module for hand tracking
 const { HandLandmarks } = NativeModules;
@@ -64,11 +65,12 @@ leftHandPaint.setColor(Skia.Color("green"));
 const rightHandPaint = Skia.Paint();
 rightHandPaint.setColor(Skia.Color("orange"));
 
-const CameraButton = ({ onPress }: { onPress: () => void }) => (
-	<Button title="Change camera" onPress={onPress} />
+const CameraButton = ({ label, onPress }: { label: string; onPress: () => void }) => (
+	<Button title={label} onPress={onPress} />
 );
 
 export default function HandTracking() {
+	const { t } = useTranslation();
 	const hands = useSharedValue<HandData[]>([]);
 	const { hasPermission, requestPermission } = useCameraPermission();
 	const [cameraPosition, setCameraPosition] = useState<CameraPosition>("front");
@@ -210,33 +212,36 @@ export default function HandTracking() {
 	const pixelFormat = Platform.OS === "ios" ? "rgb" : "yuv";
 
 	const HeaderRight = useMemo(
-		() => <CameraButton onPress={handleCameraChange} />,
-		[handleCameraChange]
+		() => <CameraButton label={t("common.changeCamera")} onPress={handleCameraChange} />,
+		[handleCameraChange, t]
 	);
 
 	const screenOptions = useMemo(
 		() => ({
-			title: "Hand Tracking",
+			title: t("hands.title"),
 			headerRight: () => HeaderRight,
 		}),
-		[HeaderRight]
+		[HeaderRight, t]
 	);
 
 	if (!hasPermission) {
-		return <Text>No permission</Text>;
+		return <Text>{t("common.noPermission")}</Text>;
 	}
 
 	if (device == null) {
-		return <Text>No device</Text>;
+		return <Text>{t("common.noDevice")}</Text>;
 	}
 
 	return (
 		<>
 			<Stack.Screen name="hands" options={screenOptions} />
 			<View style={styles.drawControl}>
-				<Button title={showSkeleton ? "Hide lines" : "Show lines"} onPress={handleToggleSkeleton} />
 				<Button
-					title={showLandmarks ? "Hide circles" : "Show circles"}
+					title={showSkeleton ? t("hands.toggleLinesHide") : t("hands.toggleLinesShow")}
+					onPress={handleToggleSkeleton}
+				/>
+				<Button
+					title={showLandmarks ? t("hands.toggleCirclesHide") : t("hands.toggleCirclesShow")}
 					onPress={handleToggleLandmarks}
 				/>
 			</View>

@@ -22,6 +22,7 @@ import {
 	VisionCameraProxy,
 } from "react-native-vision-camera";
 import { useSharedValue } from "react-native-worklets-core";
+import { useTranslation } from "react-i18next";
 
 const { PoseLandmarks } = NativeModules;
 
@@ -90,37 +91,9 @@ const CONFETTI_INTERVAL = 10;
 const UI_UPDATE_THROTTLE_MS = 140;
 const REP_DEBOUNCE_MS = 650;
 
-const VOICE_CONFIG = {
-	language: "es-ES",
-	pitch: 1,
-	rate: 0.9,
-};
-
-const WELCOME_MESSAGE =
-	"Curl martillo alterno: cuerpo de frente, brazos abajo, alterna cada brazo.";
-
-const MILESTONE_MESSAGES = [
-	(count: number) => `${count} curls, sigue alternando!`,
-	(count: number) => `Gran ritmo, ${count} levantes!`,
-	(count: number) => `${count} reps, controla la bajada!`,
-];
-
-const VOICE_MESSAGES = {
-	MILESTONE: (count: number) => {
-		const randomIndex = Math.floor(Math.random() * MILESTONE_MESSAGES.length);
-		return MILESTONE_MESSAGES[randomIndex](count);
-	},
-	COUNT: (count: number) => `${count}`,
-	WELCOME: WELCOME_MESSAGE,
-};
-
 const ELBOW_EXTENDED_ANGLE = 155;
 const ELBOW_TOP_ANGLE = 60;
 const MIN_VISIBILITY = 0.55;
-
-function announceVoice(text: string) {
-	Speech.speak(text, VOICE_CONFIG);
-}
 
 function calculateAngle(p1: KeypointData, p2: KeypointData, p3: KeypointData): number {
 	const radians = Math.atan2(p3.y - p2.y, p3.x - p2.x) - Math.atan2(p1.y - p2.y, p1.x - p2.x);
@@ -136,24 +109,25 @@ function mapProgress(angle: number) {
 	return Math.min(100, Math.max(0, (value / range) * 100));
 }
 
-function describeArmState(state: ArmState) {
+function describeArmState(state: ArmState, translate: (key: string) => string) {
 	switch (state) {
 		case "extended":
-			return "Bajo";
+			return translate("hammerCurls.armState.extended");
 		case "curling":
-			return "Subiendo";
+			return translate("hammerCurls.armState.curling");
 		case "top":
-			return "Arriba";
+			return translate("hammerCurls.armState.top");
 		default:
 			return state;
 	}
 }
 
-const CameraButton = ({ onPress }: { onPress: () => void }) => (
-	<Button title="Cambiar camara" onPress={onPress} />
+const CameraButton = ({ label, onPress }: { label: string; onPress: () => void }) => (
+	<Button title={label} onPress={onPress} />
 );
 
 export default function HammerCurls() {
+	const { t, i18n } = useTranslation();
 	const landmarks = useSharedValue<KeypointsMap>({});
 	const { hasPermission, requestPermission } = useCameraPermission();
 	const [cameraPosition, setCameraPosition] = useState<CameraPosition>("front");
@@ -177,7 +151,7 @@ export default function HammerCurls() {
 	const rightStateRef = useRef<ArmState>("extended");
 
 	const [repCount, setRepCount] = useState(0);
-	const [feedback, setFeedback] = useState<string>("Pon cuerpo completo en cuadro");
+	const [feedback, setFeedback] = useState<string>(t("hammerCurls.feedback.showArms"));
 	const [activeArm, setActiveArm] = useState<Arm | null>(null);
 	const [leftAngle, setLeftAngle] = useState<number>(0);
 	const [rightAngle, setRightAngle] = useState<number>(0);
@@ -190,13 +164,49 @@ export default function HammerCurls() {
 	const progressAnim = useRef(new Animated.Value(0)).current;
 	const lastUiUpdateRef = useRef<number>(0);
 
+	const voiceConfig = useMemo(
+		() => ({
+			language: i18n.language === "es" ? "es-ES" : "en-US",
+			pitch: 1,
+			rate: 0.9,
+		}),
+		[i18n.language]
+	);
+
+	const speak = useCallback(
+		(text: string) => {
+			Speech.speak(text, voiceConfig);
+		},
+		[voiceConfig]
+	);
+
+	const getMilestoneMessage = useCallback(
+		(count: number) => {
+			const messages = t("hammerCurls.voice.milestones", {
+				returnObjects: true,
+				count,
+			}) as string[];
+			if (Array.isArray(messages) && messages.length > 0) {
+				const randomIndex = Math.floor(Math.random() * messages.length);
+				return messages[randomIndex];
+			}
+			return `${count}`;
+		},
+		[t]
+	);
+
+	const instructions = useMemo(
+		() => t("hammerCurls.instructions", { returnObjects: true }) as string[],
+		[t]
+	);
+
 	const handleCameraChange = useCallback(() => {
 		setCameraPosition((prev) => (prev === "back" ? "front" : "back"));
 	}, []);
 
 	const handleReset = useCallback(() => {
 		setRepCount(0);
-		setFeedback("Pon cuerpo completo en cuadro");
+		setFeedback(t("hammerCurls.feedback.showArms"));
 		setActiveArm(null);
 		setLeftState("extended");
 		setRightState("extended");
@@ -206,26 +216,27 @@ export default function HammerCurls() {
 			clearTimeout(confettiTimeoutRef.current);
 		}
 		setShowConfetti(false);
-	}, []);
+	}, [t]);
 
 	const HeaderRight = useMemo(
-		() => <CameraButton onPress={handleCameraChange} />,
-		[handleCameraChange]
+		() => <CameraButton label={t("common.changeCamera")} onPress={handleCameraChange} />,
+		[handleCameraChange, t]
 	);
 
 	const screenOptions = useMemo(
 		() => ({
+			title: t("hammerCurls.title"),
 			headerRight: () => HeaderRight,
 		}),
-		[HeaderRight]
+		[HeaderRight, t]
 	);
 
 	useEffect(() => {
-		announceVoice(VOICE_MESSAGES.WELCOME);
+		speak(t("hammerCurls.voice.welcome"));
 		return () => {
 			Speech.stop();
 		};
-	}, []);
+	}, [speak, t]);
 
 	useEffect(() => {
 		Animated.timing(progressAnim, {
@@ -234,6 +245,12 @@ export default function HammerCurls() {
 			useNativeDriver: false,
 		}).start();
 	}, [progress, progressAnim]);
+
+	useEffect(() => {
+		if (!activeArm && repCount === 0) {
+			setFeedback(t("hammerCurls.feedback.showArms"));
+		}
+	}, [activeArm, repCount, t]);
 
 	useEffect(() => {
 		isMountedRef.current = true;
@@ -249,12 +266,12 @@ export default function HammerCurls() {
 
 	useEffect(() => {
 		if (repCount > 0 && repCount % CONFETTI_INTERVAL === 0) {
-			announceVoice(VOICE_MESSAGES.MILESTONE(repCount));
+			speak(getMilestoneMessage(repCount));
 		}
 		return () => {
 			Speech.stop();
 		};
-	}, [repCount]);
+	}, [getMilestoneMessage, repCount, speak]);
 
 	useEffect(() => {
 		PoseLandmarks?.initModel?.();
@@ -268,7 +285,7 @@ export default function HammerCurls() {
 		const subscription = poseLandmarksEmitter.addListener("onPoseLandmarksDetected", (event) => {
 			try {
 				if (!event?.landmarks?.[0]) {
-					setFeedback("No se detecta pose");
+					setFeedback(t("hammerCurls.feedback.noPose"));
 					return;
 				}
 
@@ -286,7 +303,7 @@ export default function HammerCurls() {
 					leftShoulder && rightShoulder && leftElbow && rightElbow && leftWrist && rightWrist;
 
 				if (!allPointsExist) {
-					setFeedback("Coloca brazos visibles");
+					setFeedback(t("hammerCurls.feedback.showArms"));
 					return;
 				}
 
@@ -299,7 +316,7 @@ export default function HammerCurls() {
 					rightWrist.visibility > MIN_VISIBILITY;
 
 				if (!bodyVisible) {
-					setFeedback("Mejora la luz y muestra ambos brazos");
+					setFeedback(t("hammerCurls.feedback.improveLight"));
 					return;
 				}
 
@@ -358,6 +375,7 @@ export default function HammerCurls() {
 							if (confettiTimeoutRef.current) {
 								clearTimeout(confettiTimeoutRef.current);
 							}
+							// eslint-disable-next-line max-nested-callbacks
 							confettiTimeoutRef.current = setTimeout(() => {
 								if (isMountedRef.current) setShowConfetti(false);
 							}, 3000);
@@ -366,8 +384,12 @@ export default function HammerCurls() {
 						return newTotal;
 					});
 
-					setFeedback(`${arm === "left" ? "Izquierdo" : "Derecho"} arriba, baja controlado`);
-					announceVoice(VOICE_MESSAGES.COUNT(repCountRef.current + 1));
+					setFeedback(
+						t("hammerCurls.feedback.counting", {
+							arm: t(`hammerCurls.armLabel.${arm}` as const),
+						})
+					);
+					speak(`${repCountRef.current + 1}`);
 				};
 
 				tryCount("left", leftElbowAngle, newLeftState);
@@ -377,7 +399,7 @@ export default function HammerCurls() {
 				setRightState(newRightState);
 
 				if (newLeftState === "extended" && newRightState === "extended") {
-					setFeedback("Brazos abajo, alterna el siguiente levantamiento");
+					setFeedback(t("hammerCurls.feedback.bothDown"));
 					setActiveArm(null);
 					setProgress(0);
 				}
@@ -389,7 +411,8 @@ export default function HammerCurls() {
 		return () => {
 			subscription.remove();
 		};
-	}, []);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [speak, t]);
 
 	const frameProcessor = useSkiaFrameProcessor(
 		(frame) => {
@@ -433,8 +456,8 @@ export default function HammerCurls() {
 	if (!hasPermission) {
 		return (
 			<View style={styles.container}>
-				<Text>No hay permiso de camara</Text>
-				<Button title="Solicitar" onPress={requestPermission} />
+				<Text>{t("common.noPermission")}</Text>
+				<Button title={t("common.requestPermission") || ""} onPress={requestPermission} />
 			</View>
 		);
 	}
@@ -442,7 +465,7 @@ export default function HammerCurls() {
 	if (device == null) {
 		return (
 			<View style={styles.container}>
-				<Text>No se encuentra camara</Text>
+				<Text>{t("common.noDevice")}</Text>
 			</View>
 		);
 	}
@@ -465,7 +488,7 @@ export default function HammerCurls() {
 			<View style={styles.topBar}>
 				<View style={styles.counterContainer}>
 					<Text style={styles.counterValue}>{repCount}</Text>
-					<Text style={styles.counterLabel}>HAMMER CURLS</Text>
+					<Text style={styles.counterLabel}>{t("hammerCurls.counterLabel")}</Text>
 				</View>
 			</View>
 
@@ -473,14 +496,14 @@ export default function HammerCurls() {
 				<Text style={[styles.feedbackText]}>{feedback}</Text>
 				<View style={styles.armAnglesRow}>
 					<View style={styles.armChip}>
-						<Text style={styles.armLabel}>Izq</Text>
+						<Text style={styles.armLabel}>{t("hammerCurls.armLabel.left")}</Text>
 						<Text style={styles.armValue}>{leftAngle}°</Text>
-						<Text style={styles.armState}>{describeArmState(leftState)}</Text>
+						<Text style={styles.armState}>{describeArmState(leftState, t)}</Text>
 					</View>
 					<View style={styles.armChip}>
-						<Text style={styles.armLabel}>Der</Text>
+						<Text style={styles.armLabel}>{t("hammerCurls.armLabel.right")}</Text>
 						<Text style={styles.armValue}>{rightAngle}°</Text>
-						<Text style={styles.armState}>{describeArmState(rightState)}</Text>
+						<Text style={styles.armState}>{describeArmState(rightState, t)}</Text>
 					</View>
 				</View>
 			</View>
@@ -508,28 +531,22 @@ export default function HammerCurls() {
 			<View style={styles.bottomPanel}>
 				<View style={styles.statsRow}>
 					<View style={styles.statItem}>
-						<Text style={styles.statLabel}>Ultimo brazo</Text>
+						<Text style={styles.statLabel}>{t("common.lastArm")}</Text>
 						<Text style={styles.statValue}>
-							{lastRepArm ? (lastRepArm === "left" ? "Izquierdo" : "Derecho") : "-"}
+							{lastRepArm ? t(`hammerCurls.armLabel.${lastRepArm}` as const) : "-"}
 						</Text>
 					</View>
 					<View style={styles.resetButtonContainer}>
-						<Button title="Reset" onPress={handleReset} color="#FF6B6B" />
+						<Button title={t("common.reset")} onPress={handleReset} color="#FF6B6B" />
 					</View>
 				</View>
 
 				<View style={styles.instructionsContainer}>
-					<Text style={styles.instructionText}>
-						1) Postura: de pie, torso recto, miranda al frente.
-					</Text>
-					<Text style={styles.instructionText}>
-						2) Agarre martillo: palmas enfrentadas todo el tiempo.
-					</Text>
-					<Text style={styles.instructionText}>3) Codos pegados al torso y muñecas neutras.</Text>
-					<Text style={styles.instructionText}>
-						4) Alterna: sube derecho, baja; sube izquierdo, baja.
-					</Text>
-					<Text style={styles.instructionText}>Cada subida completa cuenta como 1 levante.</Text>
+					{instructions.map((item) => (
+						<Text key={item} style={styles.instructionText}>
+							{item}
+						</Text>
+					))}
 				</View>
 			</View>
 
