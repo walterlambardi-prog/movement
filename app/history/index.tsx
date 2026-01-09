@@ -225,7 +225,10 @@ export default function History() {
 
 				<View style={styles.summaryGrid}>
 					{highlights.map((item) => (
-						<View key={item.key} style={styles.summaryCard}>
+						<View
+							key={item.key}
+							style={[styles.summaryCard, item.key === "lastSession" && styles.summaryCardFull]}
+						>
 							<View style={styles.summaryHeader}>
 								<Text style={styles.summaryLabel}>{item.label}</Text>
 							</View>

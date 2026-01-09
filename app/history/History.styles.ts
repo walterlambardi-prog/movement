@@ -64,16 +64,21 @@ export const styles = StyleSheet.create({
 		padding: 14,
 		borderWidth: 1,
 		borderColor: "rgba(255, 255, 255, 0.08)",
-		gap: 6,
+		minHeight: 150,
+		justifyContent: "space-between",
 		shadowColor: "#0EA5E9",
 		shadowOpacity: 0.18,
 		shadowRadius: 8,
 		elevation: 3,
 	},
+	summaryCardFull: {
+		flexBasis: "100%",
+	},
 	summaryHeader: {
 		flexDirection: "row",
 		justifyContent: "space-between",
 		alignItems: "center",
+		marginBottom: 6,
 	},
 	summaryLabel: {
 		color: "#E2E8F0",
@@ -84,11 +89,13 @@ export const styles = StyleSheet.create({
 		color: "#22D3EE",
 		fontSize: 26,
 		fontWeight: "900",
+		marginBottom: 6,
 	},
 	summarySubtext: {
 		color: "#94A3B8",
 		fontSize: 12,
 		lineHeight: 16,
+		marginTop: 2,
 	},
 	statsGrid: {
 		flexDirection: "row",
