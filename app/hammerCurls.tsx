@@ -552,7 +552,7 @@ export default function HammerCurls() {
 
 			{showConfetti && (
 				<View style={styles.confettiContainer}>
-					<Confetti count={200} fallDuration={4000} />
+					<Confetti count={150} fallDuration={3000} />
 				</View>
 			)}
 		</View>
