@@ -8,6 +8,17 @@ import { useAppStore, type ExerciseKey } from "../state/useAppStore";
 import { styles } from "./History.styles";
 import { type SessionItem } from "./History.types";
 
+type HighlightKey = "totalReps" | "sessions" | "topExercise" | "avgPerSession" | "lastSession";
+
+type HighlightItem = {
+	key: HighlightKey;
+	label: string;
+	value: string;
+	subtitle: string;
+};
+
+const isExerciseKey = (key: ExerciseKey | null): key is ExerciseKey => key !== null;
+
 const exerciseLabels = (t: (k: string) => string): Record<ExerciseKey, string> => ({
 	hammerCurls: t("index.hammerTitle"),
 	lateralRaises: t("index.lateralsTitle"),
@@ -32,6 +43,13 @@ const exerciseMeta: Record<ExerciseKey, { image: number; accent: string }> = {
 		image: require("../../assets/images/exercises/squats.png"),
 		accent: "#8B5CF6",
 	},
+};
+
+const highlightBackgrounds: Partial<Record<HighlightKey, number>> = {
+	totalReps: require("../../assets/images/exercises/total-reps.png"),
+	sessions: require("../../assets/images/exercises/sessions.png"),
+	avgPerSession: require("../../assets/images/exercises/avg-per-session.png"),
+	lastSession: require("../../assets/images/exercises/last-session.png"),
 };
 
 const SESSION_MERGE_WINDOW_MS = 5 * 60 * 1000; // Merge entries within 5 minutes as one session
@@ -63,7 +81,7 @@ export default function History() {
 		const merged: SessionItem[] = [];
 
 		sortedAsc.forEach((item) => {
-			const last = merged[merged.length - 1];
+			const last = merged.at(-1);
 			if (
 				last &&
 				last.exercise === item.exercise &&
@@ -117,10 +135,18 @@ export default function History() {
 		return best;
 	}, [exercises]);
 
+	let topExerciseMeta: { image: number; accent: string } | null = null;
+	let topExerciseTotal = 0;
+	if (isExerciseKey(topExerciseKey)) {
+		const stats = exercises[topExerciseKey as ExerciseKey];
+		topExerciseTotal = stats?.total ?? 0;
+		topExerciseMeta = exerciseMeta[topExerciseKey];
+	}
+
 	const avgPerSession = totalSessions > 0 ? Math.round(totalReps / totalSessions) : 0;
 	const lastSessionTs = mergedSessions[0]?.session.timestamp;
 
-	const highlights = useMemo(
+	const highlights = useMemo<HighlightItem[]>(
 		() => [
 			{
 				key: "totalReps",
@@ -129,18 +155,18 @@ export default function History() {
 				subtitle: t("history.highlights.allExercises"),
 			},
 			{
-				key: "sessions",
-				label: t("history.highlights.sessions"),
-				value: todaySessionsCount.toString(),
-				subtitle: t("history.highlights.sessionsSub"),
-			},
-			{
 				key: "topExercise",
 				label: t("history.highlights.topExercise"),
 				value: topExerciseKey ? labels[topExerciseKey] : t("history.highlights.none"),
 				subtitle: topExerciseKey
-					? t("history.highlights.repsCount", { count: exercises[topExerciseKey]?.total ?? 0 })
+					? t("history.highlights.repsCount", { count: topExerciseTotal })
 					: t("history.highlights.noData"),
+			},
+			{
+				key: "sessions",
+				label: t("history.highlights.sessions"),
+				value: todaySessionsCount.toString(),
+				subtitle: t("history.highlights.sessionsSub"),
 			},
 			{
 				key: "avgPerSession",
@@ -207,7 +233,7 @@ export default function History() {
 				</View>
 				<View style={styles.statsGrid}>
 					{(Object.keys(exercises) as ExerciseKey[]).map((key) => (
-						<View key={key} style={[styles.statCard, { borderColor: exerciseMeta[key].accent }]}>
+						<View key={key} style={styles.statCard}>
 							<ImageBackground
 								source={exerciseMeta[key].image}
 								style={styles.statImage}
@@ -223,19 +249,66 @@ export default function History() {
 					))}
 				</View>
 
+				<View style={styles.summaryHeading}>
+					<Text style={styles.summaryTitle}>{t("history.highlights.sectionTitle")}</Text>
+					<Text style={styles.summarySubtitle}>{t("history.highlights.sectionSubtitle")}</Text>
+				</View>
+
 				<View style={styles.summaryGrid}>
-					{highlights.map((item) => (
-						<View
-							key={item.key}
-							style={[styles.summaryCard, item.key === "lastSession" && styles.summaryCardFull]}
-						>
-							<View style={styles.summaryHeader}>
-								<Text style={styles.summaryLabel}>{item.label}</Text>
+					{highlights.map((item) => {
+						const isTopExercise = item.key === "topExercise";
+						const commonStyle = [
+							styles.summaryCard,
+							item.key === "lastSession" && styles.summaryCardFull,
+						];
+
+						const content = (
+							<View style={styles.summaryContent}>
+								<View style={styles.summaryHeader}>
+									<Text style={styles.summaryLabel}>{item.label}</Text>
+								</View>
+								<Text style={styles.summaryValue}>{item.value}</Text>
+								<Text style={styles.summarySubtext}>{item.subtitle}</Text>
 							</View>
-							<Text style={styles.summaryValue}>{item.value}</Text>
-							<Text style={styles.summarySubtext}>{item.subtitle}</Text>
-						</View>
-					))}
+						);
+
+						const backgroundImage = !isTopExercise ? highlightBackgrounds[item.key] : undefined;
+
+						if (isTopExercise && topExerciseMeta) {
+							const meta = topExerciseMeta as { image: number; accent: string };
+							return (
+								<ImageBackground
+									key={item.key}
+									source={meta.image}
+									style={commonStyle}
+									imageStyle={styles.summaryImageRadius}
+								>
+									<View style={styles.summaryOverlay} />
+									{content}
+								</ImageBackground>
+							);
+						}
+
+						if (backgroundImage) {
+							return (
+								<ImageBackground
+									key={item.key}
+									source={backgroundImage}
+									style={commonStyle}
+									imageStyle={styles.summaryImageRadius}
+								>
+									<View style={styles.summaryOverlay} />
+									{content}
+								</ImageBackground>
+							);
+						}
+
+						return (
+							<View key={item.key} style={commonStyle}>
+								{content}
+							</View>
+						);
+					})}
 				</View>
 				<FlatList
 					data={mergedSessions}

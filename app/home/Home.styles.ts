@@ -138,16 +138,7 @@ export const styles = StyleSheet.create({
 		gap: 20,
 	},
 	card: {
-		borderColor: "rgba(255, 255, 255, 0.05)",
-		backgroundColor: "#0F172A",
 		borderRadius: 18,
-		borderWidth: 1,
-		shadowColor: "#0EA5E9",
-		shadowOpacity: 0.2,
-		shadowRadius: 8,
-		elevation: 3,
-		width: "100%",
-		overflow: "hidden",
 	},
 	cardImage: {
 		width: "100%",
@@ -160,6 +151,7 @@ export const styles = StyleSheet.create({
 	cardOverlay: {
 		...StyleSheet.absoluteFillObject,
 		borderRadius: 18,
+		backgroundColor: "rgba(0, 0, 0, 0.3)",
 	},
 	cardContent: {
 		padding: 16,

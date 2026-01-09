@@ -57,19 +57,34 @@ export const styles = StyleSheet.create({
 		gap: 12,
 		marginBottom: 12,
 	},
+	summaryHeading: {
+		marginTop: 39,
+		marginBottom: 20,
+		gap: 4,
+		paddingHorizontal: 10,
+	},
+	summaryTitle: {
+		color: "#E2E8F0",
+		fontSize: 24,
+		fontWeight: "900",
+	},
+	summarySubtitle: {
+		color: "#94A3B8",
+		fontSize: 13,
+		lineHeight: 18,
+	},
 	summaryCard: {
 		flexBasis: "48%",
 		backgroundColor: "#0F172A",
 		borderRadius: 14,
 		padding: 14,
-		borderWidth: 1,
-		borderColor: "rgba(255, 255, 255, 0.08)",
 		minHeight: 150,
 		justifyContent: "space-between",
 		shadowColor: "#0EA5E9",
 		shadowOpacity: 0.18,
 		shadowRadius: 8,
 		elevation: 3,
+		overflow: "hidden",
 	},
 	summaryCardFull: {
 		flexBasis: "100%",
@@ -84,6 +99,7 @@ export const styles = StyleSheet.create({
 		color: "#E2E8F0",
 		fontWeight: "800",
 		fontSize: 13,
+		overflow: "hidden",
 	},
 	summaryValue: {
 		color: "#22D3EE",
@@ -97,6 +113,18 @@ export const styles = StyleSheet.create({
 		lineHeight: 16,
 		marginTop: 2,
 	},
+	summaryOverlay: {
+		...StyleSheet.absoluteFillObject,
+		backgroundColor: "rgba(10, 15, 44, 0.55)",
+	},
+	summaryContent: {
+		flex: 1,
+		justifyContent: "space-between",
+	},
+	summaryImageRadius: {
+		borderRadius: 14,
+		resizeMode: "cover",
+	},
 	statsGrid: {
 		flexDirection: "row",
 		flexWrap: "wrap",
@@ -107,11 +135,9 @@ export const styles = StyleSheet.create({
 		flexBasis: "48%",
 		borderRadius: 14,
 		overflow: "hidden",
-		borderWidth: 1,
-		borderColor: "#1E293B",
 	},
 	statImage: {
-		height: 140,
+		height: 150,
 		justifyContent: "flex-end",
 	},
 	statImageRadius: {
@@ -131,6 +157,7 @@ export const styles = StyleSheet.create({
 		fontWeight: "700",
 		letterSpacing: 0.3,
 		textTransform: "uppercase",
+		width: "90%",
 	},
 	statValue: {
 		color: "#FFFFFF",

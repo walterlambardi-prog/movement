@@ -54,6 +54,8 @@
 		"badge": "Activity",
 		"reps": "Reps",
 		"highlights": {
+			"sectionTitle": "Highlights",
+			"sectionSubtitle": "Your key stats at a glance",
 			"totalReps": "Total reps",
 			"allExercises": "All exercises",
 			"sessions": "Sessions",

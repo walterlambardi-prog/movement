@@ -10,24 +10,16 @@ import { CardProps } from "./Home.types";
 
 const withAlpha = (hex: string, alphaHex: string) => `${hex}${alphaHex}`;
 
-const ExerciseCard = memo(function ExerciseCard({
-	href,
-	title,
-	subtitle,
-	accent,
-	image,
-}: CardProps) {
+const ExerciseCard = memo(function ExerciseCard({ href, title, subtitle, image }: CardProps) {
 	return (
 		<Link href={href} asChild>
-			<TouchableOpacity style={[styles.card, { borderColor: accent, shadowColor: accent }]}>
+			<TouchableOpacity style={styles.card}>
 				<ImageBackground
 					source={image}
 					style={styles.cardImage}
 					imageStyle={styles.cardImageRadius}
 				>
-					<View
-						style={[styles.cardOverlay, { backgroundColor: withAlpha(accent as string, "29") }]}
-					/>
+					<View style={styles.cardOverlay} />
 					<View style={styles.cardContent}>
 						<Text style={styles.cardTitle}>{title}</Text>
 						<Text style={styles.cardSubtitle}>{subtitle}</Text>
