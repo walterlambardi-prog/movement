@@ -86,7 +86,7 @@ circlePaint.setColor(Skia.Color("#FFC107")); // Amarillo para los puntos
 linePaint.setStrokeWidth(8);
 
 // Configuración: Mostrar confetti cada N sentadillas
-const CONFETTI_INTERVAL = 5;
+const CONFETTI_INTERVAL = 10;
 const UI_UPDATE_THROTTLE_MS = 140; // reduce setState frequency for smoother UI
 const REP_DEBOUNCE_MS = 900; // allow quicker consecutive reps
 
