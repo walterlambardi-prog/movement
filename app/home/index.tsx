@@ -1,16 +1,11 @@
-import { memo, useCallback, useMemo } from "react";
-import { Link, useRouter } from "expo-router";
+import { memo, useMemo } from "react";
+import { Link } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { ImageBackground, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
 import { useAppStore } from "../state/useAppStore";
-import {
-	DEFAULT_ROUTINE_TARGET,
-	ROUTINE_SEQUENCE,
-	getNextRoutineExercise,
-} from "../routine/config";
 import { styles } from "./Home.styles";
 import { CardProps } from "./Home.types";
 
@@ -38,30 +33,9 @@ const ExerciseCard = memo(function ExerciseCard({ href, title, subtitle, image }
 
 export default function Home() {
 	const { t } = useTranslation();
-	const router = useRouter();
 	const insets = useSafeAreaInsets();
 	const username = useAppStore((state) => state.username);
 	const displayName = username?.trim().length ? username : t("index.welcomeTitle");
-	const routineTarget = DEFAULT_ROUTINE_TARGET;
-
-	const routineSubtitle = useMemo(
-		() => t("routine.ctaSubtitle", { count: routineTarget }),
-		[routineTarget, t]
-	);
-
-	const handleStartRoutine = useCallback(() => {
-		const firstExercise = ROUTINE_SEQUENCE[0];
-		const nextExercise = getNextRoutineExercise(firstExercise);
-
-		router.push({
-			pathname: `/${firstExercise}`,
-			params: {
-				routine: "true",
-				targetReps: routineTarget.toString(),
-				...(nextExercise ? { nextExercise } : {}),
-			},
-		});
-	}, [router, routineTarget]);
 
 	const exercises = useMemo(
 		() => [
@@ -100,6 +74,15 @@ export default function Home() {
 	const quickActions = useMemo(
 		() => [
 			{
+				href: "/routine" as const,
+				title: t("routineBuilder.quickTitle", { defaultValue: "Routine" }),
+				subtitle: t("routineBuilder.quickSubtitle", {
+					defaultValue: "Configura tu rutina",
+				}),
+				accent: "#22D3EE",
+				icon: "barbell-outline" as const,
+			},
+			{
 				href: "/history" as const,
 				title: t("common.history", { defaultValue: "History" }),
 				subtitle: t("index.historySubtitle", { defaultValue: "Revisa tus sesiones" }),
@@ -131,22 +114,6 @@ export default function Home() {
 					<Text style={styles.heroName}>{displayName}</Text>
 					<Text style={styles.heroSubtitle}>{t("index.subtitle")}</Text>
 				</View>
-
-				<TouchableOpacity
-					style={styles.routineCard}
-					activeOpacity={0.92}
-					onPress={handleStartRoutine}
-				>
-					<View style={styles.routineHeader}>
-						<View style={styles.routineBadge}>
-							<Ionicons name="barbell-outline" size={14} color="#22D3EE" />
-							<Text style={styles.routineBadgeText}>{t("routine.badge")}</Text>
-						</View>
-						<Ionicons name="play-circle" size={26} color="#22D3EE" />
-					</View>
-					<Text style={styles.routineTitle}>{t("routine.ctaTitle")}</Text>
-					<Text style={styles.routineSubtitle}>{routineSubtitle}</Text>
-				</TouchableOpacity>
 
 				<View style={styles.quickActionsRow}>
 					{quickActions.map((action) => (

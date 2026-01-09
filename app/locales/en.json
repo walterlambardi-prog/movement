@@ -60,6 +60,18 @@
 		"completeLabel": "Complete",
 		"finished": "Routine complete! Great work."
 	},
+	"routineBuilder": {
+		"title": "Build your routine",
+		"subtitle": "Choose exercises and set reps for each movement.",
+		"quickTitle": "Routine",
+		"quickSubtitle": "Configure your routine",
+		"start": "Start routine",
+		"select": "Select",
+		"deselect": "Remove",
+		"selection": "{{count}} of {{total}} selected",
+		"totalReps": "Total reps: {{count}}",
+		"repsLabel": "{{count}} reps"
+	},
 	"history": {
 		"title": "Progress history",
 		"subtitle": "See every session and total across exercises.",
