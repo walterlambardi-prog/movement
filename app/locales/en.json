@@ -48,6 +48,18 @@
 		"historySubtitle": "Review your sessions",
 		"profileSubtitle": "Adjust profile settings"
 	},
+	"routine": {
+		"badge": "Routine",
+		"ctaTitle": "Start guided routine",
+		"ctaSubtitle": "{{count}} reps each: squats, push-ups, hammer curls and lateral raises",
+		"goalLabel": "Goal",
+		"goalValue": "{{current}} / {{target}} reps",
+		"remainingLabel": "Remaining",
+		"remainingValue": "{{count}} reps left",
+		"nextLabel": "Next",
+		"completeLabel": "Complete",
+		"finished": "Routine complete! Great work."
+	},
 	"history": {
 		"title": "Progress history",
 		"subtitle": "See every session and total across exercises.",

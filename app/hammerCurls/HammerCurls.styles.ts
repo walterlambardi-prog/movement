@@ -142,6 +142,24 @@ export const styles = StyleSheet.create({
 		borderWidth: 2,
 		borderColor: "rgba(255, 255, 255, 0.2)",
 	},
+	routineMetaRow: {
+		flexDirection: "row",
+		gap: 10,
+		marginBottom: 10,
+	},
+	routineChip: {
+		flex: 1,
+		padding: 12,
+		borderRadius: 12,
+		borderWidth: 1,
+		borderColor: "rgba(255, 255, 255, 0.2)",
+		backgroundColor: "rgba(0, 0, 0, 0.35)",
+	},
+	routineHint: {
+		color: "#94A3B8",
+		fontSize: 12,
+		marginTop: 4,
+	},
 	statsRow: {
 		flexDirection: "row",
 		justifyContent: "space-between",

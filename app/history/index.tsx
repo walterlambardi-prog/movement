@@ -1,7 +1,6 @@
 import { Stack } from "expo-router";
 import { useCallback, useMemo } from "react";
 import { FlatList, ImageBackground, ListRenderItem, ScrollView, Text, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 
 import { useAppStore, type ExerciseKey } from "../state/useAppStore";

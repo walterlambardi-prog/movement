@@ -24,6 +24,7 @@ import {
 import { useSharedValue } from "react-native-worklets-core";
 import { useTranslation } from "react-i18next";
 import { useSessionRecorder } from "../state/useSessionRecorder";
+import { useRoutineStep } from "../routine/useRoutineStep";
 import { styles } from "./LateralRaises.styles";
 import { ArmState, KeypointData, KeypointsMap } from "./LateralRaises.types";
 
@@ -169,6 +170,12 @@ export default function LateralRaises() {
 	const [progress, setProgress] = useState<number>(0);
 	const [showConfetti, setShowConfetti] = useState(false);
 
+	const { isRoutine, target, nextExercise, advanceToNext } = useRoutineStep("lateralRaises");
+	const remainingReps = useMemo(
+		() => (target !== null ? Math.max(target - repCount, 0) : null),
+		[repCount, target]
+	);
+
 	useSessionRecorder("lateralRaises", repCount);
 
 	const progressAnim = useRef(new Animated.Value(0)).current;
@@ -260,6 +267,10 @@ export default function LateralRaises() {
 			Speech.stop();
 		};
 	}, [getMilestoneMessage, repCount, speak]);
+
+	useEffect(() => {
+		advanceToNext(repCount);
+	}, [advanceToNext, repCount]);
 
 	useEffect(() => {
 		PoseLandmarks?.initModel?.();
@@ -510,6 +521,30 @@ export default function LateralRaises() {
 			</View>
 
 			<View style={styles.bottomPanel}>
+				{isRoutine && target !== null && (
+					<View style={styles.routineMetaRow}>
+						<View style={styles.routineChip}>
+							<Text style={styles.statLabel}>{t("routine.goalLabel")}</Text>
+							<Text style={styles.statValue}>
+								{t("routine.goalValue", {
+									current: Math.min(repCount, target),
+									target,
+								})}
+							</Text>
+							<Text style={styles.routineHint}>
+								{t("routine.remainingValue", { count: remainingReps ?? 0 })}
+							</Text>
+						</View>
+						<View style={styles.routineChip}>
+							<Text style={styles.statLabel}>{t("routine.nextLabel")}</Text>
+							<Text style={styles.statValue}>
+								{nextExercise ? t(`${nextExercise}.title` as const) : t("routine.completeLabel")}
+							</Text>
+							{!nextExercise && <Text style={styles.routineHint}>{t("routine.finished")}</Text>}
+						</View>
+					</View>
+				)}
+
 				<View style={styles.statsRow}>
 					<View style={styles.statItem}>
 						<Text style={styles.statLabel}>{t("common.state")}</Text>

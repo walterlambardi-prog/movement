@@ -33,6 +33,7 @@ import {
 	StateTransitionResult,
 } from "./Pushups.types";
 import { useSessionRecorder } from "../state/useSessionRecorder";
+import { useRoutineStep } from "../routine/useRoutineStep";
 
 const { PoseLandmarks } = NativeModules;
 
@@ -312,6 +313,12 @@ export default function Pushups() {
 	const [showConfetti, setShowConfetti] = useState(false);
 	const [lastRepQuality, setLastRepQuality] = useState<RepQuality | null>(null);
 
+	const { isRoutine, target, nextExercise, advanceToNext } = useRoutineStep("pushups");
+	const remainingReps = useMemo(
+		() => (target !== null ? Math.max(target - pushupCount, 0) : null),
+		[pushupCount, target]
+	);
+
 	useSessionRecorder("pushups", pushupCount);
 
 	const voiceConfig = useMemo(
@@ -431,6 +438,10 @@ export default function Pushups() {
 			Speech.stop();
 		};
 	}, [getMilestoneMessage, pushupCount, speak]);
+
+	useEffect(() => {
+		advanceToNext(pushupCount);
+	}, [advanceToNext, pushupCount]);
 
 	useEffect(() => {
 		PoseLandmarks?.initModel?.();
@@ -729,6 +740,30 @@ export default function Pushups() {
 			)}
 
 			<View style={styles.bottomPanel}>
+				{isRoutine && target !== null && (
+					<View style={styles.routineMetaRow}>
+						<View style={styles.routineChip}>
+							<Text style={styles.statLabel}>{t("routine.goalLabel")}</Text>
+							<Text style={styles.statValue}>
+								{t("routine.goalValue", {
+									current: Math.min(pushupCount, target),
+									target,
+								})}
+							</Text>
+							<Text style={styles.routineHint}>
+								{t("routine.remainingValue", { count: remainingReps ?? 0 })}
+							</Text>
+						</View>
+						<View style={styles.routineChip}>
+							<Text style={styles.statLabel}>{t("routine.nextLabel")}</Text>
+							<Text style={styles.statValue}>
+								{nextExercise ? t(`${nextExercise}.title` as const) : t("routine.completeLabel")}
+							</Text>
+							{!nextExercise && <Text style={styles.routineHint}>{t("routine.finished")}</Text>}
+						</View>
+					</View>
+				)}
+
 				<View style={styles.statsRow}>
 					<View style={styles.statItem}>
 						<Text style={styles.statLabel}>{t("common.state")}</Text>
