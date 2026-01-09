@@ -64,9 +64,8 @@ export const styles = StyleSheet.create({
 		borderColor: "black",
 	},
 	cardsContainer: {
-		flex: 1,
 		paddingHorizontal: 20,
-		paddingTop: 40,
+		paddingTop: 24,
 		paddingBottom: 32,
 		gap: 24,
 	},
@@ -84,25 +83,22 @@ export const styles = StyleSheet.create({
 		elevation: 3,
 		width: "100%",
 	},
-	cardHeader: {
-		flexDirection: "row",
-		alignItems: "center",
-		justifyContent: "space-between",
-	},
 	cardTitle: {
 		fontSize: 18,
 		fontWeight: "800",
 		color: "white",
-	},
-	cardDot: {
-		width: 10,
-		height: 10,
-		borderRadius: 5,
 	},
 	cardSubtitle: {
 		fontSize: 13,
 		color: "#CBD5E1",
 		marginTop: 8,
 		lineHeight: 18,
+	},
+	cardImage: {
+		width: "100%",
+		height: 230,
+		borderRadius: 14,
+		marginBottom: 14,
+		backgroundColor: "#0B1226",
 	},
 });

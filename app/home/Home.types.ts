@@ -1,5 +1,5 @@
 import { type LinkProps } from "expo-router";
-import { ColorValue } from "react-native";
+import { ColorValue, type ImageSourcePropType } from "react-native";
 
 export type Language = {
 	readonly code: string;
@@ -11,4 +11,5 @@ export type CardProps = {
 	readonly title: string;
 	readonly subtitle: string;
 	readonly accent: ColorValue;
+	readonly image: ImageSourcePropType;
 };

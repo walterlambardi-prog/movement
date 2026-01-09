@@ -1,7 +1,7 @@
 import { memo, useCallback, useMemo } from "react";
 import { Link } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { Text, TouchableOpacity, View } from "react-native";
+import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 import i18n from "../i18n";
 import { styles } from "./Home.styles";
@@ -12,7 +12,13 @@ const languages: Language[] = [
 	{ code: "es", label: "ES" },
 ];
 
-const ExerciseCard = memo(function ExerciseCard({ href, title, subtitle, accent }: CardProps) {
+const ExerciseCard = memo(function ExerciseCard({
+	href,
+	title,
+	subtitle,
+	accent,
+	image,
+}: CardProps) {
 	return (
 		<Link href={href} asChild>
 			{/* <TouchableOpacity style={[styles.card, { borderColor: accent }]}> */}
@@ -31,10 +37,8 @@ const ExerciseCard = memo(function ExerciseCard({ href, title, subtitle, accent 
 					width: "100%",
 				}}
 			>
-				<View style={styles.cardHeader}>
-					<Text style={styles.cardTitle}>{title}</Text>
-					<View style={[styles.cardDot, { backgroundColor: accent }]} />
-				</View>
+				<Image source={image} style={styles.cardImage} resizeMode="cover" />
+				<Text style={styles.cardTitle}>{title}</Text>
 				<Text style={styles.cardSubtitle}>{subtitle}</Text>
 			</TouchableOpacity>
 		</Link>
@@ -73,24 +77,28 @@ export default function Home() {
 				title: t("index.hammerTitle"),
 				subtitle: t("index.hammerSubtitle"),
 				accent: "#F97316",
+				image: require("../../assets/images/exercises/hammerCurls.png"),
 			},
 			{
 				href: "/lateralRaises" as const,
 				title: t("index.lateralsTitle"),
 				subtitle: t("index.lateralsSubtitle"),
 				accent: "#22D3EE",
+				image: require("../../assets/images/exercises/lateralRaises.png"),
 			},
 			{
 				href: "/pushups" as const,
 				title: t("index.pushupsTitle"),
 				subtitle: t("index.pushupsSubtitle"),
 				accent: "#EF4444",
+				image: require("../../assets/images/exercises/pushups.png"),
 			},
 			{
 				href: "/squats" as const,
 				title: t("index.squatsTitle"),
 				subtitle: t("index.squatsSubtitle"),
 				accent: "#8B5CF6",
+				image: require("../../assets/images/exercises/squats.png"),
 			},
 		],
 		[t]
@@ -122,7 +130,10 @@ export default function Home() {
 				</View>
 			</View>
 
-			<View style={styles.cardsContainer}>
+			<ScrollView
+				contentContainerStyle={styles.cardsContainer}
+				showsVerticalScrollIndicator={false}
+			>
 				{exercises.map((exercise) => (
 					<ExerciseCard
 						key={exercise.href}
@@ -130,9 +141,10 @@ export default function Home() {
 						title={exercise.title}
 						subtitle={exercise.subtitle}
 						accent={exercise.accent}
+						image={exercise.image}
 					/>
 				))}
-			</View>
+			</ScrollView>
 		</View>
 	);
 }

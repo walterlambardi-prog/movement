@@ -21,7 +21,7 @@ PODS:
     - ExpoModulesCore
   - ExpoLinking (7.0.5):
     - ExpoModulesCore
-  - ExpoLocalization (18.0.0-canary-20260105-6b962e6):
+  - ExpoLocalization (17.0.8):
     - ExpoModulesCore
   - ExpoModulesCore (2.2.3):
     - DoubleConversion
@@ -2209,7 +2209,7 @@ SPEC CHECKSUMS:
   ExpoHead: 2a14db58219c0a506e4a409ea83f884eab23f555
   ExpoKeepAwake: b0171a73665bfcefcfcc311742a72a956e6aa680
   ExpoLinking: 8d12bee174ba0cdf31239706578e29e74a417402
-  ExpoLocalization: a450f24b5a8dc02f4cc17b386710850df5699fe9
+  ExpoLocalization: d9168d5300a5b03e5e78b986124d11fb6ec3ebbd
   ExpoModulesCore: c25d77625038b1968ea1afefc719862c0d8dd993
   ExpoSpeech: 8f74347608243ee8fdc2faa14e7d2cd5503f33f8
   ExpoSplashScreen: 8261985ce9778f904abc7e31bed3538dce67ed4d
