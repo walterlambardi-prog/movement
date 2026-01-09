@@ -31,6 +31,7 @@ export const styles = StyleSheet.create({
 		color: "#E2E8F0",
 		fontSize: 24,
 		fontWeight: "900",
+		textTransform: "uppercase",
 	},
 	summarySubtitle: {
 		color: "#94A3B8",
