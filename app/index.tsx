@@ -108,6 +108,25 @@ export default function Page() {
 					</Text>
 				</TouchableOpacity>
 			</Link>
+
+			<Link href="/lateralRaises" asChild>
+				<TouchableOpacity
+					style={{
+						borderColor: "black",
+						borderWidth: 1,
+						borderRadius: 5,
+						paddingHorizontal: 40,
+						paddingVertical: 10,
+						margin: 10,
+						backgroundColor: "#f0f0f0",
+					}}
+				>
+					<Text style={{ fontSize: 16, textAlign: "center" }}>🪽 Lateral Raises</Text>
+					<Text style={{ fontSize: 12, textAlign: "center", color: "gray" }}>
+						Elevaciones laterales simultaneas
+					</Text>
+				</TouchableOpacity>
+			</Link>
 		</View>
 	);
 }
