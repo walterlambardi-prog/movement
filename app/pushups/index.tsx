@@ -24,10 +24,17 @@ import {
 } from "react-native-vision-camera";
 import { useSharedValue } from "react-native-worklets-core";
 import { useTranslation } from "react-i18next";
+import { styles } from "./Pushups.styles";
+import {
+	KeypointData,
+	KeypointsMap,
+	PushupState,
+	RepQuality,
+	StateTransitionResult,
+} from "./Pushups.types";
 
 const { PoseLandmarks } = NativeModules;
 
-// Initialize the frame processor plugin 'poseLandmarks'
 const poseLandMarkPlugin = VisionCameraProxy.initFrameProcessorPlugin("poseLandmarks", {});
 
 function poseLandmarks(frame: Frame) {
@@ -38,18 +45,6 @@ function poseLandmarks(frame: Frame) {
 	return poseLandMarkPlugin.call(frame);
 }
 
-type KeypointData = {
-	keypoint: number;
-	x: number;
-	y: number;
-	z: number;
-	visibility: number;
-	presence: number;
-};
-
-type KeypointsMap = { [key: string]: KeypointData };
-
-// Líneas para conectar los puntos del cuerpo (esqueleto)
 const LINES = [
 	[0, 1],
 	[0, 4],
@@ -88,32 +83,26 @@ const LINES = [
 	[30, 32],
 ];
 
-// Paint para las líneas (esqueleto)
 const linePaint = Skia.Paint();
-linePaint.setColor(Skia.Color("#FF6B6B")); // Rojo para flexiones
+linePaint.setColor(Skia.Color("#FF6B6B"));
 linePaint.setStrokeWidth(25);
 
-// Paint para los círculos (keypoints)
 const circlePaint = Skia.Paint();
-circlePaint.setColor(Skia.Color("#FFC107")); // Amarillo para los puntos
+circlePaint.setColor(Skia.Color("#FFC107"));
 linePaint.setStrokeWidth(10);
 
-// Configuración: Mostrar confetti cada N flexiones
 const CONFETTI_INTERVAL = 5;
 
-// Detection tolerances
-const MIN_VISIBILITY = 0.3; // More permissive visibility so the body can be considered visible
-const HIP_SHOULDER_MAX_DELTA = 0.5; // More lenient plank tolerance between hips and shoulders
-const KNEE_HIP_MIN_DELTA = -0.25; // Knees can sit a bit higher relative to hips
+const MIN_VISIBILITY = 0.3;
+const HIP_SHOULDER_MAX_DELTA = 0.5;
+const KNEE_HIP_MIN_DELTA = -0.25;
 
-// Push-up angle thresholds (more permissive to count shallow reps)
-const ELBOW_EXTENDED = 140; // Arms considered extended/ready
-const ELBOW_START_DESCENT = 135; // Start counting descent sooner
-const ELBOW_BOTTOM = 110; // Depth considered valid
-const ELBOW_ASCEND_TRIGGER = 120; // Start ascent once past this
-const ELBOW_COMPLETE = 140; // Count rep when back near extension
+const ELBOW_EXTENDED = 140;
+const ELBOW_START_DESCENT = 135;
+const ELBOW_BOTTOM = 110;
+const ELBOW_ASCEND_TRIGGER = 120;
+const ELBOW_COMPLETE = 140;
 
-// Función para calcular el ángulo entre 3 puntos
 function calculateAngle(p1: KeypointData, p2: KeypointData, p3: KeypointData): number {
 	const radians = Math.atan2(p3.y - p2.y, p3.x - p2.x) - Math.atan2(p1.y - p2.y, p1.x - p2.x);
 	let angle = Math.abs((radians * 180) / Math.PI);
@@ -121,31 +110,15 @@ function calculateAngle(p1: KeypointData, p2: KeypointData, p3: KeypointData): n
 	return angle;
 }
 
-// Estados de la flexión mejorados
-type PushupState = "idle" | "ready" | "descending" | "bottom" | "ascending";
-
-type RepQuality = "perfect" | "good" | "incomplete";
-
-type StateTransitionResult = {
-	newState: PushupState;
-	feedback: string;
-	incrementCount: boolean;
-	quality?: RepQuality;
-	progress: number; // 0-100 para mostrar progreso visual
-};
-
-// Función mejorada para manejar las transiciones de estado de la flexión
-// Usa ángulo de codo (enfoque estándar de apps de fitness)
 function processPushupStateMachine(
 	currentState: PushupState,
-	elbowAngle: number, // Ángulo del codo (shoulder-elbow-wrist)
+	elbowAngle: number,
 	bodyFullyVisible: boolean,
-	isInPlankPosition: boolean, // Cuerpo en posición de plancha
+	isInPlankPosition: boolean,
 	translate: (key: string, options?: Record<string, unknown>) => string
 ): StateTransitionResult {
 	const angle = Math.round(elbowAngle);
 
-	// Si el cuerpo no está completamente visible, volver a idle
 	if (!bodyFullyVisible) {
 		return {
 			newState: "idle",
@@ -155,7 +128,6 @@ function processPushupStateMachine(
 		};
 	}
 
-	// IDLE -> READY: En posición de plancha con brazos extendidos
 	if (currentState === "idle") {
 		if (isInPlankPosition && elbowAngle > ELBOW_EXTENDED) {
 			return {
@@ -175,7 +147,6 @@ function processPushupStateMachine(
 		};
 	}
 
-	// READY -> DESCENDING: Comenzando a flexionar los brazos
 	if (currentState === "ready") {
 		if (elbowAngle < ELBOW_START_DESCENT) {
 			return {
@@ -193,9 +164,7 @@ function processPushupStateMachine(
 		};
 	}
 
-	// DESCENDING: Bajando
 	if (currentState === "descending") {
-		// Llegó a buena profundidad (brazos bien flexionados)
 		if (elbowAngle < ELBOW_BOTTOM) {
 			return {
 				newState: "bottom",
@@ -204,7 +173,6 @@ function processPushupStateMachine(
 				progress: 50,
 			};
 		}
-		// Se devolvió antes de llegar abajo
 		if (elbowAngle > ELBOW_EXTENDED) {
 			return {
 				newState: "ready",
@@ -213,7 +181,6 @@ function processPushupStateMachine(
 				progress: 0,
 			};
 		}
-		// Calculando progreso basado en ángulo (140° -> 110°)
 		const progress = Math.min(
 			50,
 			((ELBOW_EXTENDED - elbowAngle) / (ELBOW_EXTENDED - ELBOW_BOTTOM)) * 50
@@ -226,9 +193,7 @@ function processPushupStateMachine(
 		};
 	}
 
-	// BOTTOM: En la posición más baja
 	if (currentState === "bottom") {
-		// Empezó a extender los brazos
 		if (elbowAngle > ELBOW_ASCEND_TRIGGER) {
 			return {
 				newState: "ascending",
@@ -245,9 +210,7 @@ function processPushupStateMachine(
 		};
 	}
 
-	// ASCENDING: Extendiendo los brazos
 	if (currentState === "ascending") {
-		// Completó la flexión - brazos extendidos
 		if (elbowAngle > ELBOW_COMPLETE) {
 			return {
 				newState: "ready",
@@ -257,7 +220,6 @@ function processPushupStateMachine(
 				progress: 100,
 			};
 		}
-		// Se devolvió antes de completar
 		if (elbowAngle < ELBOW_BOTTOM) {
 			return {
 				newState: "bottom",
@@ -266,7 +228,6 @@ function processPushupStateMachine(
 				progress: 50,
 			};
 		}
-		// Calculando progreso basado en ángulo (110° -> 140°)
 		const progress =
 			50 + Math.min(50, ((elbowAngle - ELBOW_BOTTOM) / (ELBOW_COMPLETE - ELBOW_BOTTOM)) * 50);
 		return {
@@ -297,14 +258,12 @@ export default function Pushups() {
 	const device = useCameraDevice(cameraPosition);
 	const format = useCameraFormat(device, [{ fps: 30 }]);
 
-	// Referencias para control de tiempo
 	const lastPushupTimeRef = useRef<number>(0);
 	const confettiTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 	const isMountedRef = useRef<boolean>(true);
 	const pushupCountRef = useRef<number>(0);
 	const pushupStateRef = useRef<PushupState>("idle");
 
-	// Estados del contador
 	const [pushupCount, setPushupCount] = useState(0);
 	const [pushupState, setPushupState] = useState<PushupState>("idle");
 	const [currentAngle, setCurrentAngle] = useState<number>(0);
@@ -346,7 +305,6 @@ export default function Pushups() {
 		[t]
 	);
 
-	// Mantener refs sincronizados con el estado
 	useEffect(() => {
 		pushupCountRef.current = pushupCount;
 	}, [pushupCount]);
@@ -355,7 +313,6 @@ export default function Pushups() {
 		pushupStateRef.current = pushupState;
 	}, [pushupState]);
 
-	// Animación para la barra de progreso
 	const progressAnim = useRef(new Animated.Value(0)).current;
 
 	const handleCameraChange = useCallback(() => {
@@ -387,7 +344,6 @@ export default function Pushups() {
 		[HeaderRight, t]
 	);
 
-	// Anunciar mensaje de bienvenida al montar el componente
 	useEffect(() => {
 		speak(t("pushups.voice.welcome"));
 		return () => {
@@ -395,7 +351,6 @@ export default function Pushups() {
 		};
 	}, [speak, t]);
 
-	// Animar la barra de progreso cuando cambie
 	useEffect(() => {
 		Animated.timing(progressAnim, {
 			toValue: progress,
@@ -410,7 +365,6 @@ export default function Pushups() {
 		}
 	}, [pushupState, t]);
 
-	// Limpiar recursos al desmontar
 	useEffect(() => {
 		isMountedRef.current = true;
 		return () => {
@@ -423,14 +377,11 @@ export default function Pushups() {
 		};
 	}, []);
 
-	// Anunciar voz cuando cambia el contador (evita duplicados)
 	useEffect(() => {
 		if (pushupCount > 0) {
 			if (pushupCount % CONFETTI_INTERVAL === 0) {
-				// Anuncio especial para múltiplos del intervalo
 				speak(getMilestoneMessage(pushupCount));
 			} else {
-				// Anuncio simple del número
 				speak(`${pushupCount}`);
 			}
 		}
@@ -440,7 +391,6 @@ export default function Pushups() {
 	}, [getMilestoneMessage, pushupCount, speak]);
 
 	useEffect(() => {
-		// Initialize the model explicitly (needed for iOS)
 		PoseLandmarks?.initModel?.();
 
 		if (!PoseLandmarks) {
@@ -451,7 +401,6 @@ export default function Pushups() {
 		const poseLandmarksEmitter = new NativeEventEmitter(PoseLandmarks);
 		const subscription = poseLandmarksEmitter.addListener("onPoseLandmarksDetected", (event) => {
 			try {
-				// Validar que existan landmarks
 				if (!event?.landmarks?.[0]) {
 					setPushupState("idle");
 					setFeedback(t("pushups.feedback.noPose"));
@@ -462,7 +411,6 @@ export default function Pushups() {
 				const detectedLandmarks = event.landmarks[0];
 				landmarks.value = detectedLandmarks;
 
-				// Verificar que los puntos necesarios existan
 				const leftShoulder = detectedLandmarks[11];
 				const rightShoulder = detectedLandmarks[12];
 				const leftElbow = detectedLandmarks[13];
@@ -476,7 +424,6 @@ export default function Pushups() {
 				const leftAnkle = detectedLandmarks[27];
 				const rightAnkle = detectedLandmarks[28];
 
-				// Validar que todos los puntos clave del cuerpo existan
 				const allPointsExist =
 					leftShoulder &&
 					rightShoulder &&
@@ -498,7 +445,6 @@ export default function Pushups() {
 					return;
 				}
 
-				// Verificar visibilidad del cuerpo completo
 				const bodyFullyVisible =
 					leftShoulder.visibility > MIN_VISIBILITY &&
 					rightShoulder.visibility > MIN_VISIBILITY &&
@@ -511,22 +457,18 @@ export default function Pushups() {
 					leftKnee.visibility > MIN_VISIBILITY &&
 					rightKnee.visibility > MIN_VISIBILITY;
 
-				// Calcular ángulos de los codos (enfoque estándar de apps de fitness)
 				const leftElbowAngle = calculateAngle(leftShoulder, leftElbow, leftWrist);
 				const rightElbowAngle = calculateAngle(rightShoulder, rightElbow, rightWrist);
 				const avgElbowAngle = (leftElbowAngle + rightElbowAngle) / 2;
 				setCurrentAngle(avgElbowAngle);
 
-				// Validar posición de plancha: cuerpo relativamente recto y manos en posición
 				const avgShoulderY = (leftShoulder.y + rightShoulder.y) / 2;
 				const avgHipY = (leftHip.y + rightHip.y) / 2;
 				const avgKneeY = (leftKnee.y + rightKnee.y) / 2;
-				// En plancha: caderas no deben estar muy abajo ni muy arriba
 				const isInPlankPosition =
 					Math.abs(avgHipY - avgShoulderY) < HIP_SHOULDER_MAX_DELTA &&
 					avgKneeY > avgHipY + KNEE_HIP_MIN_DELTA;
 
-				// Procesar la máquina de estados
 				const result = processPushupStateMachine(
 					pushupStateRef.current,
 					avgElbowAngle,
@@ -539,27 +481,21 @@ export default function Pushups() {
 				setFeedback(result.feedback);
 				setProgress(result.progress);
 
-				// Manejar el incremento del contador con debounce
 				if (result.incrementCount) {
 					const now = Date.now();
-					// Debounce de 1.5 segundos entre reps
 					if (now - lastPushupTimeRef.current > 1500) {
 						lastPushupTimeRef.current = now;
 
 						if (!isMountedRef.current) return;
 
-						// Actualizar calidad de la rep
 						setLastRepQuality(result.quality || "good");
 
-						// Incrementar contador usando setState funcional y manejar confetti
 						setPushupCount((prevCount) => {
 							const newCount = prevCount + 1;
 
-							// Mostrar confetti cada CONFETTI_INTERVAL flexiones
 							if (newCount % CONFETTI_INTERVAL === 0) {
 								setShowConfetti(true);
 
-								// Ocultar confetti después de 3 segundos
 								if (confettiTimeoutRef.current) {
 									clearTimeout(confettiTimeoutRef.current);
 									confettiTimeoutRef.current = null;
@@ -591,13 +527,11 @@ export default function Pushups() {
 		frame.render();
 		poseLandmarks(frame);
 
-		// Dibujar la silueta del usuario
 		if (landmarks?.value !== undefined && Object.keys(landmarks?.value).length > 0) {
 			const body = landmarks?.value;
 			const frameWidth = frame.width;
 			const frameHeight = frame.height;
 
-			// Dibujar líneas del esqueleto
 			for (const [from, to] of LINES) {
 				const fromPoint = body[from];
 				const toPoint = body[to];
@@ -612,7 +546,6 @@ export default function Pushups() {
 				}
 			}
 
-			// Dibujar círculos en los keypoints
 			for (const mark of Object.values(body)) {
 				if (mark && typeof mark === "object" && "x" in mark && "y" in mark) {
 					frame.drawCircle(
@@ -658,10 +591,8 @@ export default function Pushups() {
 				videoBitRate="extra-low"
 			/>
 
-			{/* Overlay oscuro para mejorar legibilidad */}
 			<View style={styles.overlay} />
 
-			{/* Contador principal - más grande y visible */}
 			<View style={styles.topBar}>
 				<View style={styles.counterContainer}>
 					<Text style={styles.counterValue}>{pushupCount}</Text>
@@ -669,7 +600,6 @@ export default function Pushups() {
 				</View>
 			</View>
 
-			{/* Feedback central - mensaje principal */}
 			<View style={styles.centerFeedback}>
 				<Text style={[styles.feedbackText, getFeedbackStyle(pushupState)]}>{feedback}</Text>
 				{pushupState !== "idle" && (
@@ -677,7 +607,6 @@ export default function Pushups() {
 				)}
 			</View>
 
-			{/* Barra de progreso visual */}
 			{(pushupState === "descending" ||
 				pushupState === "ascending" ||
 				pushupState === "bottom") && (
@@ -700,7 +629,6 @@ export default function Pushups() {
 				</View>
 			)}
 
-			{/* Indicador de calidad de la última rep */}
 			{lastRepQuality && pushupState === "ready" && (
 				<View style={styles.qualityBadge}>
 					<Text style={styles.qualityText}>
@@ -709,7 +637,6 @@ export default function Pushups() {
 				</View>
 			)}
 
-			{/* Panel inferior con controles */}
 			<View style={styles.bottomPanel}>
 				<View style={styles.statsRow}>
 					<View style={styles.statItem}>
@@ -721,7 +648,6 @@ export default function Pushups() {
 					</View>
 				</View>
 
-				{/* Guía de instrucciones compacta */}
 				{pushupState === "idle" && (
 					<View style={styles.instructionsContainer}>
 						{instructions.map((item) => (
@@ -733,7 +659,6 @@ export default function Pushups() {
 				)}
 			</View>
 
-			{/* Confetti - solo cuando showConfetti es true */}
 			{showConfetti && (
 				<View style={styles.confettiContainer}>
 					<Confetti count={150} fallDuration={3000} />
@@ -743,39 +668,36 @@ export default function Pushups() {
 	);
 }
 
-// Función auxiliar para estilos dinámicos del feedback
 function getFeedbackStyle(state: PushupState) {
 	switch (state) {
 		case "idle":
-			return { color: "#FFC107" }; // Amarillo - atención
+			return { color: "#FFC107" };
 		case "ready":
-			return { color: "#FF6B6B" }; // Rojo - listo
+			return { color: "#FF6B6B" };
 		case "descending":
-			return { color: "#2196F3" }; // Azul - bajando
+			return { color: "#2196F3" };
 		case "bottom":
-			return { color: "#FF9800" }; // Naranja - profundidad
+			return { color: "#FF9800" };
 		case "ascending":
-			return { color: "#9C27B0" }; // Púrpura - subiendo
+			return { color: "#9C27B0" };
 		default:
 			return { color: "white" };
 	}
 }
 
-// Función auxiliar para color de barra de progreso
 function getProgressBarColor(state: PushupState) {
 	switch (state) {
 		case "descending":
-			return { backgroundColor: "#2196F3" }; // Azul
+			return { backgroundColor: "#2196F3" };
 		case "bottom":
-			return { backgroundColor: "#FF9800" }; // Naranja
+			return { backgroundColor: "#FF9800" };
 		case "ascending":
-			return { backgroundColor: "#FF6B6B" }; // Rojo
+			return { backgroundColor: "#FF6B6B" };
 		default:
 			return { backgroundColor: "#FF6B6B" };
 	}
 }
 
-// Función auxiliar para etiqueta del estado
 function getStateLabel(state: PushupState, translate: (key: string) => string): string {
 	switch (state) {
 		case "idle":
@@ -792,195 +714,3 @@ function getStateLabel(state: PushupState, translate: (key: string) => string): 
 			return state;
 	}
 }
-
-const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		backgroundColor: "black",
-	},
-	overlay: {
-		...StyleSheet.absoluteFillObject,
-		backgroundColor: "rgba(0, 0, 0, 0.3)",
-		zIndex: 1,
-	},
-	// Barra superior con contador
-	topBar: {
-		position: "absolute",
-		top: 60,
-		left: 0,
-		right: 0,
-		zIndex: 10,
-		alignItems: "center",
-	},
-	counterContainer: {
-		backgroundColor: "rgba(0, 0, 0, 0.45)",
-		paddingVertical: 20,
-		paddingHorizontal: 40,
-		borderRadius: 20,
-		borderWidth: 3,
-		borderColor: "#FF6B6B",
-		alignItems: "center",
-	},
-	counterValue: {
-		fontSize: 80,
-		fontWeight: "900",
-		color: "#FF6B6B",
-		letterSpacing: 2,
-		textShadowColor: "rgba(255, 107, 107, 0.5)",
-		textShadowOffset: { width: 0, height: 0 },
-		textShadowRadius: 20,
-	},
-	counterLabel: {
-		fontSize: 16,
-		fontWeight: "bold",
-		color: "white",
-		letterSpacing: 4,
-		marginTop: 5,
-	},
-	// Feedback central
-	centerFeedback: {
-		position: "absolute",
-		top: "40%",
-		left: 20,
-		right: 20,
-		zIndex: 10,
-		alignItems: "center",
-	},
-	feedbackText: {
-		fontSize: 32,
-		fontWeight: "bold",
-		textAlign: "center",
-		textShadowColor: "rgba(0, 0, 0, 0.8)",
-		textShadowOffset: { width: 0, height: 2 },
-		textShadowRadius: 4,
-		paddingHorizontal: 20,
-		paddingVertical: 10,
-		backgroundColor: "rgba(0, 0, 0, 0.6)",
-		borderRadius: 15,
-		overflow: "hidden",
-	},
-	angleIndicator: {
-		fontSize: 48,
-		fontWeight: "900",
-		color: "white",
-		marginTop: 10,
-		textShadowColor: "rgba(0, 0, 0, 0.8)",
-		textShadowOffset: { width: 0, height: 2 },
-		textShadowRadius: 4,
-	},
-	bodyAngleIndicator: {
-		fontSize: 20,
-		fontWeight: "bold",
-		color: "#FFC107",
-		marginTop: 8,
-		textShadowColor: "rgba(0, 0, 0, 0.8)",
-		textShadowOffset: { width: 0, height: 2 },
-		textShadowRadius: 4,
-	},
-	// Barra de progreso
-	progressBarContainer: {
-		position: "absolute",
-		top: "55%",
-		left: 40,
-		right: 40,
-		zIndex: 10,
-		alignItems: "center",
-	},
-	progressBarBackground: {
-		width: "100%",
-		height: 20,
-		backgroundColor: "rgba(255, 255, 255, 0.2)",
-		borderRadius: 10,
-		overflow: "hidden",
-		borderWidth: 2,
-		borderColor: "rgba(255, 255, 255, 0.3)",
-	},
-	progressBarFill: {
-		height: "100%",
-		borderRadius: 8,
-	},
-	progressText: {
-		fontSize: 14,
-		fontWeight: "bold",
-		color: "white",
-		marginTop: 5,
-		textShadowColor: "rgba(0, 0, 0, 0.8)",
-		textShadowOffset: { width: 0, height: 1 },
-		textShadowRadius: 3,
-	},
-	// Badge de calidad
-	qualityBadge: {
-		position: "absolute",
-		top: 220,
-		alignSelf: "center",
-		backgroundColor: "rgba(255, 107, 107, 0.9)",
-		paddingHorizontal: 20,
-		paddingVertical: 8,
-		borderRadius: 20,
-		zIndex: 10,
-	},
-	qualityText: {
-		fontSize: 18,
-		fontWeight: "bold",
-		color: "white",
-	},
-	// Panel inferior
-	bottomPanel: {
-		position: "absolute",
-		bottom: 40,
-		left: 20,
-		right: 20,
-		zIndex: 10,
-		backgroundColor: "rgba(0, 0, 0, 0.45)",
-		borderRadius: 20,
-		padding: 20,
-		borderWidth: 2,
-		borderColor: "rgba(255, 255, 255, 0.2)",
-	},
-	statsRow: {
-		flexDirection: "row",
-		justifyContent: "space-between",
-		alignItems: "center",
-		marginBottom: 10,
-	},
-	statItem: {
-		flex: 1,
-	},
-	statLabel: {
-		fontSize: 12,
-		color: "#888",
-		marginBottom: 3,
-		textTransform: "uppercase",
-		letterSpacing: 1,
-	},
-	statValue: {
-		fontSize: 18,
-		fontWeight: "bold",
-		color: "#FF6B6B",
-	},
-	resetButtonContainer: {
-		marginLeft: 10,
-	},
-	instructionsContainer: {
-		marginTop: 10,
-		paddingTop: 15,
-		borderTopWidth: 1,
-		borderTopColor: "rgba(255, 255, 255, 0.2)",
-	},
-	instructionText: {
-		fontSize: 13,
-		color: "#AAA",
-		marginVertical: 3,
-		textAlign: "center",
-	},
-	// Confetti
-	confettiContainer: {
-		position: "absolute",
-		top: 0,
-		left: 0,
-		right: 0,
-		bottom: 0,
-		zIndex: 9999,
-		pointerEvents: "none",
-	},
-});

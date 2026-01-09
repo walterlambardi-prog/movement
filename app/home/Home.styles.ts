@@ -1,0 +1,108 @@
+import { StyleSheet } from "react-native";
+
+export const styles = StyleSheet.create({
+	container: {
+		flex: 1,
+		backgroundColor: "#010a30ff",
+	},
+	bubbleTop: {
+		position: "absolute",
+		top: -120,
+		right: -100,
+		width: 280,
+		height: 280,
+		borderRadius: 140,
+		backgroundColor: "#0EA5E9",
+		opacity: 0.15,
+	},
+	bubbleBottom: {
+		position: "absolute",
+		bottom: -140,
+		left: -120,
+		width: 320,
+		height: 320,
+		borderRadius: 160,
+		backgroundColor: "#22D3EE",
+		opacity: 0.1,
+	},
+	header: {
+		paddingTop: 64,
+		paddingHorizontal: 20,
+	},
+	headerTitle: {
+		color: "#E2E8F0",
+		fontSize: 28,
+		fontWeight: "900",
+		letterSpacing: 0.5,
+	},
+	headerSubtitle: {
+		color: "#94A3B8",
+		fontSize: 15,
+		marginTop: 6,
+		lineHeight: 20,
+	},
+	languageRow: {
+		flexDirection: "row",
+		alignItems: "center",
+		marginTop: 24,
+	},
+	languageLabel: {
+		color: "#CBD5E1",
+		marginRight: 8,
+	},
+	languageButton: {
+		paddingHorizontal: 10,
+		paddingVertical: 6,
+		marginHorizontal: 4,
+		borderWidth: 1,
+		borderRadius: 6,
+		backgroundColor: "white",
+		borderColor: "gray",
+	},
+	languageButtonActive: {
+		backgroundColor: "#e0e0e0",
+		borderColor: "black",
+	},
+	cardsContainer: {
+		flex: 1,
+		paddingHorizontal: 20,
+		paddingTop: 40,
+		paddingBottom: 32,
+		gap: 24,
+	},
+	card: {
+		borderColor: "rgba(255, 255, 255, 0.05)",
+		backgroundColor: "#0F172A",
+		borderRadius: 18,
+		paddingHorizontal: 18,
+		paddingVertical: 18,
+		margin: 10,
+		borderWidth: 1,
+		shadowColor: "#000",
+		shadowOpacity: 0.25,
+		shadowRadius: 8,
+		elevation: 3,
+		width: "100%",
+	},
+	cardHeader: {
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "space-between",
+	},
+	cardTitle: {
+		fontSize: 18,
+		fontWeight: "800",
+		color: "white",
+	},
+	cardDot: {
+		width: 10,
+		height: 10,
+		borderRadius: 5,
+	},
+	cardSubtitle: {
+		fontSize: 13,
+		color: "#CBD5E1",
+		marginTop: 8,
+		lineHeight: 18,
+	},
+});
