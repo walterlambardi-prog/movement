@@ -53,8 +53,14 @@
 		"hammerSubtitle": "Alternating hammer curl counter",
 		"lateralsTitle": "Lateral Raises",
 		"lateralsSubtitle": "Simultaneous lateral raises",
+		"exercisesActionTitle": "Exercises",
+		"exercisesActionSubtitle": "Browse guided counters",
 		"historySubtitle": "Review your sessions and stats",
 		"profileSubtitle": "Change your name, adjust language, or reset from scratch."
+	},
+	"exercises": {
+		"heroGreeting": "Choose your movement",
+		"heroMessage": "Pick an exercise to start tracking reps instantly."
 	},
 	"routine": {
 		"goalLabel": "Goal",

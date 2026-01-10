@@ -1,35 +1,15 @@
-import { memo, useMemo } from "react";
+import { useMemo } from "react";
 import { Link } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { ImageBackground, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
 import { useAppStore } from "../state/useAppStore";
 import { styles } from "./Home.styles";
-import { CardProps } from "./Home.types";
+import { QuickAction } from "./Home.types";
 
 const withAlpha = (hex: string, alphaHex: string) => `${hex}${alphaHex}`;
-
-const ExerciseCard = memo(function ExerciseCard({ href, title, subtitle, image }: CardProps) {
-	return (
-		<Link href={href} asChild>
-			<TouchableOpacity style={styles.card}>
-				<ImageBackground
-					source={image}
-					style={styles.cardImage}
-					imageStyle={styles.cardImageRadius}
-				>
-					<View style={styles.cardOverlay} />
-					<View style={styles.cardContent}>
-						<Text style={styles.cardTitle}>{title}</Text>
-						<Text style={styles.cardSubtitle}>{subtitle}</Text>
-					</View>
-				</ImageBackground>
-			</TouchableOpacity>
-		</Link>
-	);
-});
 
 export default function Home() {
 	const { t } = useTranslation();
@@ -37,42 +17,17 @@ export default function Home() {
 	const username = useAppStore((state) => state.username);
 	const displayName = username?.trim().length ? username : t("index.welcomeTitle");
 
-	const exercises = useMemo(
+	const quickActions: QuickAction[] = useMemo(
 		() => [
 			{
-				href: "/hammerCurls" as const,
-				title: t("index.hammerTitle"),
-				subtitle: t("index.hammerSubtitle"),
-				accent: "#F97316",
-				image: require("../../assets/images/exercises/hammerCurls.png"),
+				href: "/exercises" as const,
+				title: t("index.exercisesActionTitle", { defaultValue: "Exercises" }),
+				subtitle: t("index.exercisesActionSubtitle", {
+					defaultValue: "Browse guided counters",
+				}),
+				accent: "#38BDF8",
+				icon: "list-outline" as const,
 			},
-			{
-				href: "/lateralRaises" as const,
-				title: t("index.lateralsTitle"),
-				subtitle: t("index.lateralsSubtitle"),
-				accent: "#22D3EE",
-				image: require("../../assets/images/exercises/lateralRaises.png"),
-			},
-			{
-				href: "/pushups" as const,
-				title: t("index.pushupsTitle"),
-				subtitle: t("index.pushupsSubtitle"),
-				accent: "#EF4444",
-				image: require("../../assets/images/exercises/pushups.png"),
-			},
-			{
-				href: "/squats" as const,
-				title: t("index.squatsTitle"),
-				subtitle: t("index.squatsSubtitle"),
-				accent: "#8B5CF6",
-				image: require("../../assets/images/exercises/squats.png"),
-			},
-		],
-		[t]
-	);
-
-	const quickActions = useMemo(
-		() => [
 			{
 				href: "/routine" as const,
 				title: t("common.routine", { defaultValue: "Routine" }),
@@ -139,19 +94,6 @@ export default function Home() {
 								</View>
 							</TouchableOpacity>
 						</Link>
-					))}
-				</View>
-
-				<View style={styles.cardsContainer}>
-					{exercises.map((exercise) => (
-						<ExerciseCard
-							key={exercise.href}
-							href={exercise.href}
-							title={exercise.title}
-							subtitle={exercise.subtitle}
-							accent={exercise.accent}
-							image={exercise.image}
-						/>
 					))}
 				</View>
 			</ScrollView>

@@ -53,8 +53,14 @@
 		"hammerSubtitle": "Curl martillo alterno con conteo",
 		"lateralsTitle": "Elevaciones Laterales",
 		"lateralsSubtitle": "Elevaciones laterales simultáneas",
+		"exercisesActionTitle": "Ejercicios",
+		"exercisesActionSubtitle": "Explora contadores guiados",
 		"historySubtitle": "Mira cada sesión: repeticiones, tendencias y récords.",
 		"profileSubtitle": "Cambia tu nombre, ajusta el idioma o reinicia desde cero."
+	},
+	"exercises": {
+		"heroGreeting": "Elige tu movimiento",
+		"heroMessage": "Selecciona un ejercicio y empieza a contar reps al instante."
 	},
 	"routine": {
 		"goalLabel": "Meta",
