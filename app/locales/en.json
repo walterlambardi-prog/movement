@@ -59,8 +59,7 @@
 		"profileSubtitle": "Change your name, adjust language, or reset from scratch."
 	},
 	"exercises": {
-		"heroGreeting": "Choose your movement",
-		"heroMessage": "Pick an exercise to start tracking reps instantly."
+		"title": "Exercises"
 	},
 	"routine": {
 		"goalLabel": "Goal",

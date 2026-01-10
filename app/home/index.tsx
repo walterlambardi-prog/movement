@@ -25,8 +25,8 @@ export default function Home() {
 				subtitle: t("index.exercisesActionSubtitle", {
 					defaultValue: "Browse guided counters",
 				}),
-				accent: "#38BDF8",
-				icon: "list-outline" as const,
+				accent: "#A855F7",
+				icon: "body-outline" as const,
 			},
 			{
 				href: "/routine" as const,
@@ -34,15 +34,15 @@ export default function Home() {
 				subtitle: t("routineBuilder.quickSubtitle", {
 					defaultValue: "Configure your routine",
 				}),
-				accent: "#A855F7",
-				icon: "barbell-outline" as const,
+				accent: "#38BDF8",
+				icon: "fitness" as const,
 			},
 			{
 				href: "/history" as const,
 				title: t("common.history", { defaultValue: "History" }),
 				subtitle: t("index.historySubtitle", { defaultValue: "Review your sessions" }),
 				accent: "#22C55E",
-				icon: "stats-chart-outline" as const,
+				icon: "stats-chart" as const,
 			},
 			{
 				href: "/profile" as const,

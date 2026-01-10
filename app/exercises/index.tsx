@@ -1,10 +1,8 @@
 import { memo, useMemo } from "react";
-import { Link } from "expo-router";
+import { Link, Stack } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { ImageBackground, ScrollView, Text, TouchableOpacity, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 
-import { useAppStore } from "../state/useAppStore";
 import { styles } from "./Exercises.styles";
 import { type ExerciseCardProps } from "./Exercises.types";
 
@@ -35,8 +33,6 @@ const ExerciseCard = memo(function ExerciseCard({
 
 export default function ExercisesScreen() {
 	const { t } = useTranslation();
-	const username = useAppStore((state) => state.username);
-	const displayName = username?.trim().length ? username : t("index.welcomeTitle");
 
 	const exercises: ExerciseCardProps[] = useMemo(
 		() => [
@@ -70,23 +66,15 @@ export default function ExercisesScreen() {
 
 	return (
 		<View style={styles.container}>
+			<Stack.Screen
+				options={{
+					headerTitle: t("exercises.title", { defaultValue: "Exercises" }),
+				}}
+			/>
 			<View style={styles.bubbleTop} />
 			<View style={styles.bubbleBottom} />
 
 			<ScrollView contentContainerStyle={styles.screenContent} showsVerticalScrollIndicator={false}>
-				<View style={styles.heroCard}>
-					<View style={styles.heroHeaderRow}>
-						<View style={styles.heroAvatar}>
-							<Ionicons name="body-outline" size={32} color="#38BDF8" />
-						</View>
-						<View>
-							<Text style={styles.heroGreeting}>{t("exercises.heroGreeting")}</Text>
-							<Text style={styles.heroName}>{displayName}</Text>
-						</View>
-					</View>
-					<Text style={styles.heroSubtitle}>{t("exercises.heroMessage")}</Text>
-				</View>
-
 				<View style={styles.cardsContainer}>
 					{exercises.map((exercise) => (
 						<ExerciseCard

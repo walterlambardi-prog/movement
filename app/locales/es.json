@@ -59,8 +59,7 @@
 		"profileSubtitle": "Cambia tu nombre, ajusta el idioma o reinicia desde cero."
 	},
 	"exercises": {
-		"heroGreeting": "Elige tu movimiento",
-		"heroMessage": "Selecciona un ejercicio y empieza a contar reps al instante."
+		"title": "Ejercicios"
 	},
 	"routine": {
 		"goalLabel": "Meta",

@@ -25,7 +25,7 @@ export default function Profile() {
 	const resetAllExercises = useAppStore((state) => state.resetAllExercises);
 	const resetAllRoutines = useAppStore((state) => state.resetAllRoutines);
 	const [name, setName] = useState(storedName);
-	const [isNameOpen, setIsNameOpen] = useState(true);
+	const [isNameOpen, setIsNameOpen] = useState(false);
 	const [isLanguageOpen, setIsLanguageOpen] = useState(false);
 	const [isResetOpen, setIsResetOpen] = useState(false);
 
@@ -75,7 +75,7 @@ export default function Profile() {
 			<View style={styles.content}>
 				<View style={styles.heroCard}>
 					<View style={styles.heroBadge}>
-						<Ionicons name="sparkles-outline" size={16} color="#22D3EE" />
+						<Ionicons name="settings-outline" size={16} color="#22D3EE" />
 						<Text style={styles.heroBadgeText}>{t("common.profile")}</Text>
 					</View>
 					<Text style={styles.heroName}>{t("profile.greeting", { name: displayName })}</Text>
