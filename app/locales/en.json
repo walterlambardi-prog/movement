@@ -295,7 +295,7 @@
 	"aiCoach": {
 		"title": "AI Coach",
 		"subtitle": "Chat to design routines with our four exercises.",
-		"welcome": "I build safe routines using squats, push-ups, hammer curls, and lateral raises. Tell me your age, sex, activity frequency, and athletic level to tailor reps.",
+		"welcome": "Hi! I build safe routines using squats, push-ups, hammer curls, and lateral raises. Tell me your age, sex, activity frequency, and athletic level to tailor reps.",
 		"inputPlaceholder": "Ask for a routine or reps...",
 		"send": "Send",
 		"topicGuard": "I can only help with training, health, or our four exercises.",

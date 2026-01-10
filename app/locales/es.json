@@ -295,7 +295,7 @@
 	"aiCoach": {
 		"title": "Coach AI",
 		"subtitle": "Chatea para crear rutinas con nuestros cuatro ejercicios.",
-		"welcome": "Creo rutinas seguras usando sentadillas, flexiones, hammer curls y elevaciones laterales. Cuéntame tu edad, sexo, frecuencia y estado atlético para ajustar las reps.",
+		"welcome": "Hola! Creo rutinas seguras usando sentadillas, flexiones, hammer curls y elevaciones laterales. Cuéntame tu edad, sexo, frecuencia y estado atlético para ajustar las reps.",
 		"inputPlaceholder": "Pide una rutina o reps...",
 		"send": "Enviar",
 		"topicGuard": "Solo puedo ayudar con entrenamiento, salud o nuestros cuatro ejercicios.",
