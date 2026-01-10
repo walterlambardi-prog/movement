@@ -6,12 +6,12 @@ export const styles = StyleSheet.create({
 		backgroundColor: "#0A0F2C",
 	},
 	content: {
-		padding: 20,
-		paddingBottom: 32,
+		paddingHorizontal: 20,
+		paddingBottom: 39,
 	},
 	exercisesHeading: {
-		marginTop: 12,
-		marginBottom: 10,
+		marginTop: 10,
+		marginBottom: 20,
 		gap: 4,
 		paddingHorizontal: 10,
 	},
@@ -131,7 +131,7 @@ export const styles = StyleSheet.create({
 	},
 	listHeading: {
 		marginTop: 39,
-		marginBottom: 12,
+		marginBottom: 20,
 		gap: 4,
 		paddingHorizontal: 10,
 	},

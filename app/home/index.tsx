@@ -86,7 +86,7 @@ export default function Home() {
 				href: "/history" as const,
 				title: t("common.history", { defaultValue: "History" }),
 				subtitle: t("index.historySubtitle", { defaultValue: "Revisa tus sesiones" }),
-				accent: "#22D3EE",
+				accent: "#EF4444",
 				icon: "time-outline" as const,
 			},
 			{

@@ -49,12 +49,8 @@
 		"profileSubtitle": "Ajusta idioma y nombre"
 	},
 	"routine": {
-		"badge": "Rutina",
-		"ctaTitle": "Iniciar rutina guiada",
-		"ctaSubtitle": "{{count}} reps cada uno: sentadillas, flexiones, hammer curls y elevaciones laterales",
 		"goalLabel": "Meta",
 		"goalValue": "{{current}} / {{target}} reps",
-		"remainingLabel": "Restantes",
 		"remainingValue": "Quedan {{count}} reps",
 		"nextLabel": "Siguiente",
 		"completeLabel": "Completado",

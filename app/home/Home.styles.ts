@@ -62,7 +62,6 @@ export const styles = StyleSheet.create({
 		opacity: 0.1,
 	},
 	quickActionsRow: {
-		flexDirection: "row",
 		gap: 12,
 		paddingHorizontal: 20,
 		marginBottom: 14,
