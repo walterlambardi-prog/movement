@@ -53,6 +53,8 @@
 		"hammerSubtitle": "Curl martillo alterno con conteo",
 		"lateralsTitle": "Elevaciones Laterales",
 		"lateralsSubtitle": "Elevaciones laterales simultáneas",
+		"aiCoachTitle": "Coach AI",
+		"aiCoachSubtitle": "Pídele al coach una rutina segura",
 		"exercisesActionTitle": "Ejercicios",
 		"exercisesActionSubtitle": "Explora contadores guiados",
 		"historySubtitle": "Mira cada sesión: repeticiones, tendencias y récords.",
@@ -288,6 +290,27 @@
 		},
 		"voice": {
 			"welcome": "Elevaciones laterales: brazos abajo, sube ambos a la altura de hombros."
+		}
+	},
+	"aiCoach": {
+		"title": "Coach AI",
+		"subtitle": "Chatea para crear rutinas con nuestros cuatro ejercicios.",
+		"welcome": "Creo rutinas seguras usando sentadillas, flexiones, hammer curls y elevaciones laterales. Cuéntame tu edad, sexo, frecuencia y estado atlético para ajustar las reps.",
+		"inputPlaceholder": "Pide una rutina o reps...",
+		"send": "Enviar",
+		"topicGuard": "Solo puedo ayudar con entrenamiento, salud o nuestros cuatro ejercicios.",
+		"fetchError": "No pude contactar al coach. Intenta de nuevo.",
+		"planDetected": "Rutina lista. ¿La iniciamos?",
+		"usePlanCta": "Iniciar rutina",
+		"jsonToggleOn": "Modo JSON: ON",
+		"jsonToggleOff": "Modo JSON: OFF",
+		"jsonHint": "JSON devuelve ejercicios + reps para auto-ejecución.",
+		"suggestions": {
+			"starter": "Rutina de 30 min para principiante",
+			"upperLower": "División tren superior/inferior con nuestros ejercicios",
+			"reps": "¿Cuántas reps hago hoy?",
+			"form": "Consejos para mejorar la técnica",
+			"json": "Dame una rutina en JSON"
 		}
 	}
 }

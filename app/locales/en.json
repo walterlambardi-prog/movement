@@ -53,6 +53,8 @@
 		"hammerSubtitle": "Alternating hammer curl counter",
 		"lateralsTitle": "Lateral Raises",
 		"lateralsSubtitle": "Simultaneous lateral raises",
+		"aiCoachTitle": "AI Coach",
+		"aiCoachSubtitle": "Ask an AI coach for a safe routine",
 		"exercisesActionTitle": "Exercises",
 		"exercisesActionSubtitle": "Browse guided counters",
 		"historySubtitle": "Review your sessions and stats",
@@ -288,6 +290,27 @@
 		},
 		"voice": {
 			"welcome": "Lateral raises: arms down, raise both to shoulder height."
+		}
+	},
+	"aiCoach": {
+		"title": "AI Coach",
+		"subtitle": "Chat to design routines with our four exercises.",
+		"welcome": "I build safe routines using squats, push-ups, hammer curls, and lateral raises. Tell me your age, sex, activity frequency, and athletic level to tailor reps.",
+		"inputPlaceholder": "Ask for a routine or reps...",
+		"send": "Send",
+		"topicGuard": "I can only help with training, health, or our four exercises.",
+		"fetchError": "Could not reach the coach. Try again.",
+		"planDetected": "Plan detected. Start it?",
+		"usePlanCta": "Start routine",
+		"jsonToggleOn": "JSON mode: ON",
+		"jsonToggleOff": "JSON mode: OFF",
+		"jsonHint": "JSON returns exercises + reps for auto-run.",
+		"suggestions": {
+			"starter": "30-min routine for a beginner",
+			"upperLower": "Upper/lower split with our exercises",
+			"reps": "How many reps should I do today?",
+			"form": "Tips to improve my form",
+			"json": "Give me a routine in JSON"
 		}
 	}
 }

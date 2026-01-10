@@ -29,6 +29,15 @@ export default function Home() {
 				icon: "body-outline" as const,
 			},
 			{
+				href: "/aiCoach" as const,
+				title: t("index.aiCoachTitle", { defaultValue: "AI Coach" }),
+				subtitle: t("index.aiCoachSubtitle", {
+					defaultValue: "Ask an AI coach for a safe routine",
+				}),
+				accent: "#F59E0B",
+				icon: "chatbubbles-outline" as const,
+			},
+			{
 				href: "/routine" as const,
 				title: t("common.routine", { defaultValue: "Routine" }),
 				subtitle: t("routineBuilder.quickSubtitle", {
