@@ -89,120 +89,126 @@ const createDefaultRoutineState = (): RoutineState => ({
 	sessions: [],
 });
 
+let markHydrated: (() => void) | null = null;
+
 export const useAppStore = create<AppState>()(
 	persist(
-		(set, get) => ({
-			username: null,
-			language: initialLanguage,
-			exercises: createDefaultExercises(),
-			hydrated: false,
-			hasOnboarded: false,
-			routine: createDefaultRoutineState(),
+		(set, get) => {
+			markHydrated = () => set({ hydrated: true });
 
-			setUsername: (name) => set({ username: name, hasOnboarded: true }),
-			setLanguage: (language) => {
-				i18n.changeLanguage(language);
-				set({ language });
-			},
-			setOnboarded: () => set({ hasOnboarded: true }),
-			recordSession: (exercise, count, timestamp = Date.now()) => {
-				if (count <= 0) return;
-				const current = get().exercises[exercise] ?? { total: 0, sessions: [] };
-				const updated: ExerciseStats = {
-					total: current.total + count,
-					sessions: [...current.sessions, { count, timestamp }],
-				};
-				set({
-					exercises: {
-						...get().exercises,
-						[exercise]: updated,
-					},
-				});
-			},
-			resetExercise: (exercise) => {
-				set({
-					exercises: {
-						...get().exercises,
-						[exercise]: { total: 0, sessions: [] },
-					},
-				});
-			},
-			resetAllExercises: () => {
-				set({ exercises: createDefaultExercises() });
-			},
-			resetAllRoutines: () => {
-				set({
-					routine: { ...createDefaultRoutineState(), preferences: get().routine.preferences },
-				});
-			},
-			saveRoutinePreferences: (prefs) => {
-				const next = { ...get().routine.preferences };
-				(Object.keys(prefs) as ExerciseKey[]).forEach((key) => {
-					const current = next[key];
-					next[key] = {
-						selected: prefs[key]?.selected ?? current.selected,
-						reps: prefs[key]?.reps ?? current.reps,
+			return {
+				username: null,
+				language: initialLanguage,
+				exercises: createDefaultExercises(),
+				hydrated: false,
+				hasOnboarded: false,
+				routine: createDefaultRoutineState(),
+
+				setUsername: (name) => set({ username: name, hasOnboarded: true }),
+				setLanguage: (language) => {
+					i18n.changeLanguage(language);
+					set({ language });
+				},
+				setOnboarded: () => set({ hasOnboarded: true }),
+				recordSession: (exercise, count, timestamp = Date.now()) => {
+					if (count <= 0) return;
+					const current = get().exercises[exercise] ?? { total: 0, sessions: [] };
+					const updated: ExerciseStats = {
+						total: current.total + count,
+						sessions: [...current.sessions, { count, timestamp }],
 					};
-				});
-				set({ routine: { ...get().routine, preferences: next } });
-			},
-			startRoutineSession: (plan, startedAt = Date.now()) => {
-				const id = `${startedAt}`;
-				set({
-					routine: {
-						...get().routine,
-						currentSession: {
-							id,
-							startedAt,
-							plan,
-							items: [],
+					set({
+						exercises: {
+							...get().exercises,
+							[exercise]: updated,
 						},
-					},
-				});
-			},
-			completeRoutineExercise: (exercise, completed, target) => {
-				const current = get().routine.currentSession;
-				if (!current) return;
-				const items = [...current.items];
-				const existingIndex = items.findIndex((i) => i.exercise === exercise);
-				const normalizedCompleted = Math.max(0, completed);
-				if (existingIndex >= 0) {
-					items[existingIndex] = {
-						...items[existingIndex],
-						completed: normalizedCompleted,
-						target,
+					});
+				},
+				resetExercise: (exercise) => {
+					set({
+						exercises: {
+							...get().exercises,
+							[exercise]: { total: 0, sessions: [] },
+						},
+					});
+				},
+				resetAllExercises: () => {
+					set({ exercises: createDefaultExercises() });
+				},
+				resetAllRoutines: () => {
+					set({
+						routine: { ...createDefaultRoutineState(), preferences: get().routine.preferences },
+					});
+				},
+				saveRoutinePreferences: (prefs) => {
+					const next = { ...get().routine.preferences };
+					(Object.keys(prefs) as ExerciseKey[]).forEach((key) => {
+						const current = next[key];
+						next[key] = {
+							selected: prefs[key]?.selected ?? current.selected,
+							reps: prefs[key]?.reps ?? current.reps,
+						};
+					});
+					set({ routine: { ...get().routine, preferences: next } });
+				},
+				startRoutineSession: (plan, startedAt = Date.now()) => {
+					const id = `${startedAt}`;
+					set({
+						routine: {
+							...get().routine,
+							currentSession: {
+								id,
+								startedAt,
+								plan,
+								items: [],
+							},
+						},
+					});
+				},
+				completeRoutineExercise: (exercise, completed, target) => {
+					const current = get().routine.currentSession;
+					if (!current) return;
+					const items = [...current.items];
+					const existingIndex = items.findIndex((i) => i.exercise === exercise);
+					const normalizedCompleted = Math.max(0, completed);
+					if (existingIndex >= 0) {
+						items[existingIndex] = {
+							...items[existingIndex],
+							completed: normalizedCompleted,
+							target,
+						};
+					} else {
+						items.push({ exercise, target, completed: normalizedCompleted });
+					}
+					set({
+						routine: {
+							...get().routine,
+							currentSession: { ...current, items },
+						},
+					});
+				},
+				finishRoutineSession: (endedAt = Date.now()) => {
+					const routineState = get().routine;
+					const current = routineState.currentSession;
+					if (!current) return;
+					const totalReps = current.items.reduce((sum, item) => sum + item.completed, 0);
+					const session: RoutineSession = {
+						id: current.id,
+						startedAt: current.startedAt,
+						endedAt,
+						items: current.items,
+						totalReps,
 					};
-				} else {
-					items.push({ exercise, target, completed: normalizedCompleted });
-				}
-				set({
-					routine: {
-						...get().routine,
-						currentSession: { ...current, items },
-					},
-				});
-			},
-			finishRoutineSession: (endedAt = Date.now()) => {
-				const routineState = get().routine;
-				const current = routineState.currentSession;
-				if (!current) return;
-				const totalReps = current.items.reduce((sum, item) => sum + item.completed, 0);
-				const session: RoutineSession = {
-					id: current.id,
-					startedAt: current.startedAt,
-					endedAt,
-					items: current.items,
-					totalReps,
-				};
-				set({
-					routine: {
-						preferences: routineState.preferences,
-						currentSession: null,
-						sessions: [session, ...routineState.sessions],
-					},
-				});
-			},
-		}),
+					set({
+						routine: {
+							preferences: routineState.preferences,
+							currentSession: null,
+							sessions: [session, ...routineState.sessions],
+						},
+					});
+				},
+			};
+		},
 		{
 			name: "movement-app-store",
 			storage: createJSONStorage(() => AsyncStorage),
@@ -213,11 +219,14 @@ export const useAppStore = create<AppState>()(
 				hasOnboarded: state.hasOnboarded,
 				routine: state.routine,
 			}),
-			onRehydrateStorage: () => (state) => {
-				if (state) {
-					i18n.changeLanguage(state.language);
-					state.hydrated = true;
-				}
+			onRehydrateStorage: () => {
+				markHydrated?.();
+				return (state) => {
+					if (state?.language) {
+						i18n.changeLanguage(state.language);
+					}
+					markHydrated?.();
+				};
 			},
 		}
 	)
