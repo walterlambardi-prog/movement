@@ -294,7 +294,6 @@
 	},
 	"aiCoach": {
 		"title": "Coach AI",
-		"subtitle": "Chatea para crear rutinas con nuestros cuatro ejercicios.",
 		"welcome": "Hola! Creo rutinas seguras usando sentadillas, flexiones, hammer curls y elevaciones laterales. Cuéntame tu edad, sexo, frecuencia y estado atlético para ajustar las reps.",
 		"inputPlaceholder": "Pide una rutina o reps...",
 		"send": "Enviar",
@@ -306,11 +305,9 @@
 		"jsonToggleOff": "Modo JSON: OFF",
 		"jsonHint": "JSON devuelve ejercicios + reps para auto-ejecución.",
 		"suggestions": {
-			"starter": "Rutina de 30 min para principiante",
-			"upperLower": "División tren superior/inferior con nuestros ejercicios",
-			"reps": "¿Cuántas reps hago hoy?",
-			"form": "Consejos para mejorar la técnica",
-			"json": "Dame una rutina en JSON"
+			"starter": "Plan principiante con sentadillas, flexiones, hammer curls y elevaciones laterales",
+			"reps": "Reps del día para sentadillas, flexiones, hammer curls y elevaciones laterales",
+			"form": "Consejos de técnica para sentadillas, flexiones, hammer curls y elevaciones laterales"
 		}
 	}
 }

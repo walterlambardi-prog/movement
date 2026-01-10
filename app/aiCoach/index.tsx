@@ -80,7 +80,6 @@ export default function AiCoachScreen() {
 	const suggestions: Suggestion[] = useMemo(
 		() => [
 			{ id: "starter", text: t("aiCoach.suggestions.starter") },
-			{ id: "upperLower", text: t("aiCoach.suggestions.upperLower") },
 			{ id: "reps", text: t("aiCoach.suggestions.reps") },
 			{ id: "form", text: t("aiCoach.suggestions.form") },
 		],
@@ -263,8 +262,6 @@ export default function AiCoachScreen() {
 				contentContainerStyle={styles.screenContent}
 				showsVerticalScrollIndicator={false}
 			>
-				<Text style={styles.subtitle}>{t("aiCoach.subtitle")}</Text>
-
 				<View style={styles.suggestionsWrap}>
 					{suggestions.map((item) => (
 						<TouchableOpacity

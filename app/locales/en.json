@@ -294,7 +294,6 @@
 	},
 	"aiCoach": {
 		"title": "AI Coach",
-		"subtitle": "Chat to design routines with our four exercises.",
 		"welcome": "Hi! I build safe routines using squats, push-ups, hammer curls, and lateral raises. Tell me your age, sex, activity frequency, and athletic level to tailor reps.",
 		"inputPlaceholder": "Ask for a routine or reps...",
 		"send": "Send",
@@ -306,11 +305,9 @@
 		"jsonToggleOff": "JSON mode: OFF",
 		"jsonHint": "JSON returns exercises + reps for auto-run.",
 		"suggestions": {
-			"starter": "30-min routine for a beginner",
-			"upperLower": "Upper/lower split with our exercises",
-			"reps": "How many reps should I do today?",
-			"form": "Tips to improve my form",
-			"json": "Give me a routine in JSON"
+			"starter": "Beginner plan with squats, push-ups, hammer curls, lateral raises",
+			"reps": "Daily rep targets for squats, push-ups, hammer curls, lateral raises",
+			"form": "Form tips for squats, push-ups, hammer curls, lateral raises"
 		}
 	}
 }
