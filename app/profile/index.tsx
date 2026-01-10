@@ -23,6 +23,7 @@ export default function Profile() {
 	const language = useAppStore((state) => state.language);
 	const setLanguage = useAppStore((state) => state.setLanguage);
 	const resetAllExercises = useAppStore((state) => state.resetAllExercises);
+	const resetAllRoutines = useAppStore((state) => state.resetAllRoutines);
 	const [name, setName] = useState(storedName);
 	const [isNameOpen, setIsNameOpen] = useState(true);
 	const [isLanguageOpen, setIsLanguageOpen] = useState(false);
@@ -58,10 +59,13 @@ export default function Profile() {
 			{
 				text: t("profile.resetConfirmYes"),
 				style: "destructive",
-				onPress: () => resetAllExercises(),
+				onPress: () => {
+					resetAllExercises();
+					resetAllRoutines();
+				},
 			},
 		]);
-	}, [resetAllExercises, t]);
+	}, [resetAllExercises, resetAllRoutines, t]);
 
 	const displayName = (name || t("profile.emptyName")).trim();
 

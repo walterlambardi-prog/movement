@@ -21,8 +21,9 @@ export default function Onboarding({ initialName = "" }: Readonly<OnboardingProp
 			setError(t("onboarding.error"));
 			return;
 		}
+		const targetLanguage = i18n.language || "en";
+		setLanguage(targetLanguage);
 		setUsername(trimmed);
-		setLanguage(i18n.language);
 	}, [name, setLanguage, setUsername, t]);
 
 	const handleChangeName = useCallback((text: string) => {

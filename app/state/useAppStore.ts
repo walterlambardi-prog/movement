@@ -65,6 +65,7 @@ type AppState = {
 	recordSession: (exercise: ExerciseKey, count: number, timestamp?: number) => void;
 	resetExercise: (exercise: ExerciseKey) => void;
 	resetAllExercises: () => void;
+	resetAllRoutines: () => void;
 	saveRoutinePreferences: (prefs: Partial<Record<ExerciseKey, RoutinePreference>>) => void;
 	startRoutineSession: (plan: RoutinePlanItem[], startedAt?: number) => void;
 	completeRoutineExercise: (exercise: ExerciseKey, completed: number, target: number) => void;
@@ -128,6 +129,11 @@ export const useAppStore = create<AppState>()(
 			},
 			resetAllExercises: () => {
 				set({ exercises: createDefaultExercises() });
+			},
+			resetAllRoutines: () => {
+				set({
+					routine: { ...createDefaultRoutineState(), preferences: get().routine.preferences },
+				});
 			},
 			saveRoutinePreferences: (prefs) => {
 				const next = { ...get().routine.preferences };
