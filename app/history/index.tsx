@@ -7,7 +7,15 @@ import { useAppStore, type ExerciseKey } from "../state/useAppStore";
 import { styles } from "./History.styles";
 import { type SessionItem } from "./History.types";
 
-type HighlightKey = "totalReps" | "sessions" | "topExercise" | "avgPerSession" | "lastSession";
+type HighlightKey =
+	| "totalReps"
+	| "sessions"
+	| "topExercise"
+	| "avgPerSession"
+	| "lastSession"
+	| "routines"
+	| "avgRoutineReps"
+	| "avgRoutineTime";
 
 type HighlightItem = {
 	key: HighlightKey;
@@ -31,22 +39,25 @@ const exerciseMeta: Record<ExerciseKey, { image: number; accent: string }> = {
 		accent: "#F97316",
 	},
 	lateralRaises: {
-		image: require("../../assets/images/exercises/lateralRaises.png"),
+		image: require("../../assets/images/exercises/lateralRaisesWoman.png"),
 		accent: "#22D3EE",
+	},
+	squats: {
+		image: require("../../assets/images/exercises/squatsWoman.png"),
+		accent: "#8B5CF6",
 	},
 	pushups: {
 		image: require("../../assets/images/exercises/pushups.png"),
 		accent: "#EF4444",
 	},
-	squats: {
-		image: require("../../assets/images/exercises/squats.png"),
-		accent: "#8B5CF6",
-	},
 };
 
 const highlightBackgrounds: Partial<Record<HighlightKey, number>> = {
 	totalReps: require("../../assets/images/exercises/total-reps.png"),
-	sessions: require("../../assets/images/exercises/sessions.png"),
+	sessions: require("../../assets/images/exercises/hammerCurlsWoman.png"),
+	routines: require("../../assets/images/exercises/avg-per-routine.png"),
+	avgRoutineReps: require("../../assets/images/exercises/avg-reps-routine.png"),
+	avgRoutineTime: require("../../assets/images/exercises/squatsWoman.png"),
 	avgPerSession: require("../../assets/images/exercises/avg-per-session.png"),
 	lastSession: require("../../assets/images/exercises/last-session.png"),
 };
@@ -61,9 +72,18 @@ function formatDate(ts: number, locale: string) {
 	}).format(date);
 }
 
+function formatDuration(ms: number) {
+	const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+	const minutes = Math.floor(totalSeconds / 60);
+	const seconds = totalSeconds % 60;
+	if (minutes === 0) return `${seconds}s`;
+	return `${minutes}m ${seconds.toString().padStart(2, "0")}s`;
+}
+
 export default function History() {
 	const { t, i18n } = useTranslation();
 	const exercises = useAppStore((state) => state.exercises);
+	const routineSessions = useAppStore((state) => state.routine.sessions);
 	const labels = exerciseLabels(t);
 
 	const sessionList = useMemo<SessionItem[]>(() => {
@@ -104,22 +124,20 @@ export default function History() {
 		[mergedSessions]
 	);
 
-	console.log("SESSION LIST", sessionList);
-
 	const totalSessions = mergedSessions.length;
+	const totalRoutines = routineSessions.length;
 
-	const todayStart = useMemo(() => {
-		const d = new Date();
-		d.setHours(0, 0, 0, 0);
-		return d.getTime();
-	}, []);
+	const avgRoutineReps = useMemo(() => {
+		if (routineSessions.length === 0) return 0;
+		const total = routineSessions.reduce((sum, r) => sum + r.totalReps, 0);
+		return Math.round(total / routineSessions.length);
+	}, [routineSessions]);
 
-	const todaySessions = useMemo(
-		() => mergedSessions.filter((item) => item.session.timestamp >= todayStart),
-		[mergedSessions, todayStart]
-	);
-
-	const todaySessionsCount = todaySessions.length;
+	const avgRoutineTimeMs = useMemo(() => {
+		if (routineSessions.length === 0) return 0;
+		const total = routineSessions.reduce((sum, r) => sum + (r.endedAt - r.startedAt), 0);
+		return Math.round(total / routineSessions.length);
+	}, [routineSessions]);
 
 	const topExerciseKey = useMemo(() => {
 		let best: ExerciseKey | null = null;
@@ -164,14 +182,8 @@ export default function History() {
 			{
 				key: "sessions",
 				label: t("history.highlights.sessions"),
-				value: todaySessionsCount.toString(),
+				value: totalSessions.toString(),
 				subtitle: t("history.highlights.sessionsSub"),
-			},
-			{
-				key: "avgPerSession",
-				label: t("history.highlights.avgPerSession"),
-				value: avgPerSession.toString(),
-				subtitle: t("history.highlights.avgPerSessionSub"),
 			},
 			{
 				key: "lastSession",
@@ -183,6 +195,31 @@ export default function History() {
 					? t("history.highlights.lastSessionSub")
 					: t("history.highlights.noData"),
 			},
+			{
+				key: "routines",
+				label: t("history.highlights.routines"),
+				value: totalRoutines.toString(),
+				subtitle: t("history.highlights.routinesSub"),
+			},
+			{
+				key: "avgRoutineReps",
+				label: t("history.highlights.avgRoutineReps"),
+				value: avgRoutineReps.toString(),
+				subtitle: t("history.highlights.avgRoutineRepsSub"),
+			},
+			{
+				key: "avgRoutineTime",
+				label: t("history.highlights.avgRoutineTime"),
+				value:
+					avgRoutineTimeMs > 0 ? formatDuration(avgRoutineTimeMs) : t("history.highlights.none"),
+				subtitle: t("history.highlights.avgRoutineTimeSub"),
+			},
+			{
+				key: "avgPerSession",
+				label: t("history.highlights.avgPerSession"),
+				value: avgPerSession.toString(),
+				subtitle: t("history.highlights.avgPerSessionSub"),
+			},
 		],
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 		[
@@ -191,10 +228,13 @@ export default function History() {
 			i18n.language,
 			labels,
 			lastSessionTs,
+			avgRoutineReps,
+			avgRoutineTimeMs,
+			totalSessions,
+			totalRoutines,
 			t,
 			topExerciseKey,
 			totalReps,
-			totalSessions,
 		]
 	);
 
@@ -252,10 +292,7 @@ export default function History() {
 				<View style={styles.summaryGrid}>
 					{highlights.map((item) => {
 						const isTopExercise = item.key === "topExercise";
-						const commonStyle = [
-							styles.summaryCard,
-							item.key === "lastSession" && styles.summaryCardFull,
-						];
+						const commonStyle = [styles.summaryCard];
 
 						const content = (
 							<View style={styles.summaryContent}>
@@ -304,6 +341,11 @@ export default function History() {
 							</View>
 						);
 					})}
+				</View>
+
+				<View style={styles.listHeading}>
+					<Text style={styles.summaryTitle}>{t("history.combinedHeading.title")}</Text>
+					<Text style={styles.summarySubtitle}>{t("history.combinedHeading.subtitle")}</Text>
 				</View>
 				<FlatList
 					data={mergedSessions}

@@ -1,10 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
-import { ExerciseKey } from "../state/useAppStore";
+import { ExerciseKey, RoutinePreference, useAppStore } from "../state/useAppStore";
 import { DEFAULT_ROUTINE_TARGET } from "./config";
 import { styles } from "./Routine.styles";
 import { RoutineExerciseConfig } from "./Routine.types";
@@ -20,16 +20,32 @@ const clampReps = (value: number) => Math.max(1, Math.min(200, value));
 
 type ExerciseState = Record<ExerciseKey, { selected: boolean; reps: number }>;
 
-const createInitialState = (): ExerciseState =>
-	EXERCISES.reduce((acc, item) => {
-		acc[item.key] = { selected: true, reps: item.defaultReps };
+const fromPreferences = (
+	prefs: Record<ExerciseKey, RoutinePreference> | null,
+	fallBack?: ExerciseState
+): ExerciseState => {
+	if (!prefs && fallBack) return fallBack;
+	return EXERCISES.reduce((acc, item) => {
+		const pref = prefs?.[item.key];
+		acc[item.key] = {
+			selected: pref?.selected ?? true,
+			reps: pref?.reps ?? item.defaultReps,
+		};
 		return acc;
 	}, {} as ExerciseState);
+};
 
 export default function RoutineBuilder() {
 	const { t } = useTranslation();
 	const router = useRouter();
-	const [state, setState] = useState<ExerciseState>(createInitialState);
+	const routinePrefs = useAppStore((s) => s.routine.preferences);
+	const saveRoutinePreferences = useAppStore((s) => s.saveRoutinePreferences);
+	const startRoutineSession = useAppStore((s) => s.startRoutineSession);
+	const [state, setState] = useState<ExerciseState>(fromPreferences(routinePrefs));
+
+	useEffect(() => {
+		setState((prev) => fromPreferences(routinePrefs, prev));
+	}, [routinePrefs]);
 
 	const selectedExercises = useMemo(
 		() => EXERCISES.filter((item) => state[item.key]?.selected),
@@ -40,23 +56,33 @@ export default function RoutineBuilder() {
 	const totalTargets = selectedExercises.reduce((sum, item) => sum + state[item.key].reps, 0);
 
 	const toggleSelect = (key: ExerciseKey) => {
-		setState((prev) => ({
-			...prev,
-			[key]: {
-				...prev[key],
-				selected: !prev[key].selected,
-			},
-		}));
+		setState((prev) => {
+			const nextSelected = !prev[key].selected;
+			const next = {
+				...prev,
+				[key]: {
+					...prev[key],
+					selected: nextSelected,
+				},
+			};
+			saveRoutinePreferences({ [key]: { selected: nextSelected, reps: prev[key].reps } });
+			return next;
+		});
 	};
 
 	const changeReps = (key: ExerciseKey, delta: number) => {
-		setState((prev) => ({
-			...prev,
-			[key]: {
-				...prev[key],
-				reps: clampReps(prev[key].reps + delta),
-			},
-		}));
+		setState((prev) => {
+			const nextReps = clampReps(prev[key].reps + delta);
+			const next = {
+				...prev,
+				[key]: {
+					...prev[key],
+					reps: nextReps,
+				},
+			};
+			saveRoutinePreferences({ [key]: { selected: prev[key].selected, reps: nextReps } });
+			return next;
+		});
 	};
 
 	const handleStart = () => {
@@ -69,6 +95,12 @@ export default function RoutineBuilder() {
 		const targets = selectedExercises
 			.map((item) => `${item.key}:${state[item.key].reps}`)
 			.join(",");
+		const plan = selectedExercises.map((item) => ({
+			exercise: item.key,
+			target: state[item.key].reps,
+		}));
+		const startedAt = Date.now();
+		startRoutineSession(plan, startedAt);
 
 		router.push({
 			pathname: `/${first}`,
@@ -77,6 +109,7 @@ export default function RoutineBuilder() {
 				routineExercises,
 				targets,
 				targetReps: state[first].reps.toString(),
+				startAt: startedAt.toString(),
 				...(next ? { nextExercise: next } : {}),
 			},
 		});

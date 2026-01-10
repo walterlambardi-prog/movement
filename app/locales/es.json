@@ -77,6 +77,10 @@
 		"subtitle": "Revisa cada sesión y el total por ejercicio.",
 		"badge": "Actividad",
 		"reps": "Reps",
+		"combinedHeading": {
+			"title": "Sesiones combinadas",
+			"subtitle": "Historial de sesiones combinadas"
+		},
 		"exercisesHeading": {
 			"title": "Totales por ejercicio",
 			"subtitle": "Volumen por actividad"
@@ -87,7 +91,13 @@
 			"totalReps": "Reps totales",
 			"allExercises": "Todos los ejercicios",
 			"sessions": "Sesiones",
-			"sessionsSub": "Sesiones registradas hoy",
+			"sessionsSub": "Sesiones registradas en total",
+			"routines": "Rutinas",
+			"routinesSub": "Rutinas guiadas completadas",
+			"avgRoutineReps": "Promedio de reps por rutina",
+			"avgRoutineRepsSub": "Volumen promedio en rutinas",
+			"avgRoutineTime": "Tiempo promedio por rutina",
+			"avgRoutineTimeSub": "Duración promedio de inicio a fin",
 			"topExercise": "Ejercicio destacado",
 			"repsCount": "{{count}} reps",
 			"avgPerSession": "Promedio por sesión",

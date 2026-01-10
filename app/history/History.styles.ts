@@ -51,9 +51,6 @@ export const styles = StyleSheet.create({
 		elevation: 3,
 		overflow: "hidden",
 	},
-	summaryCardFull: {
-		flexBasis: "100%",
-	},
 	summaryHeader: {
 		flexDirection: "row",
 		justifyContent: "space-between",
@@ -131,6 +128,12 @@ export const styles = StyleSheet.create({
 	},
 	listContent: {
 		paddingBottom: 40,
+	},
+	listHeading: {
+		marginTop: 39,
+		marginBottom: 12,
+		gap: 4,
+		paddingHorizontal: 10,
 	},
 	itemCard: {
 		backgroundColor: "#0F172A",

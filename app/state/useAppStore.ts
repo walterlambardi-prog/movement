@@ -14,12 +14,48 @@ export type ExerciseStats = {
 	sessions: ExerciseSession[];
 };
 
+export type RoutinePreference = {
+	selected: boolean;
+	reps: number;
+};
+
+export type RoutinePlanItem = {
+	exercise: ExerciseKey;
+	target: number;
+};
+
+export type RoutineSessionItem = {
+	exercise: ExerciseKey;
+	target: number;
+	completed: number;
+};
+
+export type RoutineSession = {
+	id: string;
+	startedAt: number;
+	endedAt: number;
+	items: RoutineSessionItem[];
+	totalReps: number;
+};
+
+export type RoutineState = {
+	preferences: Record<ExerciseKey, RoutinePreference>;
+	currentSession: {
+		id: string;
+		startedAt: number;
+		plan: RoutinePlanItem[];
+		items: RoutineSessionItem[];
+	} | null;
+	sessions: RoutineSession[];
+};
+
 type AppState = {
 	username: string | null;
 	language: string;
 	exercises: Record<ExerciseKey, ExerciseStats>;
 	hydrated: boolean;
 	hasOnboarded: boolean;
+	routine: RoutineState;
 
 	setUsername: (name: string) => void;
 	setLanguage: (language: string) => void;
@@ -27,12 +63,27 @@ type AppState = {
 	recordSession: (exercise: ExerciseKey, count: number, timestamp?: number) => void;
 	resetExercise: (exercise: ExerciseKey) => void;
 	resetAllExercises: () => void;
+	saveRoutinePreferences: (prefs: Partial<Record<ExerciseKey, RoutinePreference>>) => void;
+	startRoutineSession: (plan: RoutinePlanItem[], startedAt?: number) => void;
+	completeRoutineExercise: (exercise: ExerciseKey, completed: number, target: number) => void;
+	finishRoutineSession: (endedAt?: number) => void;
 };
 const createDefaultExercises = (): Record<ExerciseKey, ExerciseStats> => ({
 	hammerCurls: { total: 0, sessions: [] },
 	lateralRaises: { total: 0, sessions: [] },
 	pushups: { total: 0, sessions: [] },
 	squats: { total: 0, sessions: [] },
+});
+
+const createDefaultRoutineState = (): RoutineState => ({
+	preferences: {
+		hammerCurls: { selected: true, reps: 10 },
+		lateralRaises: { selected: true, reps: 10 },
+		pushups: { selected: true, reps: 10 },
+		squats: { selected: true, reps: 10 },
+	},
+	currentSession: null,
+	sessions: [],
 });
 
 export const useAppStore = create<AppState>()(
@@ -43,6 +94,7 @@ export const useAppStore = create<AppState>()(
 			exercises: createDefaultExercises(),
 			hydrated: false,
 			hasOnboarded: false,
+			routine: createDefaultRoutineState(),
 
 			setUsername: (name) => set({ username: name, hasOnboarded: true }),
 			setLanguage: (language) => set({ language }),
@@ -72,6 +124,73 @@ export const useAppStore = create<AppState>()(
 			resetAllExercises: () => {
 				set({ exercises: createDefaultExercises() });
 			},
+			saveRoutinePreferences: (prefs) => {
+				const next = { ...get().routine.preferences };
+				(Object.keys(prefs) as ExerciseKey[]).forEach((key) => {
+					const current = next[key];
+					next[key] = {
+						selected: prefs[key]?.selected ?? current.selected,
+						reps: prefs[key]?.reps ?? current.reps,
+					};
+				});
+				set({ routine: { ...get().routine, preferences: next } });
+			},
+			startRoutineSession: (plan, startedAt = Date.now()) => {
+				const id = `${startedAt}`;
+				set({
+					routine: {
+						...get().routine,
+						currentSession: {
+							id,
+							startedAt,
+							plan,
+							items: [],
+						},
+					},
+				});
+			},
+			completeRoutineExercise: (exercise, completed, target) => {
+				const current = get().routine.currentSession;
+				if (!current) return;
+				const items = [...current.items];
+				const existingIndex = items.findIndex((i) => i.exercise === exercise);
+				const normalizedCompleted = Math.max(0, completed);
+				if (existingIndex >= 0) {
+					items[existingIndex] = {
+						...items[existingIndex],
+						completed: normalizedCompleted,
+						target,
+					};
+				} else {
+					items.push({ exercise, target, completed: normalizedCompleted });
+				}
+				set({
+					routine: {
+						...get().routine,
+						currentSession: { ...current, items },
+					},
+				});
+			},
+			finishRoutineSession: (endedAt = Date.now()) => {
+				const routineState = get().routine;
+				const current = routineState.currentSession;
+				if (!current) return;
+				const totalReps = current.items.reduce((sum, item) => sum + item.completed, 0);
+				const session: RoutineSession = {
+					id: current.id,
+					startedAt: current.startedAt,
+					endedAt,
+					items: current.items,
+					totalReps,
+				};
+				set({
+					routine: {
+						preferences: routineState.preferences,
+						currentSession: null,
+						sessions: [session, ...routineState.sessions],
+					},
+				});
+			},
 		}),
 		{
 			name: "movement-app-store",
@@ -81,6 +200,7 @@ export const useAppStore = create<AppState>()(
 				language: state.language,
 				exercises: state.exercises,
 				hasOnboarded: state.hasOnboarded,
+				routine: state.routine,
 			}),
 			onRehydrateStorage: () => (state) => {
 				if (state) state.hydrated = true;

@@ -1,8 +1,8 @@
-import { useCallback, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
 import { DEFAULT_ROUTINE_TARGET, ROUTINE_SEQUENCE, isRoutineExercise } from "./config";
-import { ExerciseKey } from "../state/useAppStore";
+import { ExerciseKey, RoutinePlanItem, useAppStore } from "../state/useAppStore";
 
 type RoutineParams = {
 	targetReps?: string | string[];
@@ -10,6 +10,7 @@ type RoutineParams = {
 	nextExercise?: string | string[];
 	routineExercises?: string | string[];
 	targets?: string | string[];
+	startAt?: string | string[];
 };
 
 const normalizeParam = (value?: string | string[]) => (Array.isArray(value) ? value[0] : value);
@@ -44,6 +45,11 @@ export function useRoutineStep(currentExercise: ExerciseKey) {
 	const params = useLocalSearchParams<RoutineParams>();
 	const routineExercisesParam = normalizeParam(params.routineExercises);
 	const targetsParam = normalizeParam(params.targets);
+	const startAtParam = normalizeParam(params.startAt);
+	const currentRoutine = useAppStore((s) => s.routine.currentSession);
+	const startRoutineSession = useAppStore((s) => s.startRoutineSession);
+	const completeRoutineExercise = useAppStore((s) => s.completeRoutineExercise);
+	const finishRoutineSession = useAppStore((s) => s.finishRoutineSession);
 
 	const target = useMemo(() => {
 		const raw = normalizeParam(params.targetReps);
@@ -70,6 +76,10 @@ export function useRoutineStep(currentExercise: ExerciseKey) {
 	}, [isRoutine, routineExercisesParam]);
 
 	const targetMap = useMemo(() => parseTargets(targetsParam), [targetsParam]);
+	const startAt = useMemo(() => {
+		const parsed = startAtParam ? Number(startAtParam) : NaN;
+		return Number.isFinite(parsed) ? parsed : Date.now();
+	}, [startAtParam]);
 
 	const nextFromParams = useMemo(() => {
 		if (!isRoutine) return null;
@@ -100,6 +110,22 @@ export function useRoutineStep(currentExercise: ExerciseKey) {
 		[targetMap]
 	);
 
+	const planFromParams = useMemo<RoutinePlanItem[]>(
+		() =>
+			sequence.map((exercise) => ({
+				exercise,
+				target: targetMap[exercise] ?? target ?? DEFAULT_ROUTINE_TARGET,
+			})),
+		[sequence, targetMap, target]
+	);
+
+	useEffect(() => {
+		if (!isRoutine) return;
+		if (currentRoutine) return;
+		if (planFromParams.length === 0) return;
+		startRoutineSession(planFromParams, startAt);
+	}, [currentRoutine, isRoutine, planFromParams, startAt, startRoutineSession]);
+
 	const advanceToNext = useCallback(
 		(count: number) => {
 			if (!isRoutine || resolvedTarget === null) return;
@@ -107,6 +133,7 @@ export function useRoutineStep(currentExercise: ExerciseKey) {
 			if (hasAdvancedRef.current) return;
 
 			hasAdvancedRef.current = true;
+			completeRoutineExercise(currentExercise, count, resolvedTarget);
 
 			if (computedNext) {
 				const index = sequence.indexOf(computedNext);
@@ -124,6 +151,7 @@ export function useRoutineStep(currentExercise: ExerciseKey) {
 				return;
 			}
 
+			finishRoutineSession();
 			router.replace("/");
 		},
 		[
@@ -134,6 +162,9 @@ export function useRoutineStep(currentExercise: ExerciseKey) {
 			sequence,
 			serializedExercises,
 			serializedTargets,
+			completeRoutineExercise,
+			currentExercise,
+			finishRoutineSession,
 		]
 	);
 
