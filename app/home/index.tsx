@@ -11,6 +11,16 @@ import { CardProps } from "./Home.types";
 
 const withAlpha = (hex: string, alphaHex: string) => `${hex}${alphaHex}`;
 
+const isSameDay = (timestamp: number, now: number) => {
+	const a = new Date(timestamp);
+	const b = new Date(now);
+	return (
+		a.getFullYear() === b.getFullYear() &&
+		a.getMonth() === b.getMonth() &&
+		a.getDate() === b.getDate()
+	);
+};
+
 const ExerciseCard = memo(function ExerciseCard({ href, title, subtitle, image }: CardProps) {
 	return (
 		<Link href={href} asChild>
@@ -35,7 +45,33 @@ export default function Home() {
 	const { t } = useTranslation();
 	const insets = useSafeAreaInsets();
 	const username = useAppStore((state) => state.username);
+	const exercisesState = useAppStore((state) => state.exercises);
+	const routineSessions = useAppStore((state) => state.routine.sessions);
 	const displayName = username?.trim().length ? username : t("index.welcomeTitle");
+	const now = Date.now();
+
+	const { totalRepsAllTime, repsToday, routinesToday, routinesAllTime } = useMemo(() => {
+		const totalRepsAllTimeCalc = Object.values(exercisesState).reduce(
+			(sum, stat) => sum + (stat?.total ?? 0),
+			0
+		);
+		const repsTodayCalc = Object.values(exercisesState).reduce((sum, stat) => {
+			const dayCount = stat?.sessions?.reduce((acc, session) => {
+				return isSameDay(session.timestamp, now) ? acc + session.count : acc;
+			}, 0);
+			return sum + (dayCount ?? 0);
+		}, 0);
+		const routinesTodayCalc = routineSessions.filter((session) =>
+			isSameDay(session.endedAt ?? session.startedAt, now)
+		).length;
+		const routinesAllTimeCalc = routineSessions.length;
+		return {
+			totalRepsAllTime: totalRepsAllTimeCalc,
+			repsToday: repsTodayCalc,
+			routinesToday: routinesTodayCalc,
+			routinesAllTime: routinesAllTimeCalc,
+		};
+	}, [exercisesState, now, routineSessions]);
 
 	const exercises = useMemo(
 		() => [
@@ -87,17 +123,43 @@ export default function Home() {
 				title: t("common.history", { defaultValue: "History" }),
 				subtitle: t("index.historySubtitle", { defaultValue: "Review your sessions" }),
 				accent: "#EF4444",
-				icon: "time-outline" as const,
+				icon: "stats-chart-outline" as const,
 			},
 			{
 				href: "/profile" as const,
 				title: t("common.profile", { defaultValue: "Settings" }),
 				subtitle: t("index.profileSubtitle", { defaultValue: "Adjust language and name" }),
 				accent: "#F97316",
-				icon: "person-circle-outline" as const,
+				icon: "settings-outline" as const,
 			},
 		],
 		[t]
+	);
+
+	const heroTags = useMemo(
+		() => [
+			{
+				icon: "flash-outline" as const,
+				accent: "#F97316",
+				text: t("index.heroTagToday", { count: repsToday }),
+			},
+			{
+				icon: "checkmark-done-outline" as const,
+				accent: "#A855F7",
+				text: t("index.heroTagRoutines", { count: routinesToday }),
+			},
+			{
+				icon: "trophy-outline" as const,
+				accent: "#22D3EE",
+				text: t("index.heroTagAllTime", { count: totalRepsAllTime }),
+			},
+			{
+				icon: "ribbon-outline" as const,
+				accent: "#22C55E",
+				text: t("index.heroTagRoutinesAllTime", { count: routinesAllTime }),
+			},
+		],
+		[t, repsToday, routinesAllTime, routinesToday, totalRepsAllTime]
 	);
 
 	return (
@@ -110,9 +172,33 @@ export default function Home() {
 				showsVerticalScrollIndicator={false}
 			>
 				<View style={styles.heroCard}>
-					<Text style={styles.heroGreeting}>{t("index.welcomeTitle")}</Text>
-					<Text style={styles.heroName}>{displayName}</Text>
-					<Text style={styles.heroSubtitle}>{t("index.subtitle")}</Text>
+					<View style={styles.heroHeaderRow}>
+						<View style={styles.heroAvatar}>
+							<Ionicons name="sparkles-outline" size={26} color="#22D3EE" />
+						</View>
+						<View>
+							<Text style={styles.heroGreeting}>{t("index.heroGreeting")}</Text>
+							<Text style={styles.heroName}>{displayName}</Text>
+						</View>
+					</View>
+					<Text style={styles.heroSubtitle}>{t("index.heroMessage")}</Text>
+					<View style={styles.heroPillsRow}>
+						{heroTags.map((tag) => (
+							<View
+								key={tag.icon}
+								style={[
+									styles.heroPill,
+									{
+										backgroundColor: withAlpha(tag.accent, "1A"),
+										borderColor: withAlpha(tag.accent, "33"),
+									},
+								]}
+							>
+								<Ionicons name={tag.icon} size={16} color={tag.accent} />
+								<Text style={styles.heroPillText}>{tag.text}</Text>
+							</View>
+						))}
+					</View>
 				</View>
 
 				<View style={styles.quickActionsRow}>
@@ -125,7 +211,7 @@ export default function Home() {
 										{ backgroundColor: withAlpha(action.accent, "18") },
 									]}
 								>
-									<Ionicons name={action.icon} size={18} color={action.accent} />
+									<Ionicons name={action.icon} size={42} color={action.accent} />
 								</View>
 								<View style={styles.quickActionTextWrap}>
 									<Text style={styles.quickActionTitle}>{action.title}</Text>

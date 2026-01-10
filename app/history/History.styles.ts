@@ -10,8 +10,8 @@ export const styles = StyleSheet.create({
 		paddingBottom: 39,
 	},
 	exercisesHeading: {
-		marginTop: 10,
-		marginBottom: 20,
+		marginTop: 39,
+		marginBottom: 16,
 		gap: 4,
 		paddingHorizontal: 10,
 	},
@@ -23,7 +23,7 @@ export const styles = StyleSheet.create({
 	},
 	summaryHeading: {
 		marginTop: 39,
-		marginBottom: 20,
+		marginBottom: 16,
 		gap: 4,
 		paddingHorizontal: 6,
 	},
@@ -91,7 +91,6 @@ export const styles = StyleSheet.create({
 		flexDirection: "row",
 		flexWrap: "wrap",
 		gap: 12,
-		marginBottom: 16,
 	},
 	statCard: {
 		flexBasis: "48%",
@@ -131,7 +130,7 @@ export const styles = StyleSheet.create({
 	},
 	listHeading: {
 		marginTop: 39,
-		marginBottom: 20,
+		marginBottom: 16,
 		gap: 4,
 		paddingHorizontal: 10,
 	},

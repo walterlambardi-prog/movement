@@ -42,6 +42,13 @@
 		"pushupsSubtitle": "Count your push-ups automatically",
 		"handsTitle": "Hand Tracking",
 		"handsSubtitle": "Track hand movements",
+		"heroGreeting": "Ready to move?",
+		"heroMessage": "Micro wins stack up. Drop a quick set and keep your streak alive.",
+		"motivationTag": "Fresh reps, fresh energy",
+		"heroTagAllTime": "All-time: {{count}}",
+		"heroTagToday": "Today: {{count}} reps",
+		"heroTagRoutines": "Routines: {{count}}",
+		"heroTagRoutinesAllTime": "All routines: {{count}}",
 		"hammerTitle": "Hammer Curls",
 		"hammerSubtitle": "Alternating hammer curl counter",
 		"lateralsTitle": "Lateral Raises",
@@ -105,12 +112,13 @@
 		"repsLabel": "total reps"
 	},
 	"onboarding": {
-		"title": "Welcome to Movement",
-		"subtitle": "Enter your name to personalize your experience.",
-		"placeholder": "Your name",
-		"cta": "Continue",
+		"title": "Let's get moving",
+		"subtitle": "Drop your name and we'll cheer you through every rep.",
+		"placeholder": "How should we hype you?",
+		"cta": "Start",
 		"error": "Please enter your name to continue",
-		"loading": "Loading..."
+		"loading": "Loading...",
+		"heroTag": "Built to make you move"
 	},
 	"profile": {
 		"title": "Profile",

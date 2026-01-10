@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import { ImageBackground, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 
 import { ExerciseKey, RoutinePreference, useAppStore } from "../state/useAppStore";
@@ -62,6 +63,7 @@ const fromPreferences = (
 export default function RoutineBuilder() {
 	const { t } = useTranslation();
 	const router = useRouter();
+	const insets = useSafeAreaInsets();
 	const routinePrefs = useAppStore((s) => s.routine.preferences);
 	const saveRoutinePreferences = useAppStore((s) => s.saveRoutinePreferences);
 	const startRoutineSession = useAppStore((s) => s.startRoutineSession);
@@ -151,7 +153,10 @@ export default function RoutineBuilder() {
 				}}
 			/>
 
-			<ScrollView contentContainerStyle={styles.screenContent} showsVerticalScrollIndicator={false}>
+			<ScrollView
+				contentContainerStyle={[styles.screenContent, { paddingBottom: 140 + insets.bottom }]}
+				showsVerticalScrollIndicator={false}
+			>
 				<View style={styles.header}>
 					<Text style={styles.title}>{t("routineBuilder.title")}</Text>
 					<Text style={styles.subtitle}>{t("routineBuilder.subtitle")}</Text>
@@ -213,23 +218,25 @@ export default function RoutineBuilder() {
 						);
 					})}
 				</View>
+			</ScrollView>
 
-				<View style={styles.footer}>
+			<View style={[styles.bottomBar, { paddingBottom: 12 + insets.bottom }]}>
+				<View style={styles.bottomMeta}>
 					<Text style={styles.selectionText}>
 						{t("routineBuilder.selection", { count: selectedCount, total: EXERCISES.length })}
 					</Text>
 					<Text style={styles.selectionText}>
 						{t("routineBuilder.totalReps", { count: totalTargets || DEFAULT_ROUTINE_TARGET })}
 					</Text>
-					<TouchableOpacity
-						style={[styles.startButton, isDisabled && styles.disabled]}
-						onPress={handleStart}
-						disabled={isDisabled}
-					>
-						<Text style={styles.startText}>{t("routineBuilder.start")}</Text>
-					</TouchableOpacity>
 				</View>
-			</ScrollView>
+				<TouchableOpacity
+					style={[styles.startButton, isDisabled && styles.disabled]}
+					onPress={handleStart}
+					disabled={isDisabled}
+				>
+					<Text style={styles.startText}>{t("routineBuilder.start")}</Text>
+				</TouchableOpacity>
+			</View>
 		</View>
 	);
 }

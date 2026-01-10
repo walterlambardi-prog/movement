@@ -2,6 +2,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
+import i18n, { initialLanguage } from "../i18n";
+
 export type ExerciseKey = "hammerCurls" | "lateralRaises" | "pushups" | "squats";
 
 export type ExerciseSession = {
@@ -90,14 +92,17 @@ export const useAppStore = create<AppState>()(
 	persist(
 		(set, get) => ({
 			username: null,
-			language: "en",
+			language: initialLanguage,
 			exercises: createDefaultExercises(),
 			hydrated: false,
 			hasOnboarded: false,
 			routine: createDefaultRoutineState(),
 
 			setUsername: (name) => set({ username: name, hasOnboarded: true }),
-			setLanguage: (language) => set({ language }),
+			setLanguage: (language) => {
+				i18n.changeLanguage(language);
+				set({ language });
+			},
 			setOnboarded: () => set({ hasOnboarded: true }),
 			recordSession: (exercise, count, timestamp = Date.now()) => {
 				if (count <= 0) return;
@@ -203,7 +208,10 @@ export const useAppStore = create<AppState>()(
 				routine: state.routine,
 			}),
 			onRehydrateStorage: () => (state) => {
-				if (state) state.hydrated = true;
+				if (state) {
+					i18n.changeLanguage(state.language);
+					state.hydrated = true;
+				}
 			},
 		}
 	)

@@ -42,6 +42,13 @@
 		"pushupsSubtitle": "Cuenta tus flexiones automáticamente",
 		"handsTitle": "Seguimiento de Manos",
 		"handsSubtitle": "Rastrea movimientos de mano",
+		"heroGreeting": "¿Listo para moverte?",
+		"heroMessage": "Las micro victorias suman. Haz un set rápido y mantén la racha.",
+		"motivationTag": "Reps frescas, energía nueva",
+		"heroTagAllTime": "Total: {{count}}",
+		"heroTagToday": "Hoy: {{count}} reps",
+		"heroTagRoutines": "Rutinas: {{count}}",
+		"heroTagRoutinesAllTime": "Rutinas totales: {{count}}",
 		"hammerTitle": "Hammer Curls",
 		"hammerSubtitle": "Curl martillo alterno con conteo",
 		"lateralsTitle": "Elevaciones Laterales",
@@ -105,12 +112,13 @@
 		"repsLabel": "reps totales"
 	},
 	"onboarding": {
-		"title": "Bienvenido a Movement",
-		"subtitle": "Ingresa tu nombre para personalizar la experiencia.",
-		"placeholder": "Tu nombre",
-		"cta": "Continuar",
+		"title": "Impulsa tu inicio",
+		"subtitle": "Comparte tu nombre y personalizamos tu impulso.",
+		"placeholder": "Escribe tu nombre aquí",
+		"cta": "Empezar",
 		"error": "Por favor ingresa tu nombre para continuar",
-		"loading": "Cargando..."
+		"loading": "Cargando...",
+		"heroTag": "Creado para hacerte mover"
 	},
 	"profile": {
 		"title": "Perfil",
@@ -150,7 +158,7 @@
 	},
 	"squats": {
 		"title": "Sentadillas",
-		"counterLabel": "SQUATS",
+		"counterLabel": "Sentadillas",
 		"instructions": [
 			"📱 Muestra tu cuerpo completo",
 			"🦵 Baja hasta ~100° de rodillas",
@@ -190,7 +198,7 @@
 	},
 	"pushups": {
 		"title": "Flexiones",
-		"counterLabel": "PUSH-UPS",
+		"counterLabel": "Flexiones",
 		"instructions": [
 			"📱 Muestra tu cuerpo (vista lateral o frontal)",
 			"👐 Ponte en plancha, brazos extendidos",
