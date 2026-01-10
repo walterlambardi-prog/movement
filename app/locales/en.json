@@ -192,13 +192,7 @@
 			"keepPushing": "Keep pushing!"
 		},
 		"voice": {
-			"welcome": "Let's do some squats! Position your full body in frame to begin.",
-			"milestones": [
-				"{{count}} squats! Keep it up!",
-				"Amazing! {{count}} squats completed! You're on fire!",
-				"Wow! {{count}} squats done! Keep pushing!",
-				"Fantastic! {{count}} squats! You're crushing it!"
-			]
+			"welcome": "Let's do some squats! Position your full body in frame to begin."
 		}
 	},
 	"pushups": {
@@ -234,13 +228,7 @@
 			"keepPushing": "Keep pushing!"
 		},
 		"voice": {
-			"welcome": "Let's do some push-ups! Face the camera and get in position to begin.",
-			"milestones": [
-				"{{count}} push-ups! Keep it up!",
-				"Amazing! {{count}} push-ups completed! You're on fire!",
-				"Wow! {{count}} push-ups done! Keep pushing!",
-				"Fantastic! {{count}} push-ups! You're crushing it!"
-			]
+			"welcome": "Let's do some push-ups! Face the camera and get in position to begin."
 		}
 	},
 	"hammerCurls": {
@@ -270,12 +258,7 @@
 			"right": "Right"
 		},
 		"voice": {
-			"welcome": "Alternating hammer curl: face forward, arms down, alternate each arm.",
-			"milestones": [
-				"{{count}} curls, keep alternating!",
-				"Great pace, {{count}} lifts!",
-				"{{count}} reps, control the descent!"
-			]
+			"welcome": "Alternating hammer curl: face forward, arms down, alternate each arm."
 		}
 	},
 	"lateralRaises": {
@@ -304,12 +287,7 @@
 			"lowering": "Lowering"
 		},
 		"voice": {
-			"welcome": "Lateral raises: arms down, raise both to shoulder height.",
-			"milestones": [
-				"{{count}} raises, nice control!",
-				"Keep going, {{count}} reps!",
-				"{{count}} raises, solid shoulders!"
-			]
+			"welcome": "Lateral raises: arms down, raise both to shoulder height."
 		}
 	}
 }

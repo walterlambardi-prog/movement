@@ -11,7 +11,6 @@ import {
 	Text,
 	View,
 } from "react-native";
-import { Confetti } from "react-native-fast-confetti";
 import {
 	Camera,
 	CameraPosition,
@@ -82,7 +81,6 @@ const circlePaint = Skia.Paint();
 circlePaint.setColor(Skia.Color("#FFC107"));
 linePaint.setStrokeWidth(8);
 
-const CONFETTI_INTERVAL = 10;
 const UI_UPDATE_THROTTLE_MS = 140;
 const REP_DEBOUNCE_MS = 900;
 
@@ -253,7 +251,6 @@ export default function Squats() {
 	}, []);
 
 	const lastSquatTimeRef = useRef<number>(0);
-	const confettiTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 	const isMountedRef = useRef<boolean>(true);
 	const squatCountRef = useRef<number>(0);
 	const squatStateRef = useRef<SquatState>("idle");
@@ -263,7 +260,6 @@ export default function Squats() {
 	const [currentAngle, setCurrentAngle] = useState<number>(0);
 	const [feedback, setFeedback] = useState<string>(t("squats.feedback.noBody"));
 	const [progress, setProgress] = useState<number>(0);
-	const [showConfetti, setShowConfetti] = useState(false);
 	const [lastRepQuality, setLastRepQuality] = useState<RepQuality | null>(null);
 
 	const { isRoutine, target, nextExercise, advanceToNext } = useRoutineStep("squats");
@@ -288,18 +284,6 @@ export default function Squats() {
 			Speech.speak(text, voiceConfig);
 		},
 		[voiceConfig]
-	);
-
-	const getMilestoneMessage = useCallback(
-		(count: number) => {
-			const messages = t("squats.voice.milestones", { returnObjects: true, count }) as string[];
-			if (Array.isArray(messages) && messages.length > 0) {
-				const randomIndex = Math.floor(Math.random() * messages.length);
-				return messages[randomIndex];
-			}
-			return `${count}`;
-		},
-		[t]
 	);
 
 	const instructions = useMemo(
@@ -328,10 +312,6 @@ export default function Squats() {
 		setProgress(0);
 		setFeedback(t("squats.feedback.noBody"));
 		setLastRepQuality(null);
-		setShowConfetti(false);
-		if (confettiTimeoutRef.current) {
-			clearTimeout(confettiTimeoutRef.current);
-		}
 	}, [t]);
 
 	const HeaderRight = useMemo(
@@ -373,21 +353,8 @@ export default function Squats() {
 		return () => {
 			isMountedRef.current = false;
 			Speech.stop();
-			if (confettiTimeoutRef.current) {
-				clearTimeout(confettiTimeoutRef.current);
-				confettiTimeoutRef.current = null;
-			}
 		};
 	}, []);
-
-	useEffect(() => {
-		if (squatCount > 0 && squatCount % CONFETTI_INTERVAL === 0) {
-			speak(getMilestoneMessage(squatCount));
-		}
-		return () => {
-			Speech.stop();
-		};
-	}, [getMilestoneMessage, speak, squatCount]);
 
 	useEffect(() => {
 		advanceToNext(squatCount);
@@ -493,25 +460,7 @@ export default function Squats() {
 
 						setLastRepQuality(result.quality || "good");
 
-						setSquatCount((prevCount) => {
-							const newCount = prevCount + 1;
-
-							if (newCount % CONFETTI_INTERVAL === 0) {
-								setShowConfetti(true);
-
-								if (confettiTimeoutRef.current) {
-									clearTimeout(confettiTimeoutRef.current);
-									confettiTimeoutRef.current = null;
-								}
-								confettiTimeoutRef.current = setTimeout(() => {
-									if (isMountedRef.current) {
-										setShowConfetti(false);
-									}
-								}, 3000);
-							}
-
-							return newCount;
-						});
+						setSquatCount((prevCount) => prevCount + 1);
 					}
 				}
 			} catch (error) {
@@ -683,12 +632,6 @@ export default function Squats() {
 					</View>
 				)}
 			</View>
-
-			{showConfetti && (
-				<View style={styles.confettiContainer}>
-					<Confetti count={150} fallDuration={3000} />
-				</View>
-			)}
 		</View>
 	);
 }

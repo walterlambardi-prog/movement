@@ -11,7 +11,6 @@ import {
 	Text,
 	View,
 } from "react-native";
-import { Confetti } from "react-native-fast-confetti";
 import {
 	Camera,
 	CameraPosition,
@@ -92,8 +91,6 @@ linePaint.setStrokeWidth(25);
 const circlePaint = Skia.Paint();
 circlePaint.setColor(Skia.Color("#FFC107"));
 linePaint.setStrokeWidth(10);
-
-const CONFETTI_INTERVAL = 5;
 
 const MIN_VISIBILITY = 0.45;
 const HIP_SHOULDER_MAX_DELTA = 0.48;
@@ -298,7 +295,6 @@ export default function Pushups() {
 	const format = useCameraFormat(device, [{ fps: 24 }]);
 
 	const lastPushupTimeRef = useRef<number>(0);
-	const confettiTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 	const isMountedRef = useRef<boolean>(true);
 	const pushupCountRef = useRef<number>(0);
 	const pushupStateRef = useRef<PushupState>("idle");
@@ -310,7 +306,6 @@ export default function Pushups() {
 	const [currentAngle, setCurrentAngle] = useState<number>(0);
 	const [feedback, setFeedback] = useState<string>(t("pushups.feedback.noBody"));
 	const [progress, setProgress] = useState<number>(0);
-	const [showConfetti, setShowConfetti] = useState(false);
 	const [lastRepQuality, setLastRepQuality] = useState<RepQuality | null>(null);
 
 	const { isRoutine, target, nextExercise, advanceToNext } = useRoutineStep("pushups");
@@ -335,18 +330,6 @@ export default function Pushups() {
 			Speech.speak(text, voiceConfig);
 		},
 		[voiceConfig]
-	);
-
-	const getMilestoneMessage = useCallback(
-		(count: number) => {
-			const messages = t("pushups.voice.milestones", { returnObjects: true, count }) as string[];
-			if (Array.isArray(messages) && messages.length > 0) {
-				const randomIndex = Math.floor(Math.random() * messages.length);
-				return messages[randomIndex];
-			}
-			return `${count}`;
-		},
-		[t]
 	);
 
 	const instructions = useMemo(
@@ -374,10 +357,6 @@ export default function Pushups() {
 		setProgress(0);
 		setFeedback(t("pushups.feedback.noBody"));
 		setLastRepQuality(null);
-		setShowConfetti(false);
-		if (confettiTimeoutRef.current) {
-			clearTimeout(confettiTimeoutRef.current);
-		}
 	}, [t]);
 
 	const HeaderRight = useMemo(
@@ -419,25 +398,17 @@ export default function Pushups() {
 		return () => {
 			isMountedRef.current = false;
 			Speech.stop();
-			if (confettiTimeoutRef.current) {
-				clearTimeout(confettiTimeoutRef.current);
-				confettiTimeoutRef.current = null;
-			}
 		};
 	}, []);
 
 	useEffect(() => {
 		if (pushupCount > 0) {
-			if (pushupCount % CONFETTI_INTERVAL === 0) {
-				speak(getMilestoneMessage(pushupCount));
-			} else {
-				speak(`${pushupCount}`);
-			}
+			speak(`${pushupCount}`);
 		}
 		return () => {
 			Speech.stop();
 		};
-	}, [getMilestoneMessage, pushupCount, speak]);
+	}, [pushupCount, speak]);
 
 	useEffect(() => {
 		advanceToNext(pushupCount);
@@ -592,25 +563,7 @@ export default function Pushups() {
 
 						setLastRepQuality(result.quality || "good");
 
-						setPushupCount((prevCount) => {
-							const newCount = prevCount + 1;
-
-							if (newCount % CONFETTI_INTERVAL === 0) {
-								setShowConfetti(true);
-
-								if (confettiTimeoutRef.current) {
-									clearTimeout(confettiTimeoutRef.current);
-									confettiTimeoutRef.current = null;
-								}
-								confettiTimeoutRef.current = setTimeout(() => {
-									if (isMountedRef.current) {
-										setShowConfetti(false);
-									}
-								}, 3000);
-							}
-
-							return newCount;
-						});
+						setPushupCount((prevCount) => prevCount + 1);
 					}
 				}
 			} catch (error) {
@@ -781,12 +734,6 @@ export default function Pushups() {
 					</View>
 				)}
 			</View>
-
-			{showConfetti && (
-				<View style={styles.confettiContainer}>
-					<Confetti count={150} fallDuration={3000} />
-				</View>
-			)}
 		</View>
 	);
 }

@@ -11,7 +11,6 @@ import {
 	Text,
 	View,
 } from "react-native";
-import { Confetti } from "react-native-fast-confetti";
 import {
 	Camera,
 	CameraPosition,
@@ -76,7 +75,6 @@ const circlePaint = Skia.Paint();
 circlePaint.setColor(Skia.Color("#FFC107"));
 linePaint.setStrokeWidth(8);
 
-const CONFETTI_INTERVAL = 10;
 const UI_UPDATE_THROTTLE_MS = 120;
 const REP_DEBOUNCE_MS = 850;
 
@@ -136,7 +134,6 @@ export default function LateralRaises() {
 	}, []);
 
 	const lastRepTimeRef = useRef<number>(0);
-	const confettiTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 	const isMountedRef = useRef<boolean>(true);
 	const repCountRef = useRef<number>(0);
 	const stateRef = useRef<ArmState>("down");
@@ -168,7 +165,6 @@ export default function LateralRaises() {
 	const [leftState, setLeftState] = useState<ArmState>("down");
 	const [rightState, setRightState] = useState<ArmState>("down");
 	const [progress, setProgress] = useState<number>(0);
-	const [showConfetti, setShowConfetti] = useState(false);
 
 	const { isRoutine, target, nextExercise, advanceToNext } = useRoutineStep("lateralRaises");
 	const remainingReps = useMemo(
@@ -181,21 +177,6 @@ export default function LateralRaises() {
 	const progressAnim = useRef(new Animated.Value(0)).current;
 	const lastUiUpdateRef = useRef<number>(0);
 
-	const getMilestoneMessage = useCallback(
-		(count: number) => {
-			const messages = t("lateralRaises.voice.milestones", {
-				returnObjects: true,
-				count,
-			}) as string[];
-			if (Array.isArray(messages) && messages.length > 0) {
-				const randomIndex = Math.floor(Math.random() * messages.length);
-				return messages[randomIndex];
-			}
-			return `${count}`;
-		},
-		[t]
-	);
-
 	const handleCameraChange = useCallback(() => {
 		setCameraPosition((prev) => (prev === "back" ? "front" : "back"));
 	}, []);
@@ -207,10 +188,6 @@ export default function LateralRaises() {
 		setRightState("down");
 		stateRef.current = "down";
 		setProgress(0);
-		if (confettiTimeoutRef.current) {
-			clearTimeout(confettiTimeoutRef.current);
-		}
-		setShowConfetti(false);
 	}, [t]);
 
 	const HeaderRight = useMemo(
@@ -252,21 +229,8 @@ export default function LateralRaises() {
 		return () => {
 			isMountedRef.current = false;
 			Speech.stop();
-			if (confettiTimeoutRef.current) {
-				clearTimeout(confettiTimeoutRef.current);
-				confettiTimeoutRef.current = null;
-			}
 		};
 	}, []);
-
-	useEffect(() => {
-		if (repCount > 0 && repCount % CONFETTI_INTERVAL === 0) {
-			speak(getMilestoneMessage(repCount));
-		}
-		return () => {
-			Speech.stop();
-		};
-	}, [getMilestoneMessage, repCount, speak]);
 
 	useEffect(() => {
 		advanceToNext(repCount);
@@ -363,17 +327,6 @@ export default function LateralRaises() {
 						setRepCount((prev) => {
 							const newTotal = prev + 1;
 							repCountRef.current = newTotal;
-
-							if (newTotal % CONFETTI_INTERVAL === 0) {
-								setShowConfetti(true);
-								if (confettiTimeoutRef.current) {
-									clearTimeout(confettiTimeoutRef.current);
-								}
-								confettiTimeoutRef.current = setTimeout(() => {
-									if (isMountedRef.current) setShowConfetti(false);
-								}, 3000);
-							}
-
 							return newTotal;
 						});
 
@@ -563,12 +516,6 @@ export default function LateralRaises() {
 					))}
 				</View>
 			</View>
-
-			{showConfetti && (
-				<View style={styles.confettiContainer}>
-					<Confetti count={150} fallDuration={3000} />
-				</View>
-			)}
 		</View>
 	);
 }

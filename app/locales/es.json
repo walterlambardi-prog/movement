@@ -192,13 +192,7 @@
 			"keepPushing": "Sigue empujando!"
 		},
 		"voice": {
-			"welcome": "Hagamos sentadillas! Muestra tu cuerpo completo para empezar.",
-			"milestones": [
-				"{{count}} sentadillas! Sigue así!",
-				"Increíble! {{count}} sentadillas completadas!",
-				"Wow! {{count}} sentadillas! Sigue empujando!",
-				"Fantástico! {{count}} sentadillas!"
-			]
+			"welcome": "Hagamos sentadillas! Muestra tu cuerpo completo para empezar."
 		}
 	},
 	"pushups": {
@@ -234,13 +228,7 @@
 			"keepPushing": "Sigue empujando!"
 		},
 		"voice": {
-			"welcome": "Hagamos flexiones! Mira la cámara y colócate en posición.",
-			"milestones": [
-				"{{count}} flexiones! Sigue así!",
-				"Increíble! {{count}} flexiones completadas!",
-				"Wow! {{count}} flexiones! Sigue empujando!",
-				"Fantástico! {{count}} flexiones!"
-			]
+			"welcome": "Hagamos flexiones! Mira la cámara y colócate en posición."
 		}
 	},
 	"hammerCurls": {
@@ -270,12 +258,7 @@
 			"right": "Derecho"
 		},
 		"voice": {
-			"welcome": "Curl martillo alterno: cuerpo de frente, brazos abajo, alterna cada brazo.",
-			"milestones": [
-				"{{count}} curls, sigue alternando!",
-				"Gran ritmo, {{count}} levantes!",
-				"{{count}} reps, controla la bajada!"
-			]
+			"welcome": "Curl martillo alterno: cuerpo de frente, brazos abajo, alterna cada brazo."
 		}
 	},
 	"lateralRaises": {
@@ -304,12 +287,7 @@
 			"lowering": "Bajando"
 		},
 		"voice": {
-			"welcome": "Elevaciones laterales: brazos abajo, sube ambos a la altura de hombros.",
-			"milestones": [
-				"{{count}} levantes, buen control!",
-				"Sigue, {{count}} reps!",
-				"{{count}} elevaciones, hombros firmes!"
-			]
+			"welcome": "Elevaciones laterales: brazos abajo, sube ambos a la altura de hombros."
 		}
 	}
 }

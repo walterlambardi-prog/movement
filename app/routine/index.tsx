@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { ImageBackground, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
@@ -68,6 +68,7 @@ export default function RoutineBuilder() {
 	const saveRoutinePreferences = useAppStore((s) => s.saveRoutinePreferences);
 	const startRoutineSession = useAppStore((s) => s.startRoutineSession);
 	const [state, setState] = useState<ExerciseState>(fromPreferences(routinePrefs));
+	const pendingPrefsRef = useRef<Partial<Record<ExerciseKey, RoutinePreference>>>({});
 
 	useEffect(() => {
 		setState((prev) => fromPreferences(routinePrefs, prev));
@@ -84,32 +85,44 @@ export default function RoutineBuilder() {
 	const toggleSelect = (key: ExerciseKey) => {
 		setState((prev) => {
 			const nextSelected = !prev[key].selected;
-			const next = {
+			pendingPrefsRef.current = {
+				...pendingPrefsRef.current,
+				[key]: { selected: nextSelected, reps: prev[key].reps },
+			};
+			return {
 				...prev,
 				[key]: {
 					...prev[key],
 					selected: nextSelected,
 				},
 			};
-			saveRoutinePreferences({ [key]: { selected: nextSelected, reps: prev[key].reps } });
-			return next;
 		});
 	};
 
 	const changeReps = (key: ExerciseKey, delta: number) => {
 		setState((prev) => {
 			const nextReps = clampReps(prev[key].reps + delta);
-			const next = {
+			pendingPrefsRef.current = {
+				...pendingPrefsRef.current,
+				[key]: { selected: prev[key].selected, reps: nextReps },
+			};
+			return {
 				...prev,
 				[key]: {
 					...prev[key],
 					reps: nextReps,
 				},
 			};
-			saveRoutinePreferences({ [key]: { selected: prev[key].selected, reps: nextReps } });
-			return next;
 		});
 	};
+
+	useEffect(() => {
+		const pending = pendingPrefsRef.current;
+		if (Object.keys(pending).length > 0) {
+			saveRoutinePreferences(pending);
+			pendingPrefsRef.current = {};
+		}
+	}, [state, saveRoutinePreferences]);
 
 	const handleStart = () => {
 		if (selectedExercises.length === 0) return;

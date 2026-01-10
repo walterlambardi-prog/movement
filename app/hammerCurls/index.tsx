@@ -11,7 +11,6 @@ import {
 	Text,
 	View,
 } from "react-native";
-import { Confetti } from "react-native-fast-confetti";
 import {
 	Camera,
 	CameraPosition,
@@ -76,7 +75,6 @@ const circlePaint = Skia.Paint();
 circlePaint.setColor(Skia.Color("#FFC107"));
 linePaint.setStrokeWidth(8);
 
-const CONFETTI_INTERVAL = 10;
 const UI_UPDATE_THROTTLE_MS = 140;
 const REP_DEBOUNCE_MS = 650;
 
@@ -132,8 +130,6 @@ export default function HammerCurls() {
 	}, []);
 
 	const lastRepTimeRef = useRef<number>(0);
-	const confettiTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-	const isMountedRef = useRef<boolean>(true);
 	const repCountRef = useRef<number>(0);
 	const lastArmRef = useRef<Arm | null>(null);
 	const leftStateRef = useRef<ArmState>("extended");
@@ -147,7 +143,6 @@ export default function HammerCurls() {
 	const [leftState, setLeftState] = useState<ArmState>("extended");
 	const [rightState, setRightState] = useState<ArmState>("extended");
 	const [progress, setProgress] = useState<number>(0);
-	const [showConfetti, setShowConfetti] = useState(false);
 	const [lastRepArm, setLastRepArm] = useState<Arm | null>(null);
 
 	const { isRoutine, target, nextExercise, advanceToNext } = useRoutineStep("hammerCurls");
@@ -177,21 +172,6 @@ export default function HammerCurls() {
 		[voiceConfig]
 	);
 
-	const getMilestoneMessage = useCallback(
-		(count: number) => {
-			const messages = t("hammerCurls.voice.milestones", {
-				returnObjects: true,
-				count,
-			}) as string[];
-			if (Array.isArray(messages) && messages.length > 0) {
-				const randomIndex = Math.floor(Math.random() * messages.length);
-				return messages[randomIndex];
-			}
-			return `${count}`;
-		},
-		[t]
-	);
-
 	const instructions = useMemo(
 		() => t("hammerCurls.instructions", { returnObjects: true }) as string[],
 		[t]
@@ -209,10 +189,6 @@ export default function HammerCurls() {
 		setRightState("extended");
 		setProgress(0);
 		setLastRepArm(null);
-		if (confettiTimeoutRef.current) {
-			clearTimeout(confettiTimeoutRef.current);
-		}
-		setShowConfetti(false);
 	}, [t]);
 
 	const HeaderRight = useMemo(
@@ -250,25 +226,10 @@ export default function HammerCurls() {
 	}, [activeArm, repCount, t]);
 
 	useEffect(() => {
-		isMountedRef.current = true;
 		return () => {
-			isMountedRef.current = false;
 			Speech.stop();
-			if (confettiTimeoutRef.current) {
-				clearTimeout(confettiTimeoutRef.current);
-				confettiTimeoutRef.current = null;
-			}
 		};
 	}, []);
-
-	useEffect(() => {
-		if (repCount > 0 && repCount % CONFETTI_INTERVAL === 0) {
-			speak(getMilestoneMessage(repCount));
-		}
-		return () => {
-			Speech.stop();
-		};
-	}, [getMilestoneMessage, repCount, speak]);
 
 	useEffect(() => {
 		advanceToNext(repCount);
@@ -370,18 +331,6 @@ export default function HammerCurls() {
 					setRepCount((prev) => {
 						const newTotal = prev + 1;
 						repCountRef.current = newTotal;
-
-						if (newTotal % CONFETTI_INTERVAL === 0) {
-							setShowConfetti(true);
-							if (confettiTimeoutRef.current) {
-								clearTimeout(confettiTimeoutRef.current);
-							}
-							// eslint-disable-next-line max-nested-callbacks
-							confettiTimeoutRef.current = setTimeout(() => {
-								if (isMountedRef.current) setShowConfetti(false);
-							}, 3000);
-						}
-
 						return newTotal;
 					});
 
@@ -574,12 +523,6 @@ export default function HammerCurls() {
 					))}
 				</View>
 			</View>
-
-			{showConfetti && (
-				<View style={styles.confettiContainer}>
-					<Confetti count={150} fallDuration={3000} />
-				</View>
-			)}
 		</View>
 	);
 }
