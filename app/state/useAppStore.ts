@@ -239,7 +239,7 @@ const store = create<AppState>()(
 
 if (__DEV__ && reactotron) {
 	store.subscribe((state) => {
-		reactotron.display?.({
+		reactotron?.display?.({
 			name: "useAppStore",
 			value: state,
 			preview: `user=${state.username ?? "-"} lang=${state.language}`,

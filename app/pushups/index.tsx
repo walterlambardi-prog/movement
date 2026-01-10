@@ -461,7 +461,7 @@ export default function Pushups() {
 					return;
 				}
 
-				const detectedLandmarks = event.landmarks[0];
+				const detectedLandmarks: KeypointsMap = event.landmarks[0];
 				landmarks.value = detectedLandmarks;
 
 				const leftShoulder = detectedLandmarks[11];
@@ -519,10 +519,7 @@ export default function Pushups() {
 				const shouldersLevel = Math.abs(leftShoulder.y - rightShoulder.y) < SHOULDER_LEVEL_DELTA;
 				const hipsLevel = Math.abs(leftHip.y - rightHip.y) < SHOULDER_LEVEL_DELTA;
 
-				const points = Object.values(detectedLandmarks).filter(
-					(point): point is KeypointData =>
-						point != null && typeof point.x === "number" && typeof point.y === "number"
-				);
+				const points = Object.values<KeypointData>(detectedLandmarks);
 				const minX = Math.min(...points.map((p) => p.x));
 				const maxX = Math.max(...points.map((p) => p.x));
 				const minY = Math.min(...points.map((p) => p.y));

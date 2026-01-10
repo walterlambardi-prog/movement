@@ -1,10 +1,14 @@
-import { type LinkProps } from "expo-router";
-import { type ColorValue } from "react-native";
+import { type ComponentProps } from "react";
+import { type Href } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+
+type IoniconName = ComponentProps<typeof Ionicons>["name"];
+export type QuickActionHref = Extract<Href, string>;
 
 export type QuickAction = {
-	readonly href: LinkProps["href"];
+	readonly href: QuickActionHref;
 	readonly title: string;
 	readonly subtitle: string;
-	readonly accent: ColorValue;
-	readonly icon: string;
+	readonly accent: string;
+	readonly icon: IoniconName;
 };
