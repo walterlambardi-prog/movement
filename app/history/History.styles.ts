@@ -25,7 +25,7 @@ export const styles = StyleSheet.create({
 		marginTop: 39,
 		marginBottom: 20,
 		gap: 4,
-		paddingHorizontal: 10,
+		paddingHorizontal: 6,
 	},
 	summaryTitle: {
 		color: "#E2E8F0",
