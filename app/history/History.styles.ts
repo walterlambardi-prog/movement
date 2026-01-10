@@ -40,15 +40,10 @@ export const styles = StyleSheet.create({
 	},
 	summaryCard: {
 		flexBasis: "48%",
-		backgroundColor: "#0F172A",
 		borderRadius: 14,
 		padding: 14,
 		minHeight: 150,
 		justifyContent: "space-between",
-		shadowColor: "#0EA5E9",
-		shadowOpacity: 0.18,
-		shadowRadius: 8,
-		elevation: 3,
 		overflow: "hidden",
 	},
 	summaryHeader: {

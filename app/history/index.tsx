@@ -343,17 +343,21 @@ export default function History() {
 					})}
 				</View>
 
-				<View style={styles.listHeading}>
-					<Text style={styles.summaryTitle}>{t("history.combinedHeading.title")}</Text>
-					<Text style={styles.summarySubtitle}>{t("history.combinedHeading.subtitle")}</Text>
-				</View>
-				<FlatList
-					data={mergedSessions}
-					keyExtractor={keyExtractor}
-					contentContainerStyle={styles.listContent}
-					renderItem={renderItem}
-					scrollEnabled={false}
-				/>
+				{mergedSessions.length > 0 && (
+					<>
+						<View style={styles.listHeading}>
+							<Text style={styles.summaryTitle}>{t("history.combinedHeading.title")}</Text>
+							<Text style={styles.summarySubtitle}>{t("history.combinedHeading.subtitle")}</Text>
+						</View>
+						<FlatList
+							data={mergedSessions}
+							keyExtractor={keyExtractor}
+							contentContainerStyle={styles.listContent}
+							renderItem={renderItem}
+							scrollEnabled={false}
+						/>
+					</>
+				)}
 			</ScrollView>
 		</View>
 	);
