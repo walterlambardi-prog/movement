@@ -3,6 +3,7 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
 import i18n, { initialLanguage } from "../i18n";
+import reactotron from "../ReactotronConfig";
 
 export type ExerciseKey = "hammerCurls" | "lateralRaises" | "pushups" | "squats";
 
@@ -91,7 +92,7 @@ const createDefaultRoutineState = (): RoutineState => ({
 
 let markHydrated: (() => void) | null = null;
 
-export const useAppStore = create<AppState>()(
+const store = create<AppState>()(
 	persist(
 		(set, get) => {
 			markHydrated = () => set({ hydrated: true });
@@ -220,8 +221,12 @@ export const useAppStore = create<AppState>()(
 				routine: state.routine,
 			}),
 			onRehydrateStorage: () => {
-				markHydrated?.();
-				return (state) => {
+				return (state, error) => {
+					if (error) {
+						console.warn("persist rehydrate error", error);
+					} else {
+						console.log("persist rehydrate ok", state);
+					}
 					if (state?.language) {
 						i18n.changeLanguage(state.language);
 					}
@@ -231,3 +236,15 @@ export const useAppStore = create<AppState>()(
 		}
 	)
 );
+
+if (__DEV__ && reactotron) {
+	store.subscribe((state) => {
+		reactotron.display?.({
+			name: "useAppStore",
+			value: state,
+			preview: `user=${state.username ?? "-"} lang=${state.language}`,
+		});
+	});
+}
+
+export const useAppStore = store;
