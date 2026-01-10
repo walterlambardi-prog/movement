@@ -6,8 +6,9 @@
 		"noDevice": "No device",
 		"reset": "Reset",
 		"save": "Save",
-		"profile": "Profile",
+		"profile": "Settings",
 		"history": "History",
+		"routine": "Routine Mode",
 		"state": "State",
 		"lastArm": "Last arm",
 		"left": "Left",
@@ -45,8 +46,8 @@
 		"hammerSubtitle": "Alternating hammer curl counter",
 		"lateralsTitle": "Lateral Raises",
 		"lateralsSubtitle": "Simultaneous lateral raises",
-		"historySubtitle": "Review your sessions",
-		"profileSubtitle": "Adjust profile settings"
+		"historySubtitle": "Review your sessions and stats",
+		"profileSubtitle": "Change your name, adjust language, or reset from scratch."
 	},
 	"routine": {
 		"goalLabel": "Goal",
@@ -59,14 +60,12 @@
 	"routineBuilder": {
 		"title": "Build your routine",
 		"subtitle": "Choose exercises and set reps for each movement.",
-		"quickTitle": "Routine",
-		"quickSubtitle": "Configure your routine",
+		"quickSubtitle": "Choose your activity and set your reps.",
 		"start": "Start routine",
 		"select": "Select",
 		"deselect": "Remove",
 		"selection": "{{count}} of {{total}} selected",
-		"totalReps": "Total reps: {{count}}",
-		"repsLabel": "{{count}} reps"
+		"totalReps": "Total reps: {{count}}"
 	},
 	"history": {
 		"title": "Progress history",

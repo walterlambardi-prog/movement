@@ -5,4 +5,5 @@ export type RoutineExerciseConfig = {
 	icon: string;
 	accent: string;
 	defaultReps: number;
+	image: number;
 };

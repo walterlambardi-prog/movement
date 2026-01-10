@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { ImageBackground, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
 import { ExerciseKey, RoutinePreference, useAppStore } from "../state/useAppStore";
@@ -10,10 +10,34 @@ import { styles } from "./Routine.styles";
 import { RoutineExerciseConfig } from "./Routine.types";
 
 const EXERCISES: RoutineExerciseConfig[] = [
-	{ key: "squats", icon: "barbell-outline", accent: "#8B5CF6", defaultReps: 10 },
-	{ key: "pushups", icon: "fitness-outline", accent: "#FF6B6B", defaultReps: 10 },
-	{ key: "hammerCurls", icon: "hand-right-outline", accent: "#F97316", defaultReps: 10 },
-	{ key: "lateralRaises", icon: "body-outline", accent: "#22D3EE", defaultReps: 10 },
+	{
+		key: "squats",
+		icon: "barbell-outline",
+		accent: "#8B5CF6",
+		defaultReps: 10,
+		image: require("../../assets/images/exercises/squats.png"),
+	},
+	{
+		key: "pushups",
+		icon: "fitness-outline",
+		accent: "#FF6B6B",
+		defaultReps: 10,
+		image: require("../../assets/images/exercises/pushups.png"),
+	},
+	{
+		key: "hammerCurls",
+		icon: "hand-right-outline",
+		accent: "#F97316",
+		defaultReps: 10,
+		image: require("../../assets/images/exercises/hammerCurls.png"),
+	},
+	{
+		key: "lateralRaises",
+		icon: "body-outline",
+		accent: "#22D3EE",
+		defaultReps: 10,
+		image: require("../../assets/images/exercises/lateralRaises.png"),
+	},
 ];
 
 const clampReps = (value: number) => Math.max(1, Math.min(200, value));
@@ -139,40 +163,52 @@ export default function RoutineBuilder() {
 						const isSelected = exerciseState.selected;
 						return (
 							<View key={item.key} style={styles.card}>
-								<View style={[styles.iconWrap, { backgroundColor: `${item.accent}22` }]}>
-									<Ionicons name={item.icon as never} size={22} color={item.accent} />
-								</View>
-								<View style={styles.cardText}>
-									<Text style={styles.cardTitle}>{t(`${item.key}.title` as const)}</Text>
-									<Text style={styles.cardSubtitle}>
-										{t("routineBuilder.repsLabel", { count: exerciseState.reps })}
-									</Text>
-								</View>
-								<View style={styles.counterRow}>
-									<TouchableOpacity
-										style={styles.button}
-										onPress={() => changeReps(item.key, -1)}
-										disabled={!isSelected}
-									>
-										<Text style={styles.buttonText}>-</Text>
-									</TouchableOpacity>
-									<Text style={styles.count}>{exerciseState.reps}</Text>
-									<TouchableOpacity
-										style={styles.button}
-										onPress={() => changeReps(item.key, 1)}
-										disabled={!isSelected}
-									>
-										<Text style={styles.buttonText}>+</Text>
-									</TouchableOpacity>
-									<TouchableOpacity
-										style={[styles.button, !isSelected && styles.disabled]}
-										onPress={() => toggleSelect(item.key)}
-									>
-										<Text style={styles.buttonText}>
-											{isSelected ? t("routineBuilder.deselect") : t("routineBuilder.select")}
-										</Text>
-									</TouchableOpacity>
-								</View>
+								<ImageBackground
+									source={item.image}
+									style={styles.cardBackground}
+									imageStyle={styles.cardImage}
+								>
+									<View style={[styles.cardOverlay, !isSelected && styles.cardOverlayDisabled]} />
+									<View style={styles.selectButtonContainer}>
+										<TouchableOpacity
+											style={[styles.selectButton, !isSelected && styles.selectButtonOff]}
+											onPress={() => toggleSelect(item.key)}
+										>
+											<Ionicons
+												name={(isSelected ? "checkmark-circle" : "ellipse-outline") as never}
+												size={18}
+												color={isSelected ? "#10B981" : "#E2E8F0"}
+											/>
+											<Text style={styles.selectButtonText}>
+												{isSelected ? t("routineBuilder.deselect") : t("routineBuilder.select")}
+											</Text>
+										</TouchableOpacity>
+									</View>
+
+									<View style={styles.cardContent}>
+										<View style={styles.cardBody}>
+											<Text style={styles.cardTitle}>{t(`${item.key}.title` as const)}</Text>
+										</View>
+
+										<View style={styles.cardFooter}>
+											<TouchableOpacity
+												style={[styles.circleButton, !isSelected && styles.disabled]}
+												onPress={() => changeReps(item.key, -1)}
+												disabled={!isSelected}
+											>
+												<Text style={styles.circleButtonText}>-</Text>
+											</TouchableOpacity>
+											<Text style={styles.count}>{exerciseState.reps}</Text>
+											<TouchableOpacity
+												style={[styles.circleButton, !isSelected && styles.disabled]}
+												onPress={() => changeReps(item.key, 1)}
+												disabled={!isSelected}
+											>
+												<Text style={styles.circleButtonText}>+</Text>
+											</TouchableOpacity>
+										</View>
+									</View>
+								</ImageBackground>
 							</View>
 						);
 					})}

@@ -64,12 +64,12 @@ export const styles = StyleSheet.create({
 	quickActionsRow: {
 		gap: 12,
 		paddingHorizontal: 20,
-		marginBottom: 14,
 	},
 	quickAction: {
 		flex: 1,
 		paddingVertical: 14,
-		paddingHorizontal: 16,
+		paddingStart: 20,
+		paddingEnd: 20,
 		borderRadius: 16,
 		borderWidth: 1,
 		borderColor: "rgba(34, 211, 238, 0.18)",
@@ -93,14 +93,14 @@ export const styles = StyleSheet.create({
 	},
 	quickActionTextWrap: {
 		flex: 1,
-		gap: 2,
 		marginLeft: 10,
+		justifyContent: "space-between",
 	},
 	quickActionTitle: {
 		color: "#E2E8F0",
 		fontSize: 17,
 		fontWeight: "800",
-		marginBottom: 2,
+		marginBottom: 8,
 	},
 	quickActionSubtitle: {
 		color: "#94A3B8",
@@ -131,7 +131,7 @@ export const styles = StyleSheet.create({
 	},
 	cardsContainer: {
 		paddingHorizontal: 20,
-		paddingTop: 12,
+		paddingTop: 24,
 		paddingBottom: 32,
 		gap: 20,
 	},

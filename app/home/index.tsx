@@ -75,9 +75,9 @@ export default function Home() {
 		() => [
 			{
 				href: "/routine" as const,
-				title: t("routineBuilder.quickTitle", { defaultValue: "Routine" }),
+				title: t("common.routine", { defaultValue: "Routine" }),
 				subtitle: t("routineBuilder.quickSubtitle", {
-					defaultValue: "Configura tu rutina",
+					defaultValue: "Configure your routine",
 				}),
 				accent: "#22D3EE",
 				icon: "barbell-outline" as const,
@@ -85,14 +85,14 @@ export default function Home() {
 			{
 				href: "/history" as const,
 				title: t("common.history", { defaultValue: "History" }),
-				subtitle: t("index.historySubtitle", { defaultValue: "Revisa tus sesiones" }),
+				subtitle: t("index.historySubtitle", { defaultValue: "Review your sessions" }),
 				accent: "#EF4444",
 				icon: "time-outline" as const,
 			},
 			{
 				href: "/profile" as const,
-				title: t("common.profile", { defaultValue: "Profile" }),
-				subtitle: t("index.profileSubtitle", { defaultValue: "Ajusta idioma y nombre" }),
+				title: t("common.profile", { defaultValue: "Settings" }),
+				subtitle: t("index.profileSubtitle", { defaultValue: "Adjust language and name" }),
 				accent: "#F97316",
 				icon: "person-circle-outline" as const,
 			},

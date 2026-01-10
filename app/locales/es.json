@@ -6,8 +6,9 @@
 		"noDevice": "Sin cámara",
 		"reset": "Reset",
 		"save": "Guardar",
-		"profile": "Perfil",
+		"profile": "Ajustes",
 		"history": "Historial",
+		"routine": "Modo Rutina",
 		"state": "Estado",
 		"lastArm": "Último brazo",
 		"left": "Izquierdo",
@@ -45,8 +46,8 @@
 		"hammerSubtitle": "Curl martillo alterno con conteo",
 		"lateralsTitle": "Elevaciones Laterales",
 		"lateralsSubtitle": "Elevaciones laterales simultáneas",
-		"historySubtitle": "Revisa tus sesiones",
-		"profileSubtitle": "Ajusta idioma y nombre"
+		"historySubtitle": "Mira cada sesión: repeticiones, tendencias y récords.",
+		"profileSubtitle": "Cambia tu nombre, ajusta el idioma o reinicia desde cero."
 	},
 	"routine": {
 		"goalLabel": "Meta",
@@ -59,14 +60,12 @@
 	"routineBuilder": {
 		"title": "Crea tu rutina",
 		"subtitle": "Elige ejercicios y define repeticiones para cada uno.",
-		"quickTitle": "Rutina",
-		"quickSubtitle": "Configura tu rutina",
+		"quickSubtitle": "Elige la actividad y define tus repeticiones.",
 		"start": "Iniciar rutina",
 		"select": "Elegir",
 		"deselect": "Quitar",
 		"selection": "{{count}} de {{total}} seleccionados",
-		"totalReps": "Reps totales: {{count}}",
-		"repsLabel": "{{count}} reps"
+		"totalReps": "Reps totales: {{count}}"
 	},
 	"history": {
 		"title": "Historial de progreso",
