@@ -43,6 +43,7 @@ export type RoutineSession = {
 
 export type RoutineState = {
 	preferences: Record<ExerciseKey, RoutinePreference>;
+	rounds: number;
 	currentSession: {
 		id: string;
 		startedAt: number;
@@ -68,6 +69,7 @@ type AppState = {
 	resetAllExercises: () => void;
 	resetAllRoutines: () => void;
 	saveRoutinePreferences: (prefs: Partial<Record<ExerciseKey, RoutinePreference>>) => void;
+	setRoutineRounds: (rounds: number) => void;
 	startRoutineSession: (plan: RoutinePlanItem[], startedAt?: number) => void;
 	completeRoutineExercise: (exercise: ExerciseKey, completed: number, target: number) => void;
 	finishRoutineSession: (endedAt?: number) => void;
@@ -86,6 +88,7 @@ const createDefaultRoutineState = (): RoutineState => ({
 		pushups: { selected: true, reps: 10 },
 		squats: { selected: true, reps: 10 },
 	},
+	rounds: 1,
 	currentSession: null,
 	sessions: [],
 });
@@ -138,7 +141,11 @@ const store = create<AppState>()(
 				},
 				resetAllRoutines: () => {
 					set({
-						routine: { ...createDefaultRoutineState(), preferences: get().routine.preferences },
+						routine: {
+							...createDefaultRoutineState(),
+							preferences: get().routine.preferences,
+							rounds: get().routine.rounds,
+						},
 					});
 				},
 				saveRoutinePreferences: (prefs) => {
@@ -151,6 +158,10 @@ const store = create<AppState>()(
 						};
 					});
 					set({ routine: { ...get().routine, preferences: next } });
+				},
+				setRoutineRounds: (rounds) => {
+					const normalized = Math.max(1, Math.min(rounds, 10));
+					set({ routine: { ...get().routine, rounds: normalized } });
 				},
 				startRoutineSession: (plan, startedAt = Date.now()) => {
 					const id = `${startedAt}`;
@@ -203,6 +214,7 @@ const store = create<AppState>()(
 					set({
 						routine: {
 							preferences: routineState.preferences,
+							rounds: routineState.rounds,
 							currentSession: null,
 							sessions: [session, ...routineState.sessions],
 						},

@@ -1,6 +1,5 @@
 import { Skia } from "@shopify/react-native-skia";
 import { Stack } from "expo-router";
-import * as Speech from "expo-speech";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
 	Animated,
@@ -287,7 +286,7 @@ const CameraButton = ({ label, onPress }: { label: string; onPress: () => void }
 );
 
 export default function Pushups() {
-	const { t, i18n } = useTranslation();
+	const { t } = useTranslation();
 	const landmarks = useSharedValue<KeypointsMap>({});
 	const { hasPermission, requestPermission } = useCameraPermission();
 	const [cameraPosition, setCameraPosition] = useState<CameraPosition>("front");
@@ -315,22 +314,6 @@ export default function Pushups() {
 	);
 
 	useSessionRecorder("pushups", pushupCount);
-
-	const voiceConfig = useMemo(
-		() => ({
-			language: i18n.language === "es" ? "es-ES" : "en-US",
-			pitch: 1,
-			rate: 0.85,
-		}),
-		[i18n.language]
-	);
-
-	const speak = useCallback(
-		(text: string) => {
-			Speech.speak(text, voiceConfig);
-		},
-		[voiceConfig]
-	);
 
 	const instructions = useMemo(
 		() => t("pushups.instructions", { returnObjects: true }) as string[],
@@ -373,13 +356,6 @@ export default function Pushups() {
 	);
 
 	useEffect(() => {
-		speak(t("pushups.voice.welcome"));
-		return () => {
-			Speech.stop();
-		};
-	}, [speak, t]);
-
-	useEffect(() => {
 		Animated.timing(progressAnim, {
 			toValue: progress,
 			duration: 200,
@@ -397,18 +373,8 @@ export default function Pushups() {
 		isMountedRef.current = true;
 		return () => {
 			isMountedRef.current = false;
-			Speech.stop();
 		};
 	}, []);
-
-	useEffect(() => {
-		if (pushupCount > 0) {
-			speak(`${pushupCount}`);
-		}
-		return () => {
-			Speech.stop();
-		};
-	}, [pushupCount, speak]);
 
 	useEffect(() => {
 		advanceToNext(pushupCount);

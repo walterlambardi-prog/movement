@@ -42,6 +42,7 @@ const EXERCISES: RoutineExerciseConfig[] = [
 ];
 
 const clampReps = (value: number) => Math.max(1, Math.min(200, value));
+const clampRounds = (value: number) => Math.max(1, Math.min(10, value));
 
 type ExerciseState = Record<ExerciseKey, { selected: boolean; reps: number }>;
 
@@ -65,14 +66,23 @@ export default function RoutineBuilder() {
 	const router = useRouter();
 	const insets = useSafeAreaInsets();
 	const routinePrefs = useAppStore((s) => s.routine.preferences);
+	const routineRounds = useAppStore((s) => s.routine.rounds);
 	const saveRoutinePreferences = useAppStore((s) => s.saveRoutinePreferences);
+	const setRoutineRounds = useAppStore((s) => s.setRoutineRounds);
 	const startRoutineSession = useAppStore((s) => s.startRoutineSession);
 	const [state, setState] = useState<ExerciseState>(fromPreferences(routinePrefs));
+	const [rounds, setRounds] = useState(routineRounds || 1);
 	const pendingPrefsRef = useRef<Partial<Record<ExerciseKey, RoutinePreference>>>({});
 
 	useEffect(() => {
 		setState((prev) => fromPreferences(routinePrefs, prev));
 	}, [routinePrefs]);
+
+	useEffect(() => {
+		if (routineRounds && routineRounds !== rounds) {
+			setRounds(routineRounds);
+		}
+	}, [routineRounds, rounds]);
 
 	const selectedExercises = useMemo(
 		() => EXERCISES.filter((item) => state[item.key]?.selected),
@@ -80,7 +90,8 @@ export default function RoutineBuilder() {
 	);
 
 	const selectedCount = selectedExercises.length;
-	const totalTargets = selectedExercises.reduce((sum, item) => sum + state[item.key].reps, 0);
+	const totalTargetsSingle = selectedExercises.reduce((sum, item) => sum + state[item.key].reps, 0);
+	const totalTargets = totalTargetsSingle * rounds;
 
 	const toggleSelect = (key: ExerciseKey) => {
 		setState((prev) => {
@@ -116,6 +127,14 @@ export default function RoutineBuilder() {
 		});
 	};
 
+	const changeRounds = (delta: number) => {
+		setRounds((prev) => {
+			const next = clampRounds(prev + delta);
+			setRoutineRounds(next);
+			return next;
+		});
+	};
+
 	useEffect(() => {
 		const pending = pendingPrefsRef.current;
 		if (Object.keys(pending).length > 0) {
@@ -127,14 +146,15 @@ export default function RoutineBuilder() {
 	const handleStart = () => {
 		if (selectedExercises.length === 0) return;
 
-		const sequence = selectedExercises.map((item) => item.key);
+		const repeated = Array.from({ length: rounds }).flatMap(() => selectedExercises);
+		const sequence = repeated.map((item) => item.key);
 		const first = sequence[0];
 		const next = sequence[1];
 		const routineExercises = sequence.join(",");
 		const targets = selectedExercises
 			.map((item) => `${item.key}:${state[item.key].reps}`)
 			.join(",");
-		const plan = selectedExercises.map((item) => ({
+		const plan = repeated.map((item) => ({
 			exercise: item.key,
 			target: state[item.key].reps,
 		}));
@@ -173,6 +193,22 @@ export default function RoutineBuilder() {
 				<View style={styles.header}>
 					<Text style={styles.title}>{t("routineBuilder.title")}</Text>
 					<Text style={styles.subtitle}>{t("routineBuilder.subtitle")}</Text>
+				</View>
+
+				<View style={styles.roundsRow}>
+					<View>
+						<Text style={styles.roundsLabel}>{t("routineBuilder.roundsLabel")}</Text>
+						<Text style={styles.roundsHint}>{t("routineBuilder.roundsHint")}</Text>
+					</View>
+					<View style={styles.cardFooter}>
+						<TouchableOpacity style={styles.circleButton} onPress={() => changeRounds(-1)}>
+							<Text style={styles.circleButtonText}>-</Text>
+						</TouchableOpacity>
+						<Text style={styles.roundsValue}>{rounds}</Text>
+						<TouchableOpacity style={styles.circleButton} onPress={() => changeRounds(1)}>
+							<Text style={styles.circleButtonText}>+</Text>
+						</TouchableOpacity>
+					</View>
 				</View>
 
 				<View style={styles.list}>

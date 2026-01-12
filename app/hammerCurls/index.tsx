@@ -1,6 +1,5 @@
 import { Skia } from "@shopify/react-native-skia";
 import { Stack } from "expo-router";
-import * as Speech from "expo-speech";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
 	Animated,
@@ -114,7 +113,7 @@ const CameraButton = ({ label, onPress }: { label: string; onPress: () => void }
 );
 
 export default function HammerCurls() {
-	const { t, i18n } = useTranslation();
+	const { t } = useTranslation();
 	const landmarks = useSharedValue<KeypointsMap>({});
 	const { hasPermission, requestPermission } = useCameraPermission();
 	const [cameraPosition, setCameraPosition] = useState<CameraPosition>("front");
@@ -156,22 +155,6 @@ export default function HammerCurls() {
 	const progressAnim = useRef(new Animated.Value(0)).current;
 	const lastUiUpdateRef = useRef<number>(0);
 
-	const voiceConfig = useMemo(
-		() => ({
-			language: i18n.language === "es" ? "es-ES" : "en-US",
-			pitch: 1,
-			rate: 0.9,
-		}),
-		[i18n.language]
-	);
-
-	const speak = useCallback(
-		(text: string) => {
-			Speech.speak(text, voiceConfig);
-		},
-		[voiceConfig]
-	);
-
 	const instructions = useMemo(
 		() => t("hammerCurls.instructions", { returnObjects: true }) as string[],
 		[t]
@@ -205,13 +188,6 @@ export default function HammerCurls() {
 	);
 
 	useEffect(() => {
-		speak(t("hammerCurls.voice.welcome"));
-		return () => {
-			Speech.stop();
-		};
-	}, [speak, t]);
-
-	useEffect(() => {
 		Animated.timing(progressAnim, {
 			toValue: progress,
 			duration: 200,
@@ -224,12 +200,6 @@ export default function HammerCurls() {
 			setFeedback(t("hammerCurls.feedback.showArms"));
 		}
 	}, [activeArm, repCount, t]);
-
-	useEffect(() => {
-		return () => {
-			Speech.stop();
-		};
-	}, []);
 
 	useEffect(() => {
 		advanceToNext(repCount);
@@ -339,7 +309,6 @@ export default function HammerCurls() {
 							arm: t(`hammerCurls.armLabel.${arm}` as const),
 						})
 					);
-					speak(`${repCountRef.current + 1}`);
 				};
 
 				tryCount("left", leftElbowAngle, newLeftState);
@@ -362,7 +331,7 @@ export default function HammerCurls() {
 			subscription.remove();
 		};
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [speak, t]);
+	}, [t]);
 
 	const frameProcessor = useSkiaFrameProcessor(
 		(frame) => {

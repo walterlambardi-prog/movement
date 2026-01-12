@@ -47,6 +47,7 @@ export function useRoutineStep(currentExercise: ExerciseKey) {
 	const targetsParam = normalizeParam(params.targets);
 	const startAtParam = normalizeParam(params.startAt);
 	const currentRoutine = useAppStore((s) => s.routine.currentSession);
+	const planFromStore = currentRoutine?.plan ?? null;
 	const startRoutineSession = useAppStore((s) => s.startRoutineSession);
 	const completeRoutineExercise = useAppStore((s) => s.completeRoutineExercise);
 	const finishRoutineSession = useAppStore((s) => s.finishRoutineSession);
@@ -58,6 +59,7 @@ export function useRoutineStep(currentExercise: ExerciseKey) {
 	}, [params.targetReps]);
 
 	const isRoutine = useMemo(() => {
+		if (currentRoutine) return true;
 		const flag = normalizeParam(params.routine);
 		return (
 			flag === "true" ||
@@ -65,21 +67,34 @@ export function useRoutineStep(currentExercise: ExerciseKey) {
 			!!normalizeParam(params.nextExercise) ||
 			!!routineExercisesParam
 		);
-	}, [params.nextExercise, params.routine, routineExercisesParam, target]);
+	}, [currentRoutine, params.nextExercise, params.routine, routineExercisesParam, target]);
 
 	const sequence = useMemo(() => {
 		if (!isRoutine) return [] as ExerciseKey[];
+		if (planFromStore) return planFromStore.map((item) => item.exercise);
 		const parsed = parseExercises(routineExercisesParam);
-		const uniqueParsed = Array.from(new Set(parsed));
-		if (uniqueParsed.length > 0) return uniqueParsed as ExerciseKey[];
+		if (parsed.length > 0) return parsed as ExerciseKey[];
 		return ROUTINE_SEQUENCE;
-	}, [isRoutine, routineExercisesParam]);
+	}, [isRoutine, planFromStore, routineExercisesParam]);
 
-	const targetMap = useMemo(() => parseTargets(targetsParam), [targetsParam]);
+	const targetMap = useMemo(() => {
+		if (planFromStore) {
+			return planFromStore.reduce(
+				(acc, item) => {
+					acc[item.exercise] = item.target;
+					return acc;
+				},
+				{} as Record<ExerciseKey, number>
+			);
+		}
+		return parseTargets(targetsParam);
+	}, [planFromStore, targetsParam]);
+
 	const startAt = useMemo(() => {
+		if (currentRoutine?.startedAt) return currentRoutine.startedAt;
 		const parsed = startAtParam ? Number(startAtParam) : NaN;
 		return Number.isFinite(parsed) ? parsed : Date.now();
-	}, [startAtParam]);
+	}, [currentRoutine?.startedAt, startAtParam]);
 
 	const nextFromParams = useMemo(() => {
 		if (!isRoutine) return null;
@@ -102,13 +117,14 @@ export function useRoutineStep(currentExercise: ExerciseKey) {
 	const hasAdvancedRef = useRef(false);
 
 	const serializedExercises = useMemo(() => sequence.join(","), [sequence]);
-	const serializedTargets = useMemo(
-		() =>
-			Object.keys(targetMap)
-				.map((key) => `${key}:${targetMap[key as ExerciseKey]}`)
-				.join(","),
-		[targetMap]
-	);
+	const serializedTargets = useMemo(() => {
+		if (planFromStore) {
+			return planFromStore.map((item) => `${item.exercise}:${item.target}`).join(",");
+		}
+		return Object.keys(targetMap)
+			.map((key) => `${key}:${targetMap[key as ExerciseKey]}`)
+			.join(",");
+	}, [planFromStore, targetMap]);
 
 	const planFromParams = useMemo<RoutinePlanItem[]>(
 		() =>

@@ -79,7 +79,9 @@
 		"select": "Select",
 		"deselect": "Remove",
 		"selection": "{{count}} of {{total}} selected",
-		"totalReps": "Total reps: {{count}}"
+		"totalReps": "Total reps: {{count}}",
+		"roundsLabel": "Rounds",
+		"roundsHint": "Repeat the sequence"
 	},
 	"history": {
 		"title": "Progress history",
@@ -192,9 +194,6 @@
 			"excellent": "Excellent! ✨",
 			"goDeeper": "Go deeper next time",
 			"keepPushing": "Keep pushing!"
-		},
-		"voice": {
-			"welcome": "Let's do some squats! Position your full body in frame to begin."
 		}
 	},
 	"pushups": {
@@ -228,9 +227,6 @@
 			"excellent": "Perfect! ✨",
 			"goLower": "Go lower next time",
 			"keepPushing": "Keep pushing!"
-		},
-		"voice": {
-			"welcome": "Let's do some push-ups! Face the camera and get in position to begin."
 		}
 	},
 	"hammerCurls": {
@@ -258,9 +254,6 @@
 		"armLabel": {
 			"left": "Left",
 			"right": "Right"
-		},
-		"voice": {
-			"welcome": "Alternating hammer curl: face forward, arms down, alternate each arm."
 		}
 	},
 	"lateralRaises": {
@@ -287,9 +280,6 @@
 			"raising": "Raising",
 			"up": "Up",
 			"lowering": "Lowering"
-		},
-		"voice": {
-			"welcome": "Lateral raises: arms down, raise both to shoulder height."
 		}
 	},
 	"aiCoach": {

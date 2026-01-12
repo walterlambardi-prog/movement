@@ -28,6 +28,7 @@ Antes de proponer una rutina o repeticiones, primero pregunta de forma breve: se
 const normalizeContent = (text?: string) => text?.trim() ?? "";
 
 const parseJsonPlan = (raw: string): RoutinePlanItem[] | null => {
+	type PlanDraft = { exercise?: ExerciseKey; target: number };
 	try {
 		const matcher = /\{[\s\S]*\}/.exec(raw);
 		if (!matcher) return null;
@@ -35,17 +36,20 @@ const parseJsonPlan = (raw: string): RoutinePlanItem[] | null => {
 		if (!parsed?.exercises || !Array.isArray(parsed.exercises)) return null;
 		const allowed = new Set<ExerciseKey>(["squats", "pushups", "hammerCurls", "lateralRaises"]);
 		const plan: RoutinePlanItem[] = parsed.exercises
-			.map((item: { key?: string; reps?: number }) => ({
-				exercise: item.key as ExerciseKey | undefined,
-				target: Number(item.reps),
-			}))
-			.filter(
-				(item) =>
+			.map(
+				(item: { key?: string; reps?: number }): PlanDraft => ({
+					exercise: item.key as ExerciseKey | undefined,
+					target: Number(item.reps),
+				})
+			)
+			.filter((item: PlanDraft) => {
+				return (
 					allowed.has(item.exercise as ExerciseKey) &&
 					Number.isFinite(item.target) &&
 					item.target > 0
-			)
-			.map((item) => ({
+				);
+			})
+			.map((item: PlanDraft) => ({
 				exercise: item.exercise as ExerciseKey,
 				target: Math.min(Math.max(Math.round(item.target), 1), 500),
 			}));

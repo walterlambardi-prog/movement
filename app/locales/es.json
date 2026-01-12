@@ -79,7 +79,9 @@
 		"select": "Elegir",
 		"deselect": "Quitar",
 		"selection": "{{count}} de {{total}} seleccionados",
-		"totalReps": "Reps totales: {{count}}"
+		"totalReps": "Reps totales: {{count}}",
+		"roundsLabel": "Rondas",
+		"roundsHint": "Repite la secuencia"
 	},
 	"history": {
 		"title": "Historial de progreso",
@@ -192,9 +194,6 @@
 			"excellent": "Excelente! ✨",
 			"goDeeper": "Baja más la próxima",
 			"keepPushing": "Sigue empujando!"
-		},
-		"voice": {
-			"welcome": "Hagamos sentadillas! Muestra tu cuerpo completo para empezar."
 		}
 	},
 	"pushups": {
@@ -228,9 +227,6 @@
 			"excellent": "Perfecto! ✨",
 			"goLower": "Baja más la próxima",
 			"keepPushing": "Sigue empujando!"
-		},
-		"voice": {
-			"welcome": "Hagamos flexiones! Mira la cámara y colócate en posición."
 		}
 	},
 	"hammerCurls": {
@@ -258,9 +254,6 @@
 		"armLabel": {
 			"left": "Izquierdo",
 			"right": "Derecho"
-		},
-		"voice": {
-			"welcome": "Curl martillo alterno: cuerpo de frente, brazos abajo, alterna cada brazo."
 		}
 	},
 	"lateralRaises": {
@@ -287,9 +280,6 @@
 			"raising": "Subiendo",
 			"up": "Arriba",
 			"lowering": "Bajando"
-		},
-		"voice": {
-			"welcome": "Elevaciones laterales: brazos abajo, sube ambos a la altura de hombros."
 		}
 	},
 	"aiCoach": {

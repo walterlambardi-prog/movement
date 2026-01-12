@@ -1,6 +1,5 @@
 import { Skia } from "@shopify/react-native-skia";
 import { Stack } from "expo-router";
-import * as Speech from "expo-speech";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
 	Animated,
@@ -118,7 +117,7 @@ const CameraButton = ({ label, onPress }: { label: string; onPress: () => void }
 );
 
 export default function LateralRaises() {
-	const { t, i18n } = useTranslation();
+	const { t } = useTranslation();
 	const landmarks = useSharedValue<KeypointsMap>({});
 	const { hasPermission, requestPermission } = useCameraPermission();
 	const [cameraPosition, setCameraPosition] = useState<CameraPosition>("front");
@@ -140,21 +139,6 @@ export default function LateralRaises() {
 
 	const [repCount, setRepCount] = useState(0);
 	const [feedback, setFeedback] = useState<string>(t("lateralRaises.feedback.showShoulders"));
-	const voiceConfig = useMemo(
-		() => ({
-			language: i18n.language === "es" ? "es-ES" : "en-US",
-			pitch: 1,
-			rate: 0.9,
-		}),
-		[i18n.language]
-	);
-
-	const speak = useCallback(
-		(text: string) => {
-			Speech.speak(text, voiceConfig);
-		},
-		[voiceConfig]
-	);
 
 	const instructions = useMemo(
 		() => t("lateralRaises.instructions", { returnObjects: true }) as string[],
@@ -204,13 +188,6 @@ export default function LateralRaises() {
 	);
 
 	useEffect(() => {
-		speak(t("lateralRaises.voice.welcome"));
-		return () => {
-			Speech.stop();
-		};
-	}, [speak, t]);
-
-	useEffect(() => {
 		Animated.timing(progressAnim, {
 			toValue: progress,
 			duration: 200,
@@ -228,7 +205,6 @@ export default function LateralRaises() {
 		isMountedRef.current = true;
 		return () => {
 			isMountedRef.current = false;
-			Speech.stop();
 		};
 	}, []);
 
@@ -331,7 +307,6 @@ export default function LateralRaises() {
 						});
 
 						setFeedback(t("lateralRaises.feedback.upHold"));
-						speak(`${repCountRef.current + 1}`);
 					}
 					return;
 				}
@@ -359,7 +334,7 @@ export default function LateralRaises() {
 			subscription.remove();
 		};
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [speak, t]);
+	}, [t]);
 
 	const frameProcessor = useSkiaFrameProcessor(
 		(frame) => {
