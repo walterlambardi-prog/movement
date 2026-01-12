@@ -49,7 +49,7 @@
 		"heroTagToday": "Hoy: {{count}} reps",
 		"heroTagRoutines": "Rutinas: {{count}}",
 		"heroTagRoutinesAllTime": "Rutinas totales: {{count}}",
-		"hammerTitle": "Hammer Curls",
+		"hammerTitle": "Curl Martillo Alterno",
 		"hammerSubtitle": "Curl martillo alterno con conteo",
 		"lateralsTitle": "Elevaciones Laterales",
 		"lateralsSubtitle": "Elevaciones laterales simultáneas",
@@ -234,8 +234,8 @@
 		}
 	},
 	"hammerCurls": {
-		"title": "Hammer Curls",
-		"counterLabel": "HAMMER CURLS",
+		"title": "Curl Martillo Alterno",
+		"counterLabel": "CURL MARTILLO ALTERNO",
 		"instructions": [
 			"1) Postura: de pie, core firme, mirando al frente.",
 			"2) Agarre martillo: palmas enfrentadas todo el tiempo.",
@@ -265,7 +265,7 @@
 	},
 	"lateralRaises": {
 		"title": "Elevaciones Laterales",
-		"counterLabel": "LATERAL RAISES",
+		"counterLabel": "ELEVACIONES LATERALES",
 		"instructions": [
 			"1) De pie, torso recto, abdomen firme.",
 			"2) Agarre neutral, codos con leve flexión.",
@@ -294,7 +294,9 @@
 	},
 	"aiCoach": {
 		"title": "Coach AI",
-		"welcome": "Hola! Creo rutinas seguras usando sentadillas, flexiones, hammer curls y elevaciones laterales. Cuéntame tu edad, sexo, frecuencia y estado atlético para ajustar las reps.",
+		"subtitle": "Chatea para crear rutinas con nuestros cuatro ejercicios.",
+		"coachName": "Coach AI",
+		"welcome": "Hola! Creo rutinas seguras usando sentadillas, flexiones, curl martillo alterno y elevaciones laterales. Cuéntame tu edad, sexo, frecuencia y estado atlético para ajustar las reps.",
 		"inputPlaceholder": "Pide una rutina o reps...",
 		"send": "Enviar",
 		"topicGuard": "Solo puedo ayudar con entrenamiento, salud o nuestros cuatro ejercicios.",
@@ -305,9 +307,10 @@
 		"jsonToggleOff": "Modo JSON: OFF",
 		"jsonHint": "JSON devuelve ejercicios + reps para auto-ejecución.",
 		"suggestions": {
-			"starter": "Plan principiante con sentadillas, flexiones, hammer curls y elevaciones laterales",
-			"reps": "Reps del día para sentadillas, flexiones, hammer curls y elevaciones laterales",
-			"form": "Consejos de técnica para sentadillas, flexiones, hammer curls y elevaciones laterales"
+			"starter": "Plan principiante con sentadillas, flexiones, curl martillo alterno y elevaciones laterales",
+			"upperLower": "División tren superior/inferior usando esos cuatro ejercicios",
+			"reps": "Reps del día para sentadillas, flexiones, curl martillo alterno y elevaciones laterales",
+			"form": "Consejos de técnica para sentadillas, flexiones, curl martillo alterno y elevaciones laterales"
 		}
 	}
 }
