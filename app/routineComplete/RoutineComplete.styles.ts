@@ -13,6 +13,7 @@ export const styles = StyleSheet.create({
 	header: {
 		gap: 6,
 		marginBottom: 16,
+		marginHorizontal: 10,
 	},
 	title: {
 		fontSize: 28,

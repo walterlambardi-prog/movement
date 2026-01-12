@@ -84,7 +84,10 @@ export default function Home() {
 			<View style={styles.bubbleBottom} />
 
 			<ScrollView
-				contentContainerStyle={[styles.screenContent, { paddingTop: insets.top }]}
+				contentContainerStyle={[
+					styles.screenContent,
+					{ paddingTop: insets.top, paddingBottom: 80 + insets.bottom },
+				]}
 				showsVerticalScrollIndicator={false}
 			>
 				<View style={styles.heroCard}>
