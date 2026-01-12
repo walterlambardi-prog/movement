@@ -30,6 +30,7 @@ import {
 	StateTransitionResult,
 } from "./Squats.types";
 import { useSessionRecorder } from "../state/useSessionRecorder";
+import { EXERCISE_KEYS } from "../state/useAppStore";
 import { useRoutineStep } from "../routine/useRoutineStep";
 
 const { PoseLandmarks } = NativeModules;
@@ -261,13 +262,13 @@ export default function Squats() {
 	const [progress, setProgress] = useState<number>(0);
 	const [lastRepQuality, setLastRepQuality] = useState<RepQuality | null>(null);
 
-	const { isRoutine, target, nextExercise, advanceToNext } = useRoutineStep("squats");
+	const { isRoutine, target, nextExercise, advanceToNext } = useRoutineStep(EXERCISE_KEYS.SQUATS);
 	const remainingReps = useMemo(
 		() => (target !== null ? Math.max(target - squatCount, 0) : null),
 		[squatCount, target]
 	);
 
-	useSessionRecorder("squats", squatCount);
+	useSessionRecorder(EXERCISE_KEYS.SQUATS, squatCount);
 
 	const instructions = useMemo(
 		() => t("squats.instructions", { returnObjects: true }) as string[],

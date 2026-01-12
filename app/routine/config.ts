@@ -1,10 +1,10 @@
-import { ExerciseKey } from "../state/useAppStore";
+import { EXERCISE_KEYS, ExerciseKey } from "../state/useAppStore";
 
 export const ROUTINE_SEQUENCE: ExerciseKey[] = [
-	"squats",
-	"pushups",
-	"hammerCurls",
-	"lateralRaises",
+	EXERCISE_KEYS.SQUATS,
+	EXERCISE_KEYS.PUSHUPS,
+	EXERCISE_KEYS.HAMMER_CURLS,
+	EXERCISE_KEYS.LATERAL_RAISES,
 ];
 
 export const DEFAULT_ROUTINE_TARGET = 10;

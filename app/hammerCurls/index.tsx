@@ -22,6 +22,7 @@ import {
 import { useSharedValue } from "react-native-worklets-core";
 import { useTranslation } from "react-i18next";
 import { useSessionRecorder } from "../state/useSessionRecorder";
+import { EXERCISE_KEYS } from "../state/useAppStore";
 import { useRoutineStep } from "../routine/useRoutineStep";
 import { styles } from "./HammerCurls.styles";
 import { Arm, ArmState, KeypointData, KeypointsMap } from "./HammerCurls.types";
@@ -144,13 +145,15 @@ export default function HammerCurls() {
 	const [progress, setProgress] = useState<number>(0);
 	const [lastRepArm, setLastRepArm] = useState<Arm | null>(null);
 
-	const { isRoutine, target, nextExercise, advanceToNext } = useRoutineStep("hammerCurls");
+	const { isRoutine, target, nextExercise, advanceToNext } = useRoutineStep(
+		EXERCISE_KEYS.HAMMER_CURLS
+	);
 	const remainingReps = useMemo(
 		() => (target !== null ? Math.max(target - repCount, 0) : null),
 		[repCount, target]
 	);
 
-	useSessionRecorder("hammerCurls", repCount);
+	useSessionRecorder(EXERCISE_KEYS.HAMMER_CURLS, repCount);
 
 	const progressAnim = useRef(new Animated.Value(0)).current;
 	const lastUiUpdateRef = useRef<number>(0);

@@ -14,7 +14,12 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { styles } from "./AiCoach.styles";
 import { type ChatMessage, type Suggestion } from "./AiCoach.types";
-import { type ExerciseKey, type RoutinePlanItem, useAppStore } from "../state/useAppStore";
+import {
+	EXERCISE_KEYS,
+	type ExerciseKey,
+	type RoutinePlanItem,
+	useAppStore,
+} from "../state/useAppStore";
 
 const API_URL = "https://unfull-hyperflexibly-marylynn.ngrok-free.dev/v1/chat/completions";
 const MODEL = "local-llama";
@@ -34,7 +39,12 @@ const parseJsonPlan = (raw: string): RoutinePlanItem[] | null => {
 		if (!matcher) return null;
 		const parsed = JSON.parse(matcher[0]);
 		if (!parsed?.exercises || !Array.isArray(parsed.exercises)) return null;
-		const allowed = new Set<ExerciseKey>(["squats", "pushups", "hammerCurls", "lateralRaises"]);
+		const allowed = new Set<ExerciseKey>([
+			EXERCISE_KEYS.SQUATS,
+			EXERCISE_KEYS.PUSHUPS,
+			EXERCISE_KEYS.HAMMER_CURLS,
+			EXERCISE_KEYS.LATERAL_RAISES,
+		]);
 		const plan: RoutinePlanItem[] = parsed.exercises
 			.map(
 				(item: { key?: string; reps?: number }): PlanDraft => ({

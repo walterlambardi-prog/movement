@@ -31,6 +31,7 @@ import {
 	StateTransitionResult,
 } from "./Pushups.types";
 import { useSessionRecorder } from "../state/useSessionRecorder";
+import { EXERCISE_KEYS } from "../state/useAppStore";
 import { useRoutineStep } from "../routine/useRoutineStep";
 
 const { PoseLandmarks } = NativeModules;
@@ -307,13 +308,13 @@ export default function Pushups() {
 	const [progress, setProgress] = useState<number>(0);
 	const [lastRepQuality, setLastRepQuality] = useState<RepQuality | null>(null);
 
-	const { isRoutine, target, nextExercise, advanceToNext } = useRoutineStep("pushups");
+	const { isRoutine, target, nextExercise, advanceToNext } = useRoutineStep(EXERCISE_KEYS.PUSHUPS);
 	const remainingReps = useMemo(
 		() => (target !== null ? Math.max(target - pushupCount, 0) : null),
 		[pushupCount, target]
 	);
 
-	useSessionRecorder("pushups", pushupCount);
+	useSessionRecorder(EXERCISE_KEYS.PUSHUPS, pushupCount);
 
 	const instructions = useMemo(
 		() => t("pushups.instructions", { returnObjects: true }) as string[],

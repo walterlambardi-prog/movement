@@ -5,35 +5,35 @@ import { ImageBackground, ScrollView, Text, TouchableOpacity, View } from "react
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 
-import { ExerciseKey, RoutinePreference, useAppStore } from "../state/useAppStore";
+import { EXERCISE_KEYS, ExerciseKey, RoutinePreference, useAppStore } from "../state/useAppStore";
 import { DEFAULT_ROUTINE_TARGET } from "./config";
 import { styles } from "./Routine.styles";
 import { RoutineExerciseConfig } from "./Routine.types";
 
 const EXERCISES: RoutineExerciseConfig[] = [
 	{
-		key: "squats",
+		key: EXERCISE_KEYS.SQUATS,
 		icon: "barbell-outline",
 		accent: "#8B5CF6",
 		defaultReps: 10,
 		image: require("../../assets/images/exercises/squats.png"),
 	},
 	{
-		key: "pushups",
+		key: EXERCISE_KEYS.PUSHUPS,
 		icon: "fitness-outline",
 		accent: "#FF6B6B",
 		defaultReps: 10,
 		image: require("../../assets/images/exercises/pushups.png"),
 	},
 	{
-		key: "hammerCurls",
+		key: EXERCISE_KEYS.HAMMER_CURLS,
 		icon: "hand-right-outline",
 		accent: "#F97316",
 		defaultReps: 10,
 		image: require("../../assets/images/exercises/hammerCurls.png"),
 	},
 	{
-		key: "lateralRaises",
+		key: EXERCISE_KEYS.LATERAL_RAISES,
 		icon: "body-outline",
 		accent: "#22D3EE",
 		defaultReps: 10,

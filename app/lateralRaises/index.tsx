@@ -23,6 +23,7 @@ import { useSharedValue } from "react-native-worklets-core";
 import { useTranslation } from "react-i18next";
 import { useSessionRecorder } from "../state/useSessionRecorder";
 import { useRoutineStep } from "../routine/useRoutineStep";
+import { EXERCISE_KEYS } from "../state/useAppStore";
 import { styles } from "./LateralRaises.styles";
 import { ArmState, KeypointData, KeypointsMap } from "./LateralRaises.types";
 
@@ -150,13 +151,15 @@ export default function LateralRaises() {
 	const [rightState, setRightState] = useState<ArmState>("down");
 	const [progress, setProgress] = useState<number>(0);
 
-	const { isRoutine, target, nextExercise, advanceToNext } = useRoutineStep("lateralRaises");
+	const { isRoutine, target, nextExercise, advanceToNext } = useRoutineStep(
+		EXERCISE_KEYS.LATERAL_RAISES
+	);
 	const remainingReps = useMemo(
 		() => (target !== null ? Math.max(target - repCount, 0) : null),
 		[repCount, target]
 	);
 
-	useSessionRecorder("lateralRaises", repCount);
+	useSessionRecorder(EXERCISE_KEYS.LATERAL_RAISES, repCount);
 
 	const progressAnim = useRef(new Animated.Value(0)).current;
 	const lastUiUpdateRef = useRef<number>(0);

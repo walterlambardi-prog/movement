@@ -5,7 +5,14 @@ import { createJSONStorage, persist } from "zustand/middleware";
 import i18n, { initialLanguage } from "../i18n";
 import reactotron from "../ReactotronConfig";
 
-export type ExerciseKey = "hammerCurls" | "lateralRaises" | "pushups" | "squats";
+export const EXERCISE_KEYS = {
+	SQUATS: "squats",
+	PUSHUPS: "pushups",
+	HAMMER_CURLS: "hammerCurls",
+	LATERAL_RAISES: "lateralRaises",
+} as const;
+
+export type ExerciseKey = (typeof EXERCISE_KEYS)[keyof typeof EXERCISE_KEYS];
 
 export type ExerciseSession = {
 	count: number;
@@ -75,18 +82,18 @@ type AppState = {
 	finishRoutineSession: (endedAt?: number) => void;
 };
 const createDefaultExercises = (): Record<ExerciseKey, ExerciseStats> => ({
-	hammerCurls: { total: 0, sessions: [] },
-	lateralRaises: { total: 0, sessions: [] },
-	pushups: { total: 0, sessions: [] },
-	squats: { total: 0, sessions: [] },
+	[EXERCISE_KEYS.HAMMER_CURLS]: { total: 0, sessions: [] },
+	[EXERCISE_KEYS.LATERAL_RAISES]: { total: 0, sessions: [] },
+	[EXERCISE_KEYS.PUSHUPS]: { total: 0, sessions: [] },
+	[EXERCISE_KEYS.SQUATS]: { total: 0, sessions: [] },
 });
 
 const createDefaultRoutineState = (): RoutineState => ({
 	preferences: {
-		hammerCurls: { selected: true, reps: 10 },
-		lateralRaises: { selected: true, reps: 10 },
-		pushups: { selected: true, reps: 10 },
-		squats: { selected: true, reps: 10 },
+		[EXERCISE_KEYS.HAMMER_CURLS]: { selected: true, reps: 10 },
+		[EXERCISE_KEYS.LATERAL_RAISES]: { selected: true, reps: 10 },
+		[EXERCISE_KEYS.PUSHUPS]: { selected: true, reps: 10 },
+		[EXERCISE_KEYS.SQUATS]: { selected: true, reps: 10 },
 	},
 	rounds: 1,
 	currentSession: null,
