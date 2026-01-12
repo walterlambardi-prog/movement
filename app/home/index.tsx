@@ -25,7 +25,7 @@ export default function Home() {
 				subtitle: t("index.exercisesActionSubtitle", {
 					defaultValue: "Browse guided counters",
 				}),
-				accent: "#A855F7",
+				accent: "#22C55E",
 				icon: "body-outline" as const,
 			},
 			{
@@ -50,8 +50,8 @@ export default function Home() {
 				href: "/history" as const,
 				title: t("common.history", { defaultValue: "History" }),
 				subtitle: t("index.historySubtitle", { defaultValue: "Review your sessions" }),
-				accent: "#22C55E",
-				icon: "stats-chart" as const,
+				accent: "#A855F7",
+				icon: "stats-chart-outline" as const,
 			},
 			{
 				href: "/profile" as const,
