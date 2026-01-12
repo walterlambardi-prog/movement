@@ -11,6 +11,7 @@ type RoutineParams = {
 	routineExercises?: string | string[];
 	targets?: string | string[];
 	startAt?: string | string[];
+	stepIndex?: string | string[];
 };
 
 const normalizeParam = (value?: string | string[]) => (Array.isArray(value) ? value[0] : value);
@@ -46,6 +47,7 @@ export function useRoutineStep(currentExercise: ExerciseKey) {
 	const routineExercisesParam = normalizeParam(params.routineExercises);
 	const targetsParam = normalizeParam(params.targets);
 	const startAtParam = normalizeParam(params.startAt);
+	const stepIndexParam = normalizeParam(params.stepIndex);
 	const currentRoutine = useAppStore((s) => s.routine.currentSession);
 	const planFromStore = currentRoutine?.plan ?? null;
 	const startRoutineSession = useAppStore((s) => s.startRoutineSession);
@@ -96,6 +98,12 @@ export function useRoutineStep(currentExercise: ExerciseKey) {
 		return Number.isFinite(parsed) ? parsed : Date.now();
 	}, [currentRoutine?.startedAt, startAtParam]);
 
+	const stepIndex = useMemo(() => {
+		const parsed = stepIndexParam ? Number(stepIndexParam) : NaN;
+		if (Number.isFinite(parsed) && parsed >= 0) return parsed;
+		return 0;
+	}, [stepIndexParam]);
+
 	const nextFromParams = useMemo(() => {
 		if (!isRoutine) return null;
 		const raw = normalizeParam(params.nextExercise);
@@ -109,10 +117,9 @@ export function useRoutineStep(currentExercise: ExerciseKey) {
 	const computedNext = useMemo(() => {
 		if (!isRoutine) return null;
 		if (nextFromParams) return nextFromParams;
-		const index = sequence.indexOf(currentExercise);
-		if (index >= 0 && index < sequence.length - 1) return sequence[index + 1];
+		if (stepIndex < sequence.length - 1) return sequence[stepIndex + 1];
 		return null;
-	}, [currentExercise, isRoutine, nextFromParams, sequence]);
+	}, [isRoutine, nextFromParams, sequence, stepIndex]);
 
 	const hasAdvancedRef = useRef(false);
 
@@ -152,13 +159,14 @@ export function useRoutineStep(currentExercise: ExerciseKey) {
 			completeRoutineExercise(currentExercise, count, resolvedTarget);
 
 			if (computedNext) {
-				const index = sequence.indexOf(computedNext);
-				const following = index >= 0 && index < sequence.length - 1 ? sequence[index + 1] : null;
+				const nextStep = stepIndex + 1;
+				const following = nextStep < sequence.length - 1 ? sequence[nextStep + 1] : null;
 				router.replace({
 					pathname: `/${computedNext}`,
 					params: {
 						routine: "true",
 						targetReps: resolvedTarget.toString(),
+						stepIndex: nextStep.toString(),
 						...(serializedExercises ? { routineExercises: serializedExercises } : {}),
 						...(serializedTargets ? { targets: serializedTargets } : {}),
 						...(following ? { nextExercise: following } : {}),
@@ -181,6 +189,7 @@ export function useRoutineStep(currentExercise: ExerciseKey) {
 			completeRoutineExercise,
 			currentExercise,
 			finishRoutineSession,
+			stepIndex,
 		]
 	);
 

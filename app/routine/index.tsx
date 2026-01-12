@@ -169,6 +169,7 @@ export default function RoutineBuilder() {
 				targets,
 				targetReps: state[first].reps.toString(),
 				startAt: startedAt.toString(),
+				stepIndex: "0",
 				...(next ? { nextExercise: next } : {}),
 			},
 		});
