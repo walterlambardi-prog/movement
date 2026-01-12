@@ -302,5 +302,25 @@
 			"reps": "Reps del día para sentadillas, flexiones, curl martillo alterno y elevaciones laterales",
 			"form": "Consejos de técnica para sentadillas, flexiones, curl martillo alterno y elevaciones laterales"
 		}
+	},
+	"routineComplete": {
+		"title": "¡Excelente trabajo!",
+		"subtitle": "Terminaste tu rutina. Aquí tienes el resumen.",
+		"highlightTitle": "Esfuerzo total",
+		"totalReps": "Repeticiones totales",
+		"exercisesDone": "Ejercicios completados",
+		"rounds": "Rondas",
+		"duration": "Duración",
+		"avgPerExercise": "Promedio por ejercicio",
+		"repsPerMinute": "Reps por minuto",
+		"detailsTitle": "Detalles",
+		"planned": "Planificado: {{planned}} reps",
+		"bestExercise": "Ejercicio destacado",
+		"viewHistory": "Ver historial",
+		"backHome": "Volver al inicio",
+		"emptyTitle": "No hay rutina",
+		"emptySubtitle": "Inicia una rutina para ver el resumen.",
+		"durationLabel": "Tiempo: {{time}}",
+		"roundsLabel": "Rondas: {{rounds}}"
 	}
 }

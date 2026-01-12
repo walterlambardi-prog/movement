@@ -176,7 +176,11 @@ export function useRoutineStep(currentExercise: ExerciseKey) {
 			}
 
 			finishRoutineSession();
-			router.replace("/");
+			const sessionId = finishRoutineSession();
+			router.replace({
+				pathname: "/routineComplete",
+				params: sessionId ? { sessionId } : {},
+			});
 		},
 		[
 			computedNext,

@@ -299,5 +299,25 @@
 			"reps": "Daily rep targets for squats, push-ups, hammer curls, lateral raises",
 			"form": "Form tips for squats, push-ups, hammer curls, lateral raises"
 		}
+	},
+	"routineComplete": {
+		"title": "Great job!",
+		"subtitle": "You finished your routine. Here's your recap.",
+		"highlightTitle": "Total effort",
+		"totalReps": "Total reps",
+		"exercisesDone": "Exercises completed",
+		"rounds": "Rounds",
+		"duration": "Duration",
+		"avgPerExercise": "Avg reps / exercise",
+		"repsPerMinute": "Reps per minute",
+		"detailsTitle": "Details",
+		"planned": "Planned: {{planned}} reps",
+		"bestExercise": "Top exercise",
+		"viewHistory": "View history",
+		"backHome": "Back home",
+		"emptyTitle": "No routine found",
+		"emptySubtitle": "Start a routine to see your completion summary.",
+		"durationLabel": "Time: {{time}}",
+		"roundsLabel": "Rounds: {{rounds}}"
 	}
 }

@@ -44,6 +44,8 @@ export type RoutineSession = {
 	id: string;
 	startedAt: number;
 	endedAt: number;
+	rounds: number;
+	plannedReps: number;
 	items: RoutineSessionItem[];
 	totalReps: number;
 };
@@ -79,7 +81,7 @@ type AppState = {
 	setRoutineRounds: (rounds: number) => void;
 	startRoutineSession: (plan: RoutinePlanItem[], startedAt?: number) => void;
 	completeRoutineExercise: (exercise: ExerciseKey, completed: number, target: number) => void;
-	finishRoutineSession: (endedAt?: number) => void;
+	finishRoutineSession: (endedAt?: number) => string | null;
 };
 const createDefaultExercises = (): Record<ExerciseKey, ExerciseStats> => ({
 	[EXERCISE_KEYS.HAMMER_CURLS]: { total: 0, sessions: [] },
@@ -209,12 +211,16 @@ const store = create<AppState>()(
 				finishRoutineSession: (endedAt = Date.now()) => {
 					const routineState = get().routine;
 					const current = routineState.currentSession;
-					if (!current) return;
+					if (!current) return null;
 					const totalReps = current.items.reduce((sum, item) => sum + item.completed, 0);
+					const plannedReps = current.plan.reduce((sum, item) => sum + item.target, 0);
+					const rounds = routineState.rounds ?? 1;
 					const session: RoutineSession = {
 						id: current.id,
 						startedAt: current.startedAt,
 						endedAt,
+						rounds,
+						plannedReps,
 						items: current.items,
 						totalReps,
 					};
@@ -226,6 +232,7 @@ const store = create<AppState>()(
 							sessions: [session, ...routineState.sessions],
 						},
 					});
+					return session.id;
 				},
 			};
 		},
