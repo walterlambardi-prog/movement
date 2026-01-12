@@ -10,8 +10,8 @@ export const styles = StyleSheet.create({
 		paddingBottom: 39,
 	},
 	exercisesHeading: {
-		marginTop: 39,
-		marginBottom: 16,
+		paddingTop: 18,
+		paddingBottom: 16,
 		gap: 4,
 		paddingHorizontal: 10,
 	},
@@ -31,7 +31,6 @@ export const styles = StyleSheet.create({
 		color: "#E2E8F0",
 		fontSize: 24,
 		fontWeight: "900",
-		textTransform: "uppercase",
 	},
 	summarySubtitle: {
 		color: "#94A3B8",

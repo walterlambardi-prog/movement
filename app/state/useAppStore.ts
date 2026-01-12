@@ -189,18 +189,8 @@ const store = create<AppState>()(
 				completeRoutineExercise: (exercise, completed, target) => {
 					const current = get().routine.currentSession;
 					if (!current) return;
-					const items = [...current.items];
-					const existingIndex = items.findIndex((i) => i.exercise === exercise);
-					const normalizedCompleted = Math.max(0, completed);
-					if (existingIndex >= 0) {
-						items[existingIndex] = {
-							...items[existingIndex],
-							completed: normalizedCompleted,
-							target,
-						};
-					} else {
-						items.push({ exercise, target, completed: normalizedCompleted });
-					}
+					const clampedCompleted = Math.max(0, Math.min(target, completed));
+					const items = [...current.items, { exercise, target, completed: clampedCompleted }];
 					set({
 						routine: {
 							...get().routine,

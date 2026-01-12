@@ -1,7 +1,8 @@
-import { RoutineSession } from "../state/useAppStore";
+import { RoutineSession, type ExerciseKey } from "../state/useAppStore";
 
 export type RoutineCompleteParams = {
 	sessionId?: string;
+	mode?: "review";
 };
 
 export type RoutineSummary = {
@@ -9,10 +10,14 @@ export type RoutineSummary = {
 	durationMs: number;
 	avgRepsPerExercise: number;
 	exerciseCount: number;
-	repsPerMinute: number;
 	bestExercise?: {
-		exercise: string;
+		exercise: ExerciseKey;
 		completed: number;
 		target: number;
 	};
+	aggregated: Array<{
+		exercise: ExerciseKey;
+		completed: number;
+		target: number;
+	}>;
 };

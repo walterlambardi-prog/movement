@@ -15,53 +15,67 @@ export default function Home() {
 	const { t } = useTranslation();
 	const insets = useSafeAreaInsets();
 	const username = useAppStore((state) => state.username);
+	const sessions = useAppStore((state) => state.routine.sessions);
 	const displayName = username?.trim().length ? username : t("index.welcomeTitle");
+	const latestRoutine = useMemo(() => (sessions.length ? sessions[0] : null), [sessions]);
 
 	const quickActions: QuickAction[] = useMemo(
-		() => [
-			{
-				href: "/exercises" as const,
-				title: t("index.exercisesActionTitle", { defaultValue: "Exercises" }),
-				subtitle: t("index.exercisesActionSubtitle", {
-					defaultValue: "Browse guided counters",
-				}),
-				accent: "#22C55E",
-				icon: "body-outline" as const,
-			},
-			{
-				href: "/aiCoach" as const,
-				title: t("index.aiCoachTitle", { defaultValue: "AI Coach" }),
-				subtitle: t("index.aiCoachSubtitle", {
-					defaultValue: "Ask an AI coach for a safe routine",
-				}),
-				accent: "#F59E0B",
-				icon: "chatbubbles-outline" as const,
-			},
-			{
-				href: "/routine" as const,
-				title: t("common.routine", { defaultValue: "Routine" }),
-				subtitle: t("routineBuilder.quickSubtitle", {
-					defaultValue: "Configure your routine",
-				}),
-				accent: "#38BDF8",
-				icon: "fitness" as const,
-			},
-			{
-				href: "/history" as const,
-				title: t("common.history", { defaultValue: "History" }),
-				subtitle: t("index.historySubtitle", { defaultValue: "Review your sessions" }),
-				accent: "#A855F7",
-				icon: "stats-chart-outline" as const,
-			},
-			{
-				href: "/profile" as const,
-				title: t("common.profile", { defaultValue: "Settings" }),
-				subtitle: t("index.profileSubtitle", { defaultValue: "Adjust language and name" }),
-				accent: "#F97316",
-				icon: "settings-outline" as const,
-			},
-		],
-		[t]
+		() =>
+			[
+				latestRoutine
+					? {
+							href: `/routineComplete?sessionId=${latestRoutine.id}&mode=review` as const,
+							title: t("index.lastRoutineTitle", { defaultValue: "Last routine" }),
+							subtitle: t("index.lastRoutineSubtitle", {
+								defaultValue: "See your most recent session",
+							}),
+							accent: "#A5B4FC",
+							icon: "time-outline" as const,
+						}
+					: null,
+				{
+					href: "/exercises" as const,
+					title: t("index.exercisesActionTitle", { defaultValue: "Exercises" }),
+					subtitle: t("index.exercisesActionSubtitle", {
+						defaultValue: "Browse guided counters",
+					}),
+					accent: "#22C55E",
+					icon: "body-outline" as const,
+				},
+				{
+					href: "/aiCoach" as const,
+					title: t("index.aiCoachTitle", { defaultValue: "AI Coach" }),
+					subtitle: t("index.aiCoachSubtitle", {
+						defaultValue: "Ask an AI coach for a safe routine",
+					}),
+					accent: "#F59E0B",
+					icon: "chatbubbles-outline" as const,
+				},
+				{
+					href: "/routine" as const,
+					title: t("common.routine", { defaultValue: "Routine" }),
+					subtitle: t("routineBuilder.quickSubtitle", {
+						defaultValue: "Configure your routine",
+					}),
+					accent: "#38BDF8",
+					icon: "fitness" as const,
+				},
+				{
+					href: "/history" as const,
+					title: t("common.history", { defaultValue: "History" }),
+					subtitle: t("index.historySubtitle", { defaultValue: "Review your sessions" }),
+					accent: "#A855F7",
+					icon: "stats-chart-outline" as const,
+				},
+				{
+					href: "/profile" as const,
+					title: t("common.profile", { defaultValue: "Settings" }),
+					subtitle: t("index.profileSubtitle", { defaultValue: "Adjust language and name" }),
+					accent: "#F97316",
+					icon: "settings-outline" as const,
+				},
+			].filter(Boolean) as QuickAction[],
+		[t, latestRoutine]
 	);
 
 	return (

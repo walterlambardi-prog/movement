@@ -57,6 +57,8 @@
 		"aiCoachSubtitle": "Pídele al coach una rutina segura",
 		"exercisesActionTitle": "Ejercicios",
 		"exercisesActionSubtitle": "Explora contadores guiados",
+		"lastRoutineTitle": "Última rutina",
+		"lastRoutineSubtitle": "Revisa tu sesión más reciente",
 		"historySubtitle": "Mira cada sesión: repeticiones, tendencias y récords.",
 		"profileSubtitle": "Cambia tu nombre, ajusta el idioma o reinicia desde cero."
 	},
@@ -117,8 +119,7 @@
 			"lastSessionSub": "Registro más reciente",
 			"noData": "Sin datos aún",
 			"none": "-"
-		},
-		"repsLabel": "reps totales"
+		}
 	},
 	"onboarding": {
 		"title": "Impulsa tu inicio",
@@ -304,15 +305,19 @@
 		}
 	},
 	"routineComplete": {
-		"title": "¡Excelente trabajo!",
+		"title": "Rutina completada!",
+		"greetingTitle": "¡Excelente trabajo, {{name}}!",
 		"subtitle": "Terminaste tu rutina. Aquí tienes el resumen.",
+		"lastTitle": "Última rutina",
+		"lastSubtitle": "Revisa el resumen de tu última sesión.",
+		"headerTitle": "Resumen de rutina",
+		"headerReviewTitle": "Resumen de la última rutina",
+		"repeatRoutine": "Repetir rutina",
 		"highlightTitle": "Esfuerzo total",
 		"totalReps": "Repeticiones totales",
 		"exercisesDone": "Ejercicios completados",
 		"rounds": "Rondas",
 		"duration": "Duración",
-		"avgPerExercise": "Promedio por ejercicio",
-		"repsPerMinute": "Reps por minuto",
 		"detailsTitle": "Detalles",
 		"planned": "Planificado: {{planned}} reps",
 		"bestExercise": "Ejercicio destacado",

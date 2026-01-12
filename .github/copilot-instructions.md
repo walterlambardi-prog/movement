@@ -6,6 +6,7 @@
 - Maintain Expo/React Native theming already in use (dark navy background, accent borders). Extract inline styles to StyleSheet when feasible.
 - Keep onboarding optional if `hasOnboarded` and `username` already exist; don’t regress that flow.
 - Prefer memoized calculations and throttled updates on vision/pose code to avoid perf regressions.
+- After each response that involves code changes, you must run "yarn tsc" and "yarn lint". Fix any errors or warnings before proceeding.
 
 ## Development Guidelines
 

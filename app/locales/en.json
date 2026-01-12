@@ -57,6 +57,8 @@
 		"aiCoachSubtitle": "Ask an AI coach for a safe routine",
 		"exercisesActionTitle": "Exercises",
 		"exercisesActionSubtitle": "Browse guided counters",
+		"lastRoutineTitle": "Last routine",
+		"lastRoutineSubtitle": "Revisit your most recent session",
 		"historySubtitle": "Review your sessions and stats",
 		"profileSubtitle": "Change your name, adjust language, or reset from scratch."
 	},
@@ -117,8 +119,7 @@
 			"lastSessionSub": "Most recent entry",
 			"noData": "No data yet",
 			"none": "-"
-		},
-		"repsLabel": "total reps"
+		}
 	},
 	"onboarding": {
 		"title": "Let's get moving",
@@ -301,15 +302,19 @@
 		}
 	},
 	"routineComplete": {
-		"title": "Great job!",
+		"title": "Routine completed!",
+		"greetingTitle": "Great job, {{name}}!",
 		"subtitle": "You finished your routine. Here's your recap.",
+		"lastTitle": "Last routine",
+		"lastSubtitle": "Review your latest session summary.",
+		"headerTitle": "Routine recap",
+		"headerReviewTitle": "Latest routine recap",
+		"repeatRoutine": "Repeat routine",
 		"highlightTitle": "Total effort",
 		"totalReps": "Total reps",
 		"exercisesDone": "Exercises completed",
 		"rounds": "Rounds",
 		"duration": "Duration",
-		"avgPerExercise": "Avg reps / exercise",
-		"repsPerMinute": "Reps per minute",
 		"detailsTitle": "Details",
 		"planned": "Planned: {{planned}} reps",
 		"bestExercise": "Top exercise",
