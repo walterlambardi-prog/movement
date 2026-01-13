@@ -119,6 +119,10 @@ export function useRoutineStep(currentExercise: ExerciseKey) {
 
 	const hasAdvancedRef = useRef(false);
 
+	useEffect(() => {
+		hasAdvancedRef.current = false;
+	}, [currentExercise, stepIndex]);
+
 	const serializedExercises = useMemo(() => sequence.join(","), [sequence]);
 	const serializedTargets = useMemo(() => {
 		if (planFromStore) {
