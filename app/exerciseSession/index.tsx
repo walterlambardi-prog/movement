@@ -50,6 +50,9 @@ export default function ExerciseSession({ exerciseKey }: ExerciseSessionProps) {
 				isActive={true}
 				format={controller.format}
 				frameProcessor={controller.frameProcessor ?? undefined}
+				photo={false}
+				lowLightBoost={false}
+				videoStabilizationMode="off"
 				pixelFormat="yuv"
 			/>
 
