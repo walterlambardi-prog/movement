@@ -292,6 +292,15 @@
 		"fetchError": "Could not reach the coach. Try again.",
 		"planDetected": "Plan detected. Start it?",
 		"usePlanCta": "Start routine",
+		"planRoundsLabel": "Rounds: {{rounds}}",
+		"planExercisesTitle": "Exercises",
+		"planExerciseLine": "{{exercise}} — {{reps}} reps",
+		"exerciseLabels": {
+			"squats": "Squats",
+			"pushups": "Push-ups",
+			"hammerCurls": "Hammer curls",
+			"lateralRaises": "Lateral raises"
+		},
 		"jsonToggleOn": "JSON mode: ON",
 		"jsonToggleOff": "JSON mode: OFF",
 		"jsonHint": "JSON returns exercises + reps for auto-run.",

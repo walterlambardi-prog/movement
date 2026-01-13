@@ -80,6 +80,51 @@ export const styles = StyleSheet.create({
 		paddingHorizontal: 12,
 		maxWidth: "88%",
 	},
+	planPreview: {
+		gap: 8,
+		backgroundColor: "rgba(34, 211, 238, 0.06)",
+		borderRadius: 10,
+		padding: 10,
+		borderWidth: 1,
+		borderColor: "rgba(34, 211, 238, 0.22)",
+	},
+	planHeader: {
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "space-between",
+	},
+	planTitle: {
+		color: "#E2E8F0",
+		fontSize: 13,
+		fontWeight: "600",
+	},
+	planBadge: {
+		backgroundColor: "#22D3EE",
+		paddingHorizontal: 10,
+		paddingVertical: 4,
+		borderRadius: 12,
+		alignSelf: "flex-start",
+	},
+	planBadgeText: {
+		color: "#0B122F",
+		fontSize: 12,
+		fontWeight: "700",
+	},
+	planList: {
+		marginTop: 8,
+		gap: 6,
+	},
+	planRow: {
+		flexDirection: "row",
+		alignItems: "center",
+		gap: 8,
+	},
+	planDot: {
+		width: 6,
+		height: 6,
+		borderRadius: 3,
+		backgroundColor: "#22D3EE",
+	},
 	bubbleUser: {
 		alignSelf: "flex-end",
 		backgroundColor: "#0EA5E9",

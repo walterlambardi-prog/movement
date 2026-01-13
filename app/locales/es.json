@@ -294,6 +294,15 @@
 		"fetchError": "No pude contactar al coach. Intenta de nuevo.",
 		"planDetected": "Rutina lista. ¿La iniciamos?",
 		"usePlanCta": "Iniciar rutina",
+		"planRoundsLabel": "Rondas: {{rounds}}",
+		"planExercisesTitle": "Ejercicios",
+		"planExerciseLine": "{{exercise}} — {{reps}} reps",
+		"exerciseLabels": {
+			"squats": "Sentadillas",
+			"pushups": "Flexiones",
+			"hammerCurls": "Curl martillo alterno",
+			"lateralRaises": "Elevaciones laterales"
+		},
 		"jsonToggleOn": "Modo JSON: ON",
 		"jsonToggleOff": "Modo JSON: OFF",
 		"jsonHint": "JSON devuelve ejercicios + reps para auto-ejecución.",
