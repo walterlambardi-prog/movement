@@ -44,6 +44,7 @@ const parseTargets = (raw?: string | null): Record<ExerciseKey, number> => {
 export function useRoutineStep(currentExercise: ExerciseKey) {
 	const router = useRouter();
 	const params = useLocalSearchParams<RoutineParams>();
+	const routineFlag = normalizeParam(params.routine);
 	const routineExercisesParam = normalizeParam(params.routineExercises);
 	const targetsParam = normalizeParam(params.targets);
 	const startAtParam = normalizeParam(params.startAt);
@@ -61,15 +62,10 @@ export function useRoutineStep(currentExercise: ExerciseKey) {
 	}, [params.targetReps]);
 
 	const isRoutine = useMemo(() => {
-		if (currentRoutine) return true;
-		const flag = normalizeParam(params.routine);
-		return (
-			flag === "true" ||
-			target !== null ||
-			!!normalizeParam(params.nextExercise) ||
-			!!routineExercisesParam
-		);
-	}, [currentRoutine, params.nextExercise, params.routine, routineExercisesParam, target]);
+		if (routineFlag === "true") return true;
+		if (routineFlag === "false") return false;
+		return target !== null || !!normalizeParam(params.nextExercise) || !!routineExercisesParam;
+	}, [params.nextExercise, routineFlag, routineExercisesParam, target]);
 
 	const sequence = useMemo(() => {
 		if (!isRoutine) return [] as ExerciseKey[];
@@ -162,8 +158,9 @@ export function useRoutineStep(currentExercise: ExerciseKey) {
 				const nextStep = stepIndex + 1;
 				const following = nextStep < sequence.length - 1 ? sequence[nextStep + 1] : null;
 				router.replace({
-					pathname: `/${computedNext}`,
+					pathname: "/[exercise]",
 					params: {
+						exercise: computedNext,
 						routine: "true",
 						targetReps: resolvedTarget.toString(),
 						stepIndex: nextStep.toString(),
@@ -175,7 +172,6 @@ export function useRoutineStep(currentExercise: ExerciseKey) {
 				return;
 			}
 
-			finishRoutineSession();
 			const sessionId = finishRoutineSession();
 			router.replace({
 				pathname: "/routineComplete",

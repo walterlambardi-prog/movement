@@ -247,8 +247,9 @@ export default function AiCoachScreen() {
 		const [first, second] = parsedPlan;
 		if (!first) return;
 		router.push({
-			pathname: `/${first.exercise}`,
+			pathname: "/[exercise]",
 			params: {
+				exercise: first.exercise,
 				routine: "true",
 				routineExercises,
 				targets,

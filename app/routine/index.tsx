@@ -149,8 +149,9 @@ export default function RoutineBuilder() {
 		startRoutineSession(plan, startedAt);
 
 		router.push({
-			pathname: `/${first}`,
+			pathname: "/[exercise]",
 			params: {
+				exercise: first,
 				routine: "true",
 				routineExercises,
 				targets,

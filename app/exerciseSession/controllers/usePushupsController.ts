@@ -1,96 +1,17 @@
-import { Skia } from "@shopify/react-native-skia";
-import { Stack } from "expo-router";
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-	Animated,
-	Button,
-	NativeEventEmitter,
-	NativeModules,
-	StyleSheet,
-	Text,
-	View,
-} from "react-native";
-import {
-	Camera,
-	CameraPosition,
-	Frame,
-	useCameraDevice,
-	useCameraFormat,
-	useCameraPermission,
-	useSkiaFrameProcessor,
-	VisionCameraProxy,
-} from "react-native-vision-camera";
-import { useSharedValue } from "react-native-worklets-core";
-import { useTranslation } from "react-i18next";
-import { styles } from "./Pushups.styles";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { NativeEventEmitter, NativeModules } from "react-native";
+
+import { ControllerArgs, BaseControllerState } from "../ExerciseSession.types";
+import { useSessionRecorder } from "../../state/useSessionRecorder";
+import { useRoutineStep } from "../../routine/useRoutineStep";
 import {
 	KeypointData,
-	KeypointsMap,
 	PushupState,
 	RepQuality,
 	StateTransitionResult,
-} from "./Pushups.types";
-import { useSessionRecorder } from "../state/useSessionRecorder";
-import { EXERCISE_KEYS } from "../state/useAppStore";
-import { useRoutineStep } from "../routine/useRoutineStep";
+} from "../types/Pushups.types";
 
 const { PoseLandmarks } = NativeModules;
-
-const poseLandMarkPlugin = VisionCameraProxy.initFrameProcessorPlugin("poseLandmarks", {});
-
-function poseLandmarks(frame: Frame) {
-	"worklet";
-	if (poseLandMarkPlugin == null) {
-		throw new Error("Failed to load Frame Processor Plugin!");
-	}
-	return poseLandMarkPlugin.call(frame);
-}
-
-const LINES = [
-	[0, 1],
-	[0, 4],
-	[1, 2],
-	[2, 3],
-	[3, 7],
-	[4, 5],
-	[5, 6],
-	[6, 8],
-	[9, 10],
-	[11, 12],
-	[11, 13],
-	[11, 23],
-	[12, 14],
-	[12, 24],
-	[13, 15],
-	[15, 17],
-	[15, 19],
-	[15, 21],
-	[17, 19],
-	[14, 16],
-	[16, 18],
-	[16, 20],
-	[16, 22],
-	[18, 20],
-	[23, 24],
-	[23, 25],
-	[24, 26],
-	[25, 27],
-	[26, 28],
-	[27, 29],
-	[27, 31],
-	[29, 31],
-	[28, 30],
-	[28, 32],
-	[30, 32],
-];
-
-const linePaint = Skia.Paint();
-linePaint.setColor(Skia.Color("#FF6B6B"));
-linePaint.setStrokeWidth(25);
-
-const circlePaint = Skia.Paint();
-circlePaint.setColor(Skia.Color("#FFC107"));
-linePaint.setStrokeWidth(10);
 
 const MIN_VISIBILITY = 0.45;
 const HIP_SHOULDER_MAX_DELTA = 0.48;
@@ -98,9 +19,9 @@ const SHOULDER_LEVEL_DELTA = 0.2;
 const SMOOTHING_ALPHA = 0.28;
 const VISIBILITY_EPSILON = 0.1;
 const BOTTOM_HOLD_MS = 80;
-const MAX_TORSO_ANGLE = 35; // degrees from horizontal; larger means too vertical
-const MAX_FRAME_HEIGHT = 0.6; // normalized bbox height threshold to reject standing
-const MAX_HEIGHT_WIDTH_RATIO = 0.9; // if height ~= width, likely vertical
+const MAX_TORSO_ANGLE = 35;
+const MAX_FRAME_HEIGHT = 0.6;
+const MAX_HEIGHT_WIDTH_RATIO = 0.9;
 
 const ELBOW_EXTENDED = 136;
 const ELBOW_START_DESCENT = 132;
@@ -282,18 +203,29 @@ function processPushupStateMachine(
 	};
 }
 
-const CameraButton = ({ label, onPress }: { label: string; onPress: () => void }) => (
-	<Button title={label} onPress={onPress} />
-);
+function getStateLabel(state: PushupState, translate: (key: string) => string): string {
+	switch (state) {
+		case "idle":
+			return translate("pushups.stateLabel.idle");
+		case "ready":
+			return translate("pushups.stateLabel.ready");
+		case "descending":
+			return translate("pushups.stateLabel.descending");
+		case "bottom":
+			return translate("pushups.stateLabel.bottom");
+		case "ascending":
+			return translate("pushups.stateLabel.ascending");
+		default:
+			return state;
+	}
+}
 
-export default function Pushups() {
-	const { t } = useTranslation();
-	const landmarks = useSharedValue<KeypointsMap>({});
-	const { hasPermission, requestPermission } = useCameraPermission();
-	const [cameraPosition, setCameraPosition] = useState<CameraPosition>("front");
-	const device = useCameraDevice(cameraPosition);
-	const format = useCameraFormat(device, [{ fps: 24 }]);
-
+export function usePushupsController({
+	t,
+	exerciseKey,
+	camera,
+}: ControllerArgs): BaseControllerState {
+	const { landmarks } = camera;
 	const lastPushupTimeRef = useRef<number>(0);
 	const isMountedRef = useRef<boolean>(true);
 	const pushupCountRef = useRef<number>(0);
@@ -308,18 +240,13 @@ export default function Pushups() {
 	const [progress, setProgress] = useState<number>(0);
 	const [lastRepQuality, setLastRepQuality] = useState<RepQuality | null>(null);
 
-	const { isRoutine, target, nextExercise, advanceToNext } = useRoutineStep(EXERCISE_KEYS.PUSHUPS);
+	const { isRoutine, target, nextExercise, advanceToNext } = useRoutineStep(exerciseKey);
 	const remainingReps = useMemo(
 		() => (target !== null ? Math.max(target - pushupCount, 0) : null),
 		[pushupCount, target]
 	);
 
-	useSessionRecorder(EXERCISE_KEYS.PUSHUPS, pushupCount);
-
-	const instructions = useMemo(
-		() => t("pushups.instructions", { returnObjects: true }) as string[],
-		[t]
-	);
+	useSessionRecorder(exerciseKey, pushupCount);
 
 	useEffect(() => {
 		pushupCountRef.current = pushupCount;
@@ -328,47 +255,6 @@ export default function Pushups() {
 	useEffect(() => {
 		pushupStateRef.current = pushupState;
 	}, [pushupState]);
-
-	const progressAnim = useRef(new Animated.Value(0)).current;
-
-	const handleCameraChange = useCallback(() => {
-		setCameraPosition((prev) => (prev === "back" ? "front" : "back"));
-	}, []);
-
-	const handleReset = useCallback(() => {
-		setPushupCount(0);
-		setPushupState("idle");
-		setProgress(0);
-		setFeedback(t("pushups.feedback.noBody"));
-		setLastRepQuality(null);
-	}, [t]);
-
-	const HeaderRight = useMemo(
-		() => <CameraButton label={t("common.changeCamera")} onPress={handleCameraChange} />,
-		[handleCameraChange, t]
-	);
-
-	const screenOptions = useMemo(
-		() => ({
-			title: t("pushups.title"),
-			headerRight: () => HeaderRight,
-		}),
-		[HeaderRight, t]
-	);
-
-	useEffect(() => {
-		Animated.timing(progressAnim, {
-			toValue: progress,
-			duration: 200,
-			useNativeDriver: false,
-		}).start();
-	}, [progress, progressAnim]);
-
-	useEffect(() => {
-		if (pushupState === "idle") {
-			setFeedback(t("pushups.feedback.noBody"));
-		}
-	}, [pushupState, t]);
 
 	useEffect(() => {
 		isMountedRef.current = true;
@@ -380,6 +266,19 @@ export default function Pushups() {
 	useEffect(() => {
 		advanceToNext(pushupCount);
 	}, [advanceToNext, pushupCount]);
+
+	const instructions = useMemo(
+		() => t("pushups.instructions", { returnObjects: true }) as string[],
+		[t]
+	);
+
+	const handleReset = useCallback(() => {
+		setPushupCount(0);
+		setPushupState("idle");
+		setProgress(0);
+		setFeedback(t("pushups.feedback.noBody"));
+		setLastRepQuality(null);
+	}, [t]);
 
 	useEffect(() => {
 		PoseLandmarks?.initModel?.();
@@ -399,7 +298,7 @@ export default function Pushups() {
 					return;
 				}
 
-				const detectedLandmarks: KeypointsMap = event.landmarks[0];
+				const detectedLandmarks: Record<string, KeypointData> = event.landmarks[0];
 				landmarks.value = detectedLandmarks;
 
 				const leftShoulder = detectedLandmarks[11];
@@ -544,210 +443,40 @@ export default function Pushups() {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [t]);
 
-	const frameProcessor = useSkiaFrameProcessor((frame) => {
-		"worklet";
-		poseLandmarks(frame);
-
-		if (landmarks?.value !== undefined && Object.keys(landmarks?.value).length > 0) {
-			const body = landmarks?.value;
-			const frameWidth = frame.width;
-			const frameHeight = frame.height;
-
-			for (const [from, to] of LINES) {
-				const fromPoint = body[from];
-				const toPoint = body[to];
-				if (fromPoint && toPoint) {
-					frame.drawLine(
-						fromPoint.x * Number(frameWidth),
-						fromPoint.y * Number(frameHeight),
-						toPoint.x * Number(frameWidth),
-						toPoint.y * Number(frameHeight),
-						linePaint
-					);
-				}
-			}
-
-			for (const mark of Object.values(body)) {
-				if (mark && typeof mark === "object" && "x" in mark && "y" in mark) {
-					frame.drawCircle(
-						mark.x * Number(frameWidth),
-						mark.y * Number(frameHeight),
-						8,
-						circlePaint
-					);
-				}
-			}
-		}
-	}, []);
-
-	if (!hasPermission) {
-		return (
-			<View style={styles.container}>
-				<Text>{t("common.noPermission")}</Text>
-				<Button title={t("common.requestPermission") || ""} onPress={requestPermission} />
-			</View>
-		);
-	}
-
-	if (device == null) {
-		return (
-			<View style={styles.container}>
-				<Text>{t("common.noDevice")}</Text>
-			</View>
-		);
-	}
-
-	return (
-		<View style={styles.container}>
-			<Stack.Screen options={screenOptions} />
-
-			<Camera
-				style={StyleSheet.absoluteFill}
-				device={device}
-				isActive={true}
-				format={format}
-				frameProcessor={frameProcessor}
-				pixelFormat="yuv"
-			/>
-
-			<View style={styles.overlay} />
-
-			<View style={styles.topBar}>
-				<View style={styles.counterContainer}>
-					<Text style={styles.counterValue}>{pushupCount}</Text>
-					<Text style={styles.counterLabel}>{t("pushups.counterLabel")}</Text>
-				</View>
-			</View>
-
-			<View style={styles.centerFeedback}>
-				<Text style={[styles.feedbackText, getFeedbackStyle(pushupState)]}>{feedback}</Text>
-				{pushupState !== "idle" && (
-					<Text style={styles.angleIndicator}>{Math.round(currentAngle)}°</Text>
-				)}
-			</View>
-
-			{(pushupState === "descending" ||
-				pushupState === "ascending" ||
-				pushupState === "bottom") && (
-				<View style={styles.progressBarContainer}>
-					<View style={styles.progressBarBackground}>
-						<Animated.View
-							style={[
-								styles.progressBarFill,
-								{
-									width: progressAnim.interpolate({
-										inputRange: [0, 100],
-										outputRange: ["0%", "100%"],
-									}),
-								},
-								getProgressBarColor(pushupState),
-							]}
-						/>
-					</View>
-					<Text style={styles.progressText}>{Math.round(progress)}%</Text>
-				</View>
-			)}
-
-			{lastRepQuality && pushupState === "ready" && (
-				<View style={styles.qualityBadge}>
-					<Text style={styles.qualityText}>
-						{lastRepQuality === "perfect" ? t("common.quality.perfect") : t("common.quality.good")}
-					</Text>
-				</View>
-			)}
-
-			<View style={styles.bottomPanel}>
-				{isRoutine && target !== null && (
-					<View style={styles.routineMetaRow}>
-						<View style={styles.routineChip}>
-							<Text style={styles.statLabel}>{t("routine.goalLabel")}</Text>
-							<Text style={styles.statValue}>
-								{t("routine.goalValue", {
-									current: Math.min(pushupCount, target),
-									target,
-								})}
-							</Text>
-							<Text style={styles.routineHint}>
-								{t("routine.remainingValue", { count: remainingReps ?? 0 })}
-							</Text>
-						</View>
-						<View style={styles.routineChip}>
-							<Text style={styles.statLabel}>{t("routine.nextLabel")}</Text>
-							<Text style={styles.statValue}>
-								{nextExercise ? t(`${nextExercise}.title` as const) : t("routine.completeLabel")}
-							</Text>
-							{!nextExercise && <Text style={styles.routineHint}>{t("routine.finished")}</Text>}
-						</View>
-					</View>
-				)}
-
-				<View style={styles.statsRow}>
-					<View style={styles.statItem}>
-						<Text style={styles.statLabel}>{t("common.state")}</Text>
-						<Text style={styles.statValue}>{getStateLabel(pushupState, t)}</Text>
-					</View>
-					<View style={styles.resetButtonContainer}>
-						<Button title={t("common.reset")} onPress={handleReset} color="#FF6B6B" />
-					</View>
-				</View>
-
-				{pushupState === "idle" && (
-					<View style={styles.instructionsContainer}>
-						{instructions.map((item) => (
-							<Text key={item} style={styles.instructionText}>
-								{item}
-							</Text>
-						))}
-					</View>
-				)}
-			</View>
-		</View>
+	const statItems = useMemo(
+		() => [
+			{
+				label: t("common.state"),
+				value: getStateLabel(pushupState, t),
+			},
+			{
+				label: t("pushups.counterLabel"),
+				value: `${Math.round(currentAngle)}°`,
+			},
+		],
+		[currentAngle, pushupState, t]
 	);
-}
 
-function getFeedbackStyle(state: PushupState) {
-	switch (state) {
-		case "idle":
-			return { color: "#FFC107" };
-		case "ready":
-			return { color: "#FF6B6B" };
-		case "descending":
-			return { color: "#2196F3" };
-		case "bottom":
-			return { color: "#FF9800" };
-		case "ascending":
-			return { color: "#9C27B0" };
-		default:
-			return { color: "white" };
-	}
-}
+	const badge = lastRepQuality
+		? {
+				label:
+					lastRepQuality === "perfect" ? t("common.quality.perfect") : t("common.quality.good"),
+				color: lastRepQuality === "perfect" ? "#10B981" : "#EAB308",
+			}
+		: null;
 
-function getProgressBarColor(state: PushupState) {
-	switch (state) {
-		case "descending":
-			return { backgroundColor: "#2196F3" };
-		case "bottom":
-			return { backgroundColor: "#FF9800" };
-		case "ascending":
-			return { backgroundColor: "#FF6B6B" };
-		default:
-			return { backgroundColor: "#FF6B6B" };
-	}
-}
+	const showProgress =
+		pushupState === "descending" || pushupState === "ascending" || pushupState === "bottom";
 
-function getStateLabel(state: PushupState, translate: (key: string) => string): string {
-	switch (state) {
-		case "idle":
-			return translate("pushups.stateLabel.idle");
-		case "ready":
-			return translate("pushups.stateLabel.ready");
-		case "descending":
-			return translate("pushups.stateLabel.descending");
-		case "bottom":
-			return translate("pushups.stateLabel.bottom");
-		case "ascending":
-			return translate("pushups.stateLabel.ascending");
-		default:
-			return state;
-	}
+	return {
+		repCount: pushupCount,
+		feedback,
+		progress: showProgress ? progress : null,
+		progressColor: undefined,
+		statItems,
+		badge,
+		instructions,
+		routine: { isRoutine, target, nextExercise, remaining: remainingReps },
+		handleReset,
+	};
 }

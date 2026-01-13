@@ -114,8 +114,9 @@ export default function RoutineComplete() {
 		startRoutineSession(plan, startedAt);
 
 		router.replace({
-			pathname: `/${first}`,
+			pathname: "/[exercise]",
 			params: {
+				exercise: first,
 				routine: "true",
 				routineExercises: sequence.join(","),
 				targets,
