@@ -169,7 +169,7 @@ const store = create<AppState>()(
 					set({ routine: { ...get().routine, preferences: next } });
 				},
 				setRoutineRounds: (rounds) => {
-					const normalized = Math.max(1, Math.min(rounds, 10));
+					const normalized = Math.max(1, Math.min(rounds, 99));
 					set({ routine: { ...get().routine, rounds: normalized } });
 				},
 				startRoutineSession: (plan, startedAt = Date.now()) => {

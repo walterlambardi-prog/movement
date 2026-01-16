@@ -42,7 +42,7 @@ const EXERCISES: RoutineExerciseConfig[] = [
 ];
 
 const clampReps = (value: number) => Math.max(1, Math.min(200, value));
-const clampRounds = (value: number) => Math.max(1, Math.min(10, value));
+const clampRounds = (value: number) => Math.max(1, Math.min(99, value));
 
 type ExerciseState = Record<ExerciseKey, { selected: boolean; reps: number }>;
 

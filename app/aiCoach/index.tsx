@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import {
 	ActivityIndicator,
 	ScrollView,
@@ -13,23 +13,34 @@ import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { styles } from "./AiCoach.styles";
-import { useAiCoach, parseJsonPlan } from "./useAiCoach";
+import { useAiCoach, parseJsonPlan, parseLevelPrompt } from "./useAiCoach";
+import { useAppStore } from "../state/useAppStore";
 
 export default function AiCoach() {
 	const { t } = useTranslation();
 	const insets = useSafeAreaInsets();
 	const scrollRef = useRef<ScrollView>(null);
+	const username = useAppStore((s) => s.username);
 	const {
 		input,
 		setInput,
 		loading,
 		messages,
-		parsedPlan,
 		suggestions,
 		handleSend,
 		createSuggestionHandler,
 		handleStartRoutineFromPlan,
+		handleEditRoutineFromPlan,
+		handleLevelSelect,
 	} = useAiCoach();
+
+	const formatTime = useMemo(
+		() => (timestamp?: number) => {
+			const date = timestamp ? new Date(timestamp) : new Date();
+			return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+		},
+		[]
+	);
 
 	useEffect(() => {
 		const timer = setTimeout(() => {
@@ -70,8 +81,12 @@ export default function AiCoach() {
 
 				<View style={styles.messagesCard}>
 					{messages.map((message) => {
+						const parsedLevelPrompt =
+							message.role === "assistant" ? parseLevelPrompt(message.content) : null;
 						const parsedMessagePlan =
 							message.role === "assistant" ? parseJsonPlan(message.content) : null;
+						const levelPromptTitle =
+							parsedLevelPrompt?.prompt?.trim() || t("aiCoach.levelPromptFallback");
 						return (
 							<View
 								key={message.id}
@@ -83,7 +98,53 @@ export default function AiCoach() {
 								]}
 							>
 								<View style={message.role === "user" ? styles.bubbleUser : styles.bubbleAssistant}>
-									{parsedMessagePlan ? (
+									<View
+										style={[
+											styles.metaRow,
+											message.role === "user"
+												? { justifyContent: "flex-end" }
+												: { justifyContent: "flex-start" },
+										]}
+									>
+										<Text style={message.role === "user" ? styles.metaNameUser : styles.metaName}>
+											{message.role === "user"
+												? username || t("aiCoach.meLabel")
+												: t("aiCoach.coachLabel")}
+										</Text>
+										<Text style={message.role === "user" ? styles.metaTimeUser : styles.metaTime}>
+											{formatTime(message.createdAt)}
+										</Text>
+									</View>
+									{parsedLevelPrompt ? (
+										<View style={styles.levelPrompt}>
+											<Text style={styles.levelPromptTitle}>{levelPromptTitle}</Text>
+											<View style={styles.levelOptions}>
+												{parsedLevelPrompt.options.map((option) => {
+													const lower = option.toLowerCase();
+													const iconName =
+														lower.includes("avanz") || lower.includes("advanced")
+															? "rocket-outline"
+															: lower.includes("inter")
+																? "barbell-outline"
+																: "leaf-outline";
+													return (
+														<TouchableOpacity
+															key={`${message.id}-${option}`}
+															style={styles.levelOptionButton}
+															onPress={() => handleLevelSelect(option)}
+														>
+															<View style={styles.levelOptionContent}>
+																<View style={styles.levelOptionIcon}>
+																	<Ionicons name={iconName} size={16} color="#0B122F" />
+																</View>
+																<Text style={styles.levelOptionText}>{option}</Text>
+															</View>
+														</TouchableOpacity>
+													);
+												})}
+											</View>
+										</View>
+									) : parsedMessagePlan ? (
 										<View style={styles.planPreview}>
 											<View style={styles.planHeader}>
 												<Text style={styles.planTitle}>{t("aiCoach.planExercisesTitle")}</Text>
@@ -114,6 +175,32 @@ export default function AiCoach() {
 													);
 												})}
 											</View>
+											<View style={styles.planCta}>
+												<View style={styles.planCtaRow}>
+													<Ionicons name="checkmark-circle" size={18} color="#22D3EE" />
+													<Text style={styles.statusText}>{t("aiCoach.planDetected")}</Text>
+												</View>
+												<View style={styles.planActions}>
+													<TouchableOpacity
+														style={styles.planStartButton}
+														onPress={() => handleStartRoutineFromPlan()}
+													>
+														<View style={styles.planActionContent}>
+															<Ionicons name="play" size={15} color="#0B122F" />
+															<Text style={styles.planStartText}>{t("aiCoach.usePlanCta")}</Text>
+														</View>
+													</TouchableOpacity>
+													<TouchableOpacity
+														style={styles.planGhostButton}
+														onPress={() => handleEditRoutineFromPlan()}
+													>
+														<View style={styles.planActionContent}>
+															<Ionicons name="create-outline" size={15} color="#E2E8F0" />
+															<Text style={styles.planGhostText}>{t("aiCoach.editPlanCta")}</Text>
+														</View>
+													</TouchableOpacity>
+												</View>
+											</View>
 										</View>
 									) : (
 										<Text style={message.role === "user" ? styles.userText : styles.assistantText}>
@@ -127,19 +214,7 @@ export default function AiCoach() {
 					{loading ? (
 						<View style={styles.statusRow}>
 							<ActivityIndicator size="small" color="#22D3EE" />
-							<Text style={styles.statusText}>{t("onboarding.loading")}</Text>
-						</View>
-					) : null}
-					{parsedPlan ? (
-						<View style={styles.statusRow}>
-							<Ionicons name="checkmark-circle" size={18} color="#22D3EE" />
-							<Text style={styles.statusText}>{t("aiCoach.planDetected")}</Text>
-							<TouchableOpacity
-								style={styles.suggestionChip}
-								onPress={() => handleStartRoutineFromPlan()}
-							>
-								<Text style={styles.suggestionText}>{t("aiCoach.usePlanCta")}</Text>
-							</TouchableOpacity>
+							<Text style={styles.statusText}>{t("aiCoach.thinking")}</Text>
 						</View>
 					) : null}
 				</View>

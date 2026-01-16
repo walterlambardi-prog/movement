@@ -4,6 +4,7 @@ export type ChatMessage = {
 	readonly id: string;
 	readonly role: ChatMessageRole;
 	readonly content: string;
+	readonly createdAt: number;
 };
 
 export type Suggestion = {

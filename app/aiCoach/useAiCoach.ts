@@ -16,7 +16,12 @@ import {
 	TEMPERATURE,
 	TOPIC_KEYWORDS,
 } from "./constants";
-import { type ExerciseKey, type RoutinePlanItem, useAppStore } from "../state/useAppStore";
+import {
+	type ExerciseKey,
+	type RoutinePreference,
+	type RoutinePlanItem,
+	useAppStore,
+} from "../state/useAppStore";
 
 const normalizeContent = (text?: string) => text?.trim() ?? "";
 
@@ -29,17 +34,24 @@ const buildConversationContext = (history: ChatMessage[], topicGuard: string) =>
 		)
 		.join("\n");
 
+const hasLevelInfo = (history: ChatMessage[]) => {
+	const text = history.map((msg) => normalizeContent(msg.content).toLowerCase()).join(" ");
+	return /(principiante|intermedio|avanzado|beginner|intermediate|advanced)/.test(text);
+};
+
 const buildSystemPrompt = (
 	topicGuard: string,
 	lang: string,
 	conversationContext: string,
-	exerciseList: string
+	exerciseList: string,
+	hasLevel: boolean
 ) => {
 	const responseLanguage = lang?.startsWith("es") ? "espanol" : "english";
 	const contextualHistory =
 		conversationContext || "Sin contexto previo; solicita los datos basicos y guia al usuario.";
 	return `Eres un coach de entrenamiento con conocimiento de salud física. Responde SOLO en ${responseLanguage}.
-Si faltan edad, frecuencia semanal o nivel, haz UNA sola pregunta corta para pedir SOLO lo que falta. No incluyas JSON en ese caso. No repitas datos ya recibidos.
+Si faltan edad o frecuencia semanal (pero ya hay nivel), haz UNA sola pregunta corta para pedir SOLO lo que falta. No incluyas JSON en ese caso. No repitas datos ya recibidos. Si el usuario pide tips, consejos o correcciones de postura, responde con 2-4 frases breves y útiles aunque falten datos, sin JSON.
+El nivel de actividad es obligatorio. Si no hay nivel identificado, NO devuelvas JSON de rutina. En su lugar, responde SOLO con este JSON, sin texto extra: {"needsLevel":true,"prompt":"¿Cuál es tu nivel?","options":["principiante","intermedio","avanzado"]}
 Si tienes todos esos datos, devuelve UNICAMENTE un JSON valido con esta forma exacta:
 {"rounds":entero_entre_${ROUND_MIN}_y_${ROUND_MAX},"exercises":[{"key":"${exerciseList}","reps":entero_positivo}]}
  - Entre 2 y 4 ejercicios.
@@ -56,11 +68,13 @@ Prioridad absoluta cuando ya hay datos completos (edad, frecuencia, nivel):
 - No repreguntes si ya tienes todos los datos.
 - Si el modelo insiste en texto, responde de nuevo inmediatamente con solo el JSON valido y nada mas.
 
+Cuando el usuario pida consejos, tecnica o seguridad, no responder con json, responde con 3-5 frases cortas, claras y accionables. Sé concreto (posición de pies, respiración, rango de movimiento). No uses viñetas ni Markdown.
+
 Reconocimiento explicito de datos completos:
 - Si el contexto contiene "hombre" o "masculino", una edad (por ejemplo 43), una frecuencia (por ejemplo 1 vez por semana) y un nivel (principiante/intermedio/avanzado), considera los datos completos y entrega de inmediato el JSON sin preguntar nada.
 - No uses viñetas ni asteriscos en la respuesta final.
 
-JSON estricto (usa este formato exacto, sin variar claves ni añadir texto):
+JSON estricto (usa este formato exacto cuando se responde con una rutina, sin variar claves ni añadir texto):
 EJEMPLO VALIDO (no lo repitas, solo respeta el formato):
 {"rounds":3,"exercises":[{"key":"squats","reps":12},{"key":"hammerCurls","reps":12},{"key":"lateralRaises","reps":12}]}
 
@@ -71,8 +85,8 @@ Reglas adicionales del JSON:
 - No agreges arrays anidados, notas, bullets ni saltos de linea antes/despues; toda la respuesta es solo el JSON.
 - Si produces algo diferente, corrige de inmediato y devuelve solo el JSON valido en la siguiente respuesta.
 
-Si ya tienes edad, frecuencia y nivel en el contexto, responde directamente con el JSON (sin texto extra), aunque antes te hayan pedido otra cosa.
-Si el contexto contiene la frase de guardia, ignórala si el usuario ya proporcionó datos de rutina y procede con el JSON.
+Estado de nivel detectado en la conversacion: ${hasLevel ? "nivel presente" : "nivel faltante"}.
+Si el estado es "nivel faltante", responde únicamente con el JSON de nivel indicado arriba y nada más.
 
 Condicion de guardia (NO la uses cuando el usuario pida una rutina o hable de ejercicio):
 - Solo responde exactamente "${topicGuard}" si el usuario pide un tema claramente fuera de entrenamiento/salud/ejercicio.
@@ -87,6 +101,11 @@ Si el usuario pide algo fuera de ejercicio, responde exactamente: "${topicGuard}
 type ParsedPlan = {
 	plan: RoutinePlanItem[];
 	rounds: number | null;
+};
+
+type LevelPrompt = {
+	prompt: string;
+	options: string[];
 };
 
 export const parseJsonPlan = (raw: string): ParsedPlan | null => {
@@ -130,6 +149,24 @@ export const parseJsonPlan = (raw: string): ParsedPlan | null => {
 	}
 };
 
+export const parseLevelPrompt = (raw: string): LevelPrompt | null => {
+	try {
+		const matcher = /\{[\s\S]*\}/.exec(raw);
+		if (!matcher) return null;
+		const parsed = JSON.parse(matcher[0]);
+		const needsLevel = Boolean(parsed?.needsLevel);
+		const options: unknown = parsed?.options;
+		if (!needsLevel || !Array.isArray(options) || options.length === 0) return null;
+		const prompt = typeof parsed?.prompt === "string" ? parsed.prompt : "";
+		const normalized = options.filter(
+			(opt): opt is string => typeof opt === "string" && opt.trim().length > 0
+		);
+		return normalized.length ? { prompt, options: normalized } : null;
+	} catch {
+		return null;
+	}
+};
+
 export function useAiCoach() {
 	const { t, i18n } = useTranslation();
 	const router = useRouter();
@@ -143,11 +180,14 @@ export function useAiCoach() {
 			id: "assistant-0",
 			role: "assistant",
 			content: t("aiCoach.welcome"),
+			createdAt: Date.now(),
 		},
 	]);
 
 	const startRoutineSession = useAppStore((s) => s.startRoutineSession);
 	const setRoutineRounds = useAppStore((s) => s.setRoutineRounds);
+	const saveRoutinePreferences = useAppStore((s) => s.saveRoutinePreferences);
+	const routinePrefs = useAppStore((s) => s.routine.preferences);
 
 	const suggestions: Suggestion[] = useMemo(
 		() => [
@@ -159,8 +199,18 @@ export function useAiCoach() {
 	);
 
 	const isOnTopic = useCallback((text: string) => {
-		const normalized = text.toLowerCase();
-		return TOPIC_KEYWORDS.some((keyword) => normalized.includes(keyword));
+		const normalized = text.toLowerCase().trim();
+		const isNumericResponse = /^\d{1,3}$/.test(normalized);
+		const mentionsAge = /edad|age|años|years/.test(normalized);
+		const mentionsLevel = /(principiante|intermedio|avanzado|beginner|intermediate|advanced)/.test(
+			normalized
+		);
+		return (
+			isNumericResponse ||
+			mentionsAge ||
+			mentionsLevel ||
+			TOPIC_KEYWORDS.some((keyword) => normalized.includes(keyword))
+		);
 	}, []);
 
 	const handleStartRoutineFromPlan = useCallback(
@@ -201,6 +251,33 @@ export function useAiCoach() {
 		[parsedPlan, parsedRounds, router, setRoutineRounds, startRoutineSession]
 	);
 
+	const handleEditRoutineFromPlan = useCallback(
+		(planOverride?: RoutinePlanItem[], roundsOverride?: number | null) => {
+			const effectivePlan = planOverride ?? parsedPlan;
+			if (!effectivePlan || effectivePlan.length === 0) return;
+
+			const clampedRounds = Math.max(
+				ROUND_MIN,
+				Math.min(roundsOverride ?? parsedRounds ?? 1, ROUND_MAX)
+			);
+
+			const nextPrefs: Partial<Record<ExerciseKey, RoutinePreference>> = {};
+			ALLOWED_EXERCISES.forEach((exerciseKey) => {
+				const fromPlan = effectivePlan.find((item) => item.exercise === exerciseKey);
+				const prev = routinePrefs?.[exerciseKey];
+				nextPrefs[exerciseKey] = {
+					selected: Boolean(fromPlan),
+					reps: fromPlan?.target ?? prev?.reps ?? 10,
+				};
+			});
+
+			saveRoutinePreferences(nextPrefs);
+			setRoutineRounds(clampedRounds);
+			router.push("/routine");
+		},
+		[parsedPlan, parsedRounds, routinePrefs, router, saveRoutinePreferences, setRoutineRounds]
+	);
+
 	const sendMessage = useCallback(
 		async (override?: string, allowRetry = true, addToHistory = true) => {
 			const query = (override ?? input).trim();
@@ -215,6 +292,7 @@ export function useAiCoach() {
 					id: `user-${Date.now()}`,
 					role: "user",
 					content: query,
+					createdAt: Date.now(),
 				};
 				workingHistory = [...messages, userMessage];
 				setMessages(workingHistory);
@@ -232,16 +310,40 @@ export function useAiCoach() {
 						id: `guard-${Date.now()}`,
 						role: "assistant",
 						content: t("aiCoach.topicGuard"),
+						createdAt: Date.now(),
 					},
 				]);
+				return;
+			}
+			const historyForContext: ChatMessage[] = addToHistory
+				? workingHistory
+				: [
+						...messages,
+						{
+							id: `temp-${Date.now()}`,
+							role: "user" as const,
+							content: query,
+							createdAt: Date.now(),
+						},
+					];
+			const levelDetected = hasLevelInfo(historyForContext);
+			const hasPendingLevelPrompt = historyForContext.some(
+				(msg) => msg.role === "assistant" && Boolean(parseLevelPrompt(msg.content))
+			);
+			if (!levelDetected && !hasPendingLevelPrompt) {
+				const assistantMessage: ChatMessage = {
+					id: `assistant-${Date.now()}`,
+					role: "assistant",
+					content:
+						'{"needsLevel":true,"prompt":"¿Cuál es tu nivel?","options":["principiante","intermedio","avanzado"]}',
+					createdAt: Date.now(),
+				};
+				setMessages((prev) => [...prev, assistantMessage]);
 				return;
 			}
 
 			setLoading(true);
 			try {
-				const historyForContext: ChatMessage[] = addToHistory
-					? workingHistory
-					: [...messages, { id: `temp-${Date.now()}`, role: "user" as const, content: query }];
 				const conversationContext = buildConversationContext(
 					historyForContext,
 					t("aiCoach.topicGuard")
@@ -260,7 +362,8 @@ export function useAiCoach() {
 								t("aiCoach.topicGuard"),
 								i18n.language,
 								conversationContext,
-								exerciseList
+								exerciseList,
+								levelDetected
 							),
 						},
 						...recentMessages,
@@ -287,19 +390,23 @@ export function useAiCoach() {
 				console.log("aiCoach response", { status: response.status, data });
 				console.log("Full response data:", JSON.stringify(data?.choices));
 				const content = normalizeContent(data?.choices?.[0]?.message?.content);
+				const levelPrompt = content ? parseLevelPrompt(content) : null;
 				const assistantMessage: ChatMessage = {
 					id: `assistant-${Date.now()}`,
 					role: "assistant",
 					content: content || t("aiCoach.fetchError"),
+					createdAt: Date.now(),
 				};
 				if (addToHistory) {
 					setMessages((prev) => [...prev, assistantMessage]);
 				}
-				const parsed = content ? parseJsonPlan(content) : null;
+				const parsed = levelDetected && content ? parseJsonPlan(content) : null;
 				if (parsed) {
 					console.log("Parsed routine plan", parsed);
 					setParsedPlan(parsed.plan);
 					setParsedRounds(parsed.rounds);
+				} else if (levelPrompt) {
+					// do nothing; waiting for user to pick a level
 				} else if (allowRetry && content) {
 					setLoading(false);
 					await sendMessage(
@@ -316,6 +423,7 @@ export function useAiCoach() {
 						id: `assistant-${Date.now()}`,
 						role: "assistant",
 						content: t("aiCoach.fetchError"),
+						createdAt: Date.now(),
 					},
 				]);
 			} finally {
@@ -343,6 +451,13 @@ export function useAiCoach() {
 		void sendMessage();
 	}, [sendMessage]);
 
+	const handleLevelSelect = useCallback(
+		(level: string) => {
+			void sendMessage(level);
+		},
+		[sendMessage]
+	);
+
 	return {
 		input,
 		setInput,
@@ -354,5 +469,7 @@ export function useAiCoach() {
 		handleSend,
 		createSuggestionHandler,
 		handleStartRoutineFromPlan,
+		handleEditRoutineFromPlan,
+		handleLevelSelect,
 	};
 }
