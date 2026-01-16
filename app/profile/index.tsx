@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
-import { Stack } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 import i18n from "../i18n";
@@ -18,12 +18,15 @@ type LanguageHandlers = Record<LanguageOption["code"], () => void>;
 
 export default function Profile() {
 	const { t } = useTranslation();
+	const router = useRouter();
 	const storedName = useAppStore((state) => state.username) ?? "";
 	const setUsername = useAppStore((state) => state.setUsername);
 	const language = useAppStore((state) => state.language);
 	const setLanguage = useAppStore((state) => state.setLanguage);
 	const resetAllExercises = useAppStore((state) => state.resetAllExercises);
 	const resetAllRoutines = useAppStore((state) => state.resetAllRoutines);
+	const resetAccount = useAppStore((state) => state.resetAccount);
+
 	const [name, setName] = useState(storedName);
 	const [isNameOpen, setIsNameOpen] = useState(false);
 	const [isLanguageOpen, setIsLanguageOpen] = useState(false);
@@ -53,11 +56,11 @@ export default function Profile() {
 		[handleLanguage]
 	);
 
-	const handleResetExercises = useCallback(() => {
-		Alert.alert(t("profile.resetConfirmTitle"), t("profile.resetConfirmBody"), [
+	const handleResetProgress = useCallback(() => {
+		Alert.alert(t("profile.resetProgressConfirmTitle"), t("profile.resetProgressConfirmBody"), [
 			{ text: t("profile.resetConfirmNo"), style: "cancel" },
 			{
-				text: t("profile.resetConfirmYes"),
+				text: t("profile.resetProgressConfirmYes"),
 				style: "destructive",
 				onPress: () => {
 					resetAllExercises();
@@ -67,12 +70,34 @@ export default function Profile() {
 		]);
 	}, [resetAllExercises, resetAllRoutines, t]);
 
+	const handleResetAccount = useCallback(() => {
+		Alert.alert(t("profile.resetAccountConfirmTitle"), t("profile.resetAccountConfirmBody"), [
+			{ text: t("profile.resetConfirmNo"), style: "cancel" },
+			{
+				text: t("profile.resetAccountConfirmYes"),
+				style: "destructive",
+				onPress: async () => {
+					try {
+						await resetAccount();
+						router.replace("/");
+					} catch (err) {
+						console.warn("Failed to reset account", err);
+					}
+				},
+			},
+		]);
+	}, [resetAccount, router, t]);
+
 	const displayName = (name || t("profile.emptyName")).trim();
 
 	return (
 		<View style={styles.container}>
 			<Stack.Screen options={{ title: t("common.profile", { defaultValue: "Profile" }) }} />
-			<View style={styles.content}>
+			<ScrollView
+				style={styles.scroll}
+				contentContainerStyle={styles.content}
+				showsVerticalScrollIndicator={false}
+			>
 				<View style={styles.heroCard}>
 					<View style={styles.heroBadge}>
 						<Ionicons name="settings-outline" size={16} color="#22D3EE" />
@@ -194,13 +219,45 @@ export default function Profile() {
 					</TouchableOpacity>
 					{isResetOpen && (
 						<View style={styles.sectionBody}>
-							<TouchableOpacity style={styles.resetButton} onPress={handleResetExercises}>
-								<Text style={styles.resetButtonText}>{t("profile.resetButton")}</Text>
-							</TouchableOpacity>
+							<View style={styles.resetCard}>
+								<View style={styles.resetHeaderRow}>
+									<View style={[styles.resetIcon, styles.resetIconSafe]}>
+										<Ionicons name="barbell-outline" size={18} color="#22D3EE" />
+									</View>
+									<View style={styles.resetTextBlock}>
+										<Text style={styles.resetTitle}>{t("profile.resetProgressTitle")}</Text>
+										<Text style={styles.resetSubtitle}>{t("profile.resetProgressSubtitle")}</Text>
+									</View>
+								</View>
+								<TouchableOpacity
+									style={[styles.resetActionButton, styles.resetActionSecondary]}
+									onPress={handleResetProgress}
+								>
+									<Text style={styles.resetActionText}>{t("profile.resetProgressCta")}</Text>
+								</TouchableOpacity>
+							</View>
+
+							<View style={[styles.resetCard, styles.resetCardDanger]}>
+								<View style={styles.resetHeaderRow}>
+									<View style={[styles.resetIcon, styles.resetIconDanger]}>
+										<Ionicons name="trash-bin-outline" size={18} color="#F43F5E" />
+									</View>
+									<View style={styles.resetTextBlock}>
+										<Text style={styles.resetTitle}>{t("profile.resetAccountTitle")}</Text>
+										<Text style={styles.resetSubtitle}>{t("profile.resetAccountSubtitle")}</Text>
+									</View>
+								</View>
+								<TouchableOpacity
+									style={[styles.resetActionButton, styles.resetActionDanger]}
+									onPress={handleResetAccount}
+								>
+									<Text style={styles.resetActionTextDanger}>{t("profile.resetAccountCta")}</Text>
+								</TouchableOpacity>
+							</View>
 						</View>
 					)}
 				</View>
-			</View>
+			</ScrollView>
 		</View>
 	);
 }

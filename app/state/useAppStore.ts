@@ -77,6 +77,7 @@ type AppState = {
 	resetExercise: (exercise: ExerciseKey) => void;
 	resetAllExercises: () => void;
 	resetAllRoutines: () => void;
+	resetAccount: () => Promise<void>;
 	saveRoutinePreferences: (prefs: Partial<Record<ExerciseKey, RoutinePreference>>) => void;
 	setRoutineRounds: (rounds: number) => void;
 	startRoutineSession: (plan: RoutinePlanItem[], startedAt?: number) => void;
@@ -155,6 +156,22 @@ const store = create<AppState>()(
 							preferences: get().routine.preferences,
 							rounds: get().routine.rounds,
 						},
+					});
+				},
+				resetAccount: async () => {
+					try {
+						await AsyncStorage.removeItem("movement-app-store");
+					} catch (error) {
+						console.warn("Failed to clear storage", error);
+					}
+
+					i18n.changeLanguage(initialLanguage);
+					set({
+						username: null,
+						language: initialLanguage,
+						exercises: createDefaultExercises(),
+						hasOnboarded: false,
+						routine: createDefaultRoutineState(),
 					});
 				},
 				saveRoutinePreferences: (prefs) => {

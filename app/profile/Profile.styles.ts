@@ -5,9 +5,12 @@ export const styles = StyleSheet.create({
 		flex: 1,
 		backgroundColor: "#0A0F2C",
 	},
+	scroll: {
+		flex: 1,
+	},
 	content: {
 		padding: 20,
-		flex: 1,
+		paddingBottom: 28,
 	},
 	heroCard: {
 		padding: 20,
@@ -171,15 +174,75 @@ export const styles = StyleSheet.create({
 		paddingBottom: 16,
 		gap: 10,
 	},
-	resetButton: {
-		marginTop: 4,
-		paddingVertical: 12,
-		borderRadius: 10,
-		alignItems: "center",
-		backgroundColor: "#FF6B6B",
+	resetCard: {
+		backgroundColor: "#0C142C",
+		borderRadius: 12,
+		borderWidth: 1,
+		borderColor: "rgba(255, 255, 255, 0.07)",
+		padding: 14,
+		gap: 12,
 	},
-	resetButtonText: {
-		color: "#0B1028",
+	resetCardDanger: {
+		backgroundColor: "rgba(244, 63, 94, 0.07)",
+		borderColor: "rgba(244, 63, 94, 0.35)",
+	},
+	resetHeaderRow: {
+		flexDirection: "row",
+		gap: 12,
+		alignItems: "center",
+	},
+	resetIcon: {
+		width: 40,
+		height: 40,
+		borderRadius: 12,
+		alignItems: "center",
+		justifyContent: "center",
+		backgroundColor: "rgba(255, 255, 255, 0.06)",
+		borderWidth: 1,
+		borderColor: "rgba(255, 255, 255, 0.1)",
+	},
+	resetIconSafe: {
+		borderColor: "rgba(34, 211, 238, 0.5)",
+		backgroundColor: "rgba(34, 211, 238, 0.08)",
+	},
+	resetIconDanger: {
+		borderColor: "rgba(244, 63, 94, 0.6)",
+		backgroundColor: "rgba(244, 63, 94, 0.12)",
+	},
+	resetTextBlock: {
+		flex: 1,
+		gap: 4,
+	},
+	resetTitle: {
+		color: "#E2E8F0",
+		fontSize: 15,
+		fontWeight: "800",
+	},
+	resetSubtitle: {
+		color: "#94A3B8",
+		fontSize: 13,
+		lineHeight: 18,
+	},
+	resetActionButton: {
+		borderRadius: 10,
+		paddingVertical: 12,
+		alignItems: "center",
+		borderWidth: 1,
+	},
+	resetActionSecondary: {
+		borderColor: "rgba(34, 211, 238, 0.6)",
+		backgroundColor: "rgba(34, 211, 238, 0.12)",
+	},
+	resetActionDanger: {
+		borderColor: "rgba(244, 63, 94, 0.7)",
+		backgroundColor: "rgba(244, 63, 94, 0.12)",
+	},
+	resetActionText: {
+		color: "#E0F2FE",
+		fontWeight: "800",
+	},
+	resetActionTextDanger: {
+		color: "#FEE2E2",
 		fontWeight: "800",
 	},
 });
